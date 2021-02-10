@@ -328,6 +328,8 @@ timeframes = {
 }
 
 def get(asset, timeframe, first, last, file) : # Example: "GAZP", "M5", "190721", "190821", "GAZP_M5.txt"
+
+    fout = open(file, "w")
     
     try :
     
@@ -365,8 +367,6 @@ def get(asset, timeframe, first, last, file) : # Example: "GAZP", "M5", "190721"
         ])
 
         url = domain + asset + "_" + timeframe + ".txt?" + properties
-
-        fout = open(file, "w")
 
         text = urlopen(url).readlines()
 
