@@ -4,10 +4,30 @@
     <Filter Include="source">
       <UniqueIdentifier>{db81cc44-58c1-457a-8b73-b69a0dfa259a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\system">
+      <UniqueIdentifier>{d050c39a-8943-4c3b-9eb2-7855d0717734}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\logger">
+      <UniqueIdentifier>{2f9b161c-8545-498d-8789-3da0f19046c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\system\system.cpp">
+      <Filter>source\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\source\logger\logger.cpp">
+      <Filter>source\logger</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\system\system.hpp">
+      <Filter>source\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\source\logger\logger.hpp">
+      <Filter>source\logger</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
