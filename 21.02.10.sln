@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "system", "projects\system\project\system.vcxproj", "{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{2E639BB9-9D35-4871-9DFC-4F64D94C7F79}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "source", "source", "{0FB2E3A9-D366-46AB-A5BC-D31CE080E569}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "logger", "logger", "{4E636028-4332-48CE-834D-BDC060C303B9}"
+	ProjectSection(SolutionItems) = preProject
+		projects\shared\source\logger\logger.cpp = projects\shared\source\logger\logger.cpp
+		projects\shared\source\logger\logger.hpp = projects\shared\source\logger\logger.hpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "python", "python", "{7622A43A-3132-489F-BECB-8087A3AFEA55}"
+	ProjectSection(SolutionItems) = preProject
+		projects\shared\source\python\python.cpp = projects\shared\source\python\python.cpp
+		projects\shared\source\python\python.hpp = projects\shared\source\python\python.hpp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "timer", "timer", "{5C19BD06-301C-4F34-A044-B51E1DA7E572}"
+	ProjectSection(SolutionItems) = preProject
+		projects\shared\source\timer\timer.cpp = projects\shared\source\timer\timer.cpp
+		projects\shared\source\timer\timer.hpp = projects\shared\source\timer\timer.hpp
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Debug|x64.ActiveCfg = Debug|x64
+		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Debug|x64.Build.0 = Debug|x64
+		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Debug|x86.ActiveCfg = Debug|Win32
+		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Debug|x86.Build.0 = Debug|Win32
+		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Release|x64.ActiveCfg = Release|x64
+		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Release|x64.Build.0 = Release|x64
+		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Release|x86.ActiveCfg = Release|Win32
+		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0FB2E3A9-D366-46AB-A5BC-D31CE080E569} = {2E639BB9-9D35-4871-9DFC-4F64D94C7F79}
+		{4E636028-4332-48CE-834D-BDC060C303B9} = {0FB2E3A9-D366-46AB-A5BC-D31CE080E569}
+		{7622A43A-3132-489F-BECB-8087A3AFEA55} = {0FB2E3A9-D366-46AB-A5BC-D31CE080E569}
+		{5C19BD06-301C-4F34-A044-B51E1DA7E572} = {0FB2E3A9-D366-46AB-A5BC-D31CE080E569}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9CAE4987-5FDC-4283-A9B6-C4C10C326834}
+	EndGlobalSection
+EndGlobal
