@@ -10,6 +10,12 @@
     <Filter Include="source\logger">
       <UniqueIdentifier>{2f9b161c-8545-498d-8789-3da0f19046c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\python">
+      <UniqueIdentifier>{abf4b48f-33a9-4578-b18f-817c7ebaafb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market">
+      <UniqueIdentifier>{e638e700-770b-4daf-a005-71eb3c19510e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -21,6 +27,12 @@
     <ClCompile Include="..\..\shared\source\logger\logger.cpp">
       <Filter>source\logger</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\shared\source\python\python.cpp">
+      <Filter>source\python</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\market.cpp">
+      <Filter>source\market</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\system\system.hpp">
@@ -29,5 +41,16 @@
     <ClInclude Include="..\..\shared\source\logger\logger.hpp">
       <Filter>source\logger</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\shared\source\python\python.hpp">
+      <Filter>source\python</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\market.hpp">
+      <Filter>source\market</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\source\market\market.py">
+      <Filter>source\market</Filter>
+    </None>
   </ItemGroup>
 </Project>
