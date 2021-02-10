@@ -26,7 +26,7 @@ namespace solution
 
 			try
 			{
-				// ...
+				std::cout << m_market.get_all().second << std::endl;
 			}
 			catch (const std::exception & exception)
 			{

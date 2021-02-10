@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "../market/market.hpp"
+
 #include "../../../shared/source/logger/logger.hpp"
 
 namespace solution 
@@ -54,7 +56,7 @@ namespace solution
 
 		private:
 
-
+			Market m_market;
 		};
 
 	} // namespace system
