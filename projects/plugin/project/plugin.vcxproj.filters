@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{20ef628a-29a3-460d-823e-a2378664c79b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market">
+      <UniqueIdentifier>{d7668682-f979-497e-9eec-59271dd165db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\source">
+      <UniqueIdentifier>{29c65ed4-566b-40a4-b246-e54ac37d0f00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\logger">
+      <UniqueIdentifier>{f444c8a7-0f39-4333-a2a1-18b773bb9827}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\config">
+      <UniqueIdentifier>{b46cf1f0-bd72-42ec-bc17-a84b1fc37217}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\window">
+      <UniqueIdentifier>{cea2ead0-e553-4a1e-8517-547f7ab03b18}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\market\market.cpp">
+      <Filter>source\market</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\source\source.cpp">
+      <Filter>source\market\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\shared\source\logger\logger.cpp">
+      <Filter>source\logger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\window\window.cpp">
+      <Filter>source\window</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\export.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\market\market.hpp">
+      <Filter>source\market</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\source\source.hpp">
+      <Filter>source\market\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\shared\source\logger\logger.hpp">
+      <Filter>source\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\config\config.hpp">
+      <Filter>source\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\window\window.hpp">
+      <Filter>source\window</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

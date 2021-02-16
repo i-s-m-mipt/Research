@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "timer", "timer", "{5C19BD06
 		projects\shared\source\timer\timer.hpp = projects\shared\source\timer\timer.hpp
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin", "projects\plugin\project\plugin.vcxproj", "{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -43,6 +45,14 @@ Global
 		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Release|x64.Build.0 = Release|x64
 		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Release|x86.ActiveCfg = Release|Win32
 		{BC536903-0C3D-47D5-AAF3-CBD6F9961E3F}.Release|x86.Build.0 = Release|Win32
+		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Debug|x64.ActiveCfg = Debug|x64
+		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Debug|x64.Build.0 = Debug|x64
+		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Debug|x86.ActiveCfg = Debug|Win32
+		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Debug|x86.Build.0 = Debug|Win32
+		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Release|x64.ActiveCfg = Release|x64
+		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Release|x64.Build.0 = Release|x64
+		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Release|x86.ActiveCfg = Release|Win32
+		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
