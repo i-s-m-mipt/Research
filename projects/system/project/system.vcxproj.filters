@@ -48,9 +48,4 @@
       <Filter>source\market</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\source\market\market.py">
-      <Filter>source\market</Filter>
-    </None>
-  </ItemGroup>
 </Project>
