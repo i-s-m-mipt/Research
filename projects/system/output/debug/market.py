@@ -1,8 +1,8 @@
 import sys
-
 from urllib.parse   import urlencode
 from urllib.request import urlopen
-from datetime       import datetime
+from datetime       import timedelta, datetime
+from time           import sleep
 
 assets = {
     "ABRD"   : 82460,
@@ -341,8 +341,8 @@ def get(asset, timeframe, first, last, file) : # Example: "GAZP", "M5", "190721"
         properties = urlencode([
 		    ("market",    0),                       # Тип рынка
 		    ("em",        assets[asset]),           # Код актива
-	        ("code",      asset),                   # Имя актива
-	        ("apply",     0),                       # Избранное
+	        ("code",      asset),                       # Имя актива
+	        ("apply",     0),                           # Избранное
 		    ("df",        first.day),               # Начальная дата, номер дня (1-31)
 		    ("mf",        first.month - 1),         # Начальная дата, номер месяца (0-11)
 		    ("yf",        first.year),              # Начальная дата, год
@@ -369,20 +369,52 @@ def get(asset, timeframe, first, last, file) : # Example: "GAZP", "M5", "190721"
         url = domain + asset + "_" + timeframe + ".txt?" + properties
 
         text = urlopen(url).readlines()
-
+        lines = []
+        
         for line in text :
-            fout.write(line.strip().decode("utf-8") + "\n")	
+            lines.append(line.strip().decode("utf-8") + "\n")
+
+        for line in reversed(lines):
+            fout.write(line)	
 
     except:
 
-        print("Exception:", sys.exc_info()[0])
+        print("Exception: ", sys.exc_info()[0])
 
         raise
 
     finally:
 
         fout.close()
+        
 
-# if __name__ == '__main__' :
 
-    # get("GAZP", "M5", "190721", "190821", "GAZP_M5.txt")
+def get(asset, timeframe) :
+
+    try:
+        
+        total = 365 * 20
+        batch = 365
+
+        first = datetime.now().date() - timedelta(1)
+        last  = first - timedelta(batch)
+
+        path = asset + "_" + timeframe + ".txt"
+        
+        for i in range(0, total, batch):
+            
+            get_piece(asset, timeframe, last, first, path)
+
+            first = last - timedelta(1)
+            last = first - timedelta(batch)
+
+            sleep(1)
+
+    except:
+
+        print("Exception: ", sys.exc_info()[0])
+
+        raise
+
+
+# get("GAZP", "M60")
