@@ -153,75 +153,7 @@ namespace solution
 				shared::catch_handler < market_exception > (logger, exception);
 			}
 		}
-		/*
-		Market::path_t Market::get(const std::string & asset, const std::string & scale) const
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				using days = std::chrono::duration < int, std::ratio < 3600 * 24 > > ;
-
-				const std::size_t total = 365 * 20;
-				const std::size_t batch = 250;
-
-				auto first = clock_t::now() - days(batch);
-				auto last  = clock_t::now();
-
-				auto path = directory; path /= asset + "_" + scale + Extension::csv;
-
-				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
-
-				if (!fout)
-				{
-					throw market_exception("cannot open file " + path.string());
-				}
-
-				for (std::size_t size = 0; size < total; size += batch)
-				{
-					auto temporary_file = get(asset, scale, first, last);
-
-					std::fstream fin(temporary_file.string(), std::ios::in);
-
-					if (!fin)
-					{
-						throw market_exception("cannot open file " + temporary_file.string());
-					}
-
-					std::string line;
-
-					std::vector < std::string > lines;
-
-					while (std::getline(fin, line))
-					{
-						lines.push_back(line);
-					}
-
-					fin.close();
-
-					std::remove(temporary_file.string().c_str());
-
-					std::for_each(std::rbegin(lines), std::rend(lines), [&fout](const auto & line)
-					{
-						fout << line << std::endl;
-					});
-
-					last  = first - days(1);
-					first = last  - days(batch);
-
-					std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-				}
-
-				fout.close();
-
-				return path;
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-		*/
+		
 		std::pair < Market::path_t, std::size_t > Market::get_all() const
 		{
 			RUN_LOGGER(logger);
