@@ -127,7 +127,7 @@ namespace solution
 
 			try
 			{
-				path_t path = asset + "_" + scale + Extension::txt;
+				auto path = directory; path /= asset + "_" + scale + Extension::csv;
 
 				shared::Python python;
 
