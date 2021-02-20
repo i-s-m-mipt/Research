@@ -121,8 +121,7 @@ namespace solution
 			}
 		}
 
-		Market::path_t Market::get(const std::string & asset, const std::string & scale, 
-			time_point_t first, time_point_t last) const
+		Market::path_t Market::get(const std::string & asset, const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
 
@@ -136,8 +135,7 @@ namespace solution
 				{
 					boost::python::exec("from market import get", python.global(), python.global());
 
-					python.global()["get"](asset.c_str(), scale.c_str(), 
-						make_date(first).c_str(), make_date(last).c_str(), path.string().c_str());
+					python.global()["get"](asset.c_str(), scale.c_str(), path.string().c_str());
 				}
 				catch (const boost::python::error_already_set &)
 				{
@@ -155,7 +153,7 @@ namespace solution
 				shared::catch_handler < market_exception > (logger, exception);
 			}
 		}
-
+		/*
 		Market::path_t Market::get(const std::string & asset, const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
@@ -223,7 +221,7 @@ namespace solution
 				shared::catch_handler < market_exception > (logger, exception);
 			}
 		}
-
+		*/
 		std::pair < Market::path_t, std::size_t > Market::get_all() const
 		{
 			RUN_LOGGER(logger);
