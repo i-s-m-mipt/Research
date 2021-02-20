@@ -314,6 +314,7 @@ assets = {
     "ZVEZ"   : 82001
 }
  
+
 timeframes = {
     "T"   : 1,
     "M1"  : 2,
@@ -327,14 +328,13 @@ timeframes = {
     "MN"  : 10
 }
 
-def get(asset, timeframe, first, last, file) : # Example: "GAZP", "M5", "190721", "190821", "GAZP_M5.txt"
 
-    fout = open(file, "w")
+
+def get_piece(asset, timeframe, first, last, file) :
+
+    fout = open(file, "a")
     
     try :
-    
-        first = datetime.strptime(first, "%y%m%d").date()
-        last  = datetime.strptime(last,  "%y%m%d").date()
 
         domain = "http://export.finam.ru/"
 
