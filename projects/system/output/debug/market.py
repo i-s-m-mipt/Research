@@ -389,7 +389,7 @@ def get_piece(asset, timeframe, first, last, file) :
         
 
 
-def get(asset, timeframe) :
+def get(asset, timeframe, path) :
 
     try:
         
@@ -398,8 +398,6 @@ def get(asset, timeframe) :
 
         first = datetime.now().date() - timedelta(1)
         last  = first - timedelta(batch)
-
-        path = asset + "_" + timeframe + ".txt"
         
         for i in range(0, total, batch):
             
