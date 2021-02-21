@@ -273,6 +273,55 @@ namespace solution
 			}
 		}
 
+		void Market::compute_self_similarities()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & asset : m_assets)
+				{
+					m_self_similarities[asset] = self_similarity_matrix_t(
+						boost::extents[std::size(m_scales)][std::size(m_scales)]);
+
+					for (auto i = 0U; i < std::size(m_scales); ++i)
+					{
+						for (auto j = 0U; j < std::size(m_scales); ++j)
+						{
+							m_self_similarities[asset][i][j] = ((i == j) ? 1.0 : // ?
+								compute_self_similarity(asset, m_scales[i], m_scales[j]));
+						}
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		double Market::compute_self_similarity(const std::string & asset,
+			const std::string & scale_1, const std::string & scale_2) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto self_similarity = 0.0;
+
+				// TODO
+				// USE 2 std::vector < Bar > : 
+				// m_charts[asset][scale_1].something
+				// m_charts[asset][scale_2].something
+
+				return self_similarity;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		std::string Market::make_file_name(
 			const std::string & asset, const std::string & scale) const
 		{

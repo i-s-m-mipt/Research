@@ -28,6 +28,7 @@
 #include <boost/config/warning_disable.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/include/io.hpp>
+#include <boost/multi_array.hpp>
 #include <boost/python.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
@@ -169,6 +170,11 @@ namespace solution
 			using charts_container_t = std::unordered_map < std::string,
 				std::unordered_map < std::string, bars_container_t > > ;
 
+			using self_similarity_matrix_t = boost::multi_array < double, 2U > ;
+
+			using self_similarities_container_t = std::unordered_map < std::string,
+				self_similarity_matrix_t > ;
+
 		public:
 
 			Market()
@@ -215,13 +221,23 @@ namespace solution
 				return m_charts;
 			}
 
+			const auto & self_similarities() const noexcept
+			{
+				return m_self_similarities;
+			}
+
 		public:
 	
 			path_t get(const std::string & asset, const std::string & scale) const;
 
 			std::pair < path_t, std::size_t > get_all() const;
 
+			void compute_self_similarities();
+
 		private:
+
+			double compute_self_similarity(const std::string & asset,
+				const std::string & scale_1, const std::string & scale_2) const;
 
 			std::string make_file_name(
 				const std::string & asset, const std::string & scale) const;
@@ -237,6 +253,8 @@ namespace solution
 			scales_container_t m_scales;
 
 			charts_container_t m_charts;
+
+			self_similarities_container_t m_self_similarities;
 		};
 
 	} // namespace system
