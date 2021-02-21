@@ -26,9 +26,7 @@ namespace solution
 
 			try
 			{
-				// std::cout << m_market.charts().at("GAZP").at("D").size();
-
-				m_market.compute_self_similarities();
+				std::cout << m_market.self_similarities().at("GAZP")[0][0] << std::endl;
 			}
 			catch (const std::exception & exception)
 			{

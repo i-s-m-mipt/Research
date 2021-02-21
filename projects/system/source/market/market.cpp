@@ -6,13 +6,34 @@ namespace solution
 	{
 		using Severity = shared::Logger::Severity;
 
+		void Market::Data::load_config(Config & config)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				json_t raw_config;
+
+				load(File::config_json, raw_config);
+
+				config.required_charts = 
+					raw_config[Key::Config::required_charts].get < bool > ();
+				config.required_self_similarities = 
+					raw_config[Key::Config::required_self_similarities].get < bool > ();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::Data::load_assets(assets_container_t & assets)
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				auto path = File::assets;
+				auto path = File::assets_data;
 
 				std::fstream fin(path.string(), std::ios::in);
 
@@ -40,7 +61,7 @@ namespace solution
 
 			try
 			{
-				auto path = File::scales;
+				auto path = File::scales_data;
 
 				std::fstream fin(path.string(), std::ios::in);
 
@@ -62,15 +83,62 @@ namespace solution
 			}
 		}
 
+		void Market::Data::load(const path_t & path, json_t & object)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::fstream fin(path.string(), std::ios::in);
+
+				if (!fin)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				object = json_t::parse(fin);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::Data::save(const path_t & path, const json_t & object)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::fstream fout(path.string(), std::ios::out);
+
+				if (!fout)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				fout << std::setw(4) << object;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::initialize()
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
+				std::filesystem::create_directory(directory);
+
 				load();
 
-				std::filesystem::create_directory(directory);
+				if (m_config.required_self_similarities)
+				{
+					compute_self_similarities();
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -84,9 +152,24 @@ namespace solution
 
 			try
 			{
+				load_config();
 				load_assets();
 				load_scales();
 				load_charts();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::load_config()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::load_config(m_config);
 			}
 			catch (const std::exception & exception)
 			{
@@ -128,6 +211,11 @@ namespace solution
 
 			try
 			{
+				if (m_config.required_charts)
+				{
+					get_all_charts();
+				}
+
 				for (const auto & asset : m_assets)
 				{
 					for (const auto & scale : m_scales)
@@ -214,7 +302,7 @@ namespace solution
 			}
 		}
 
-		Market::path_t Market::get(const std::string & asset, const std::string & scale) const
+		Market::path_t Market::get_chart(const std::string & asset, const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
 
@@ -247,7 +335,7 @@ namespace solution
 			}
 		}
 		
-		std::pair < Market::path_t, std::size_t > Market::get_all() const
+		std::pair < Market::path_t, std::size_t > Market::get_all_charts() const
 		{
 			RUN_LOGGER(logger);
 
@@ -259,7 +347,7 @@ namespace solution
 				{
 					for (const auto & scale : m_scales)
 					{
-						get(asset, scale);
+						get_chart(asset, scale);
 
 						++counter;
 					}
@@ -281,8 +369,8 @@ namespace solution
 			{
 				for (const auto & asset : m_assets)
 				{
-					m_self_similarities[asset] = self_similarity_matrix_t(
-						boost::extents[std::size(m_scales)][std::size(m_scales)]);
+					m_self_similarities.insert(std::make_pair(asset, self_similarity_matrix_t(
+						boost::extents[std::size(m_scales)][std::size(m_scales)])));
 
 					for (auto i = 0U; i < std::size(m_scales); ++i)
 					{

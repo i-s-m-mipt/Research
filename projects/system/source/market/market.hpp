@@ -35,6 +35,9 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_object.hpp>
 
+#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
+
 #include "../../../shared/source/logger/logger.hpp"
 #include "../../../shared/source/python/python.hpp"
 
@@ -65,6 +68,14 @@ namespace solution
 
 		private:
 
+			struct Config
+			{
+				bool required_charts            = false;
+				bool required_self_similarities = false;
+			};
+
+		private:
+
 			using assets_container_t = std::vector < std::string > ;
 
 			using scales_container_t = std::vector < std::string > ;
@@ -88,23 +99,47 @@ namespace solution
 			{
 			private:
 
+				using json_t = nlohmann::json;
+
+			private:
+
 				struct File
 				{
 					using path_t = std::filesystem::path;
 
-					static inline const path_t assets = "market/data/assets.data";
-					static inline const path_t scales = "market/data/scales.data";
+					static inline const path_t config_json = "market/config.json";
+					static inline const path_t assets_data = "market/assets.data";
+					static inline const path_t scales_data = "market/scales.data";
 				};
 
 			private:
 
 				using path_t = File::path_t;
 
+			private:
+
+				struct Key
+				{
+					struct Config
+					{
+						static inline const std::string required_charts            = "required_charts";
+						static inline const std::string required_self_similarities = "required_self_similarities";
+					};
+				};
+
 			public:
+
+				static void load_config(Config & config);
 
 				static void load_assets(assets_container_t & assets);
 
 				static void load_scales(scales_container_t & scales);
+
+			private:
+
+				static void load(const path_t & path, json_t & object);
+
+				static void save(const path_t & path, const json_t & object);
 			};
 
 		public:
@@ -118,8 +153,8 @@ namespace solution
 
 				using volume_t = std::uint64_t;
 
-				date_t date;
-				time_t time;
+				date_t date = 0U;
+				time_t time = 0U;
 
 				price_t price_open  = 0.0;
 				price_t price_high  = 0.0;
@@ -194,6 +229,8 @@ namespace solution
 
 		private:
 
+			void load_config();
+
 			void load_assets();
 
 			void load_scales();
@@ -228,9 +265,9 @@ namespace solution
 
 		public:
 	
-			path_t get(const std::string & asset, const std::string & scale) const;
+			path_t get_chart(const std::string & asset, const std::string & scale) const;
 
-			std::pair < path_t, std::size_t > get_all() const;
+			std::pair < path_t, std::size_t > get_all_charts() const;
 
 			void compute_self_similarities();
 
@@ -244,9 +281,11 @@ namespace solution
 			
 		private:
 
-			static inline const path_t directory = "market/bars";
+			static inline const path_t directory = "market/charts";
 
 		private:
+
+			Config m_config;
 
 			assets_container_t m_assets;
 
