@@ -342,3 +342,5 @@ healthchecksdb
 service/
 /__pycache__
 *.csv
+*.exe
+plugin.dll
