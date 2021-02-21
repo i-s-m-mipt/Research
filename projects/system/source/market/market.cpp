@@ -86,6 +86,7 @@ namespace solution
 			{
 				load_assets();
 				load_scales();
+				load_charts();
 			}
 			catch (const std::exception & exception)
 			{
@@ -121,13 +122,105 @@ namespace solution
 			}
 		}
 
+		void Market::load_charts()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & asset : m_assets)
+				{
+					for (const auto & scale : m_scales)
+					{
+						auto path = directory; path /= make_file_name(asset, scale);
+
+						if (!std::filesystem::exists(path))
+						{
+							logger.write(Severity::error, "file " + path.string() + " doesn't exist");
+
+							continue;
+						}
+
+						m_charts[asset][scale] = load_bars(path);
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		Market::bars_container_t Market::load_bars(const path_t & path) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				bars_container_t bars;
+
+				std::fstream fin(path.string(), std::ios::in);
+
+				if (!fin)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				std::string s;
+
+				while (std::getline(fin, s))
+				{
+					bars.push_back(parse(s));
+				}
+
+				std::reverse(std::begin(bars), std::end(bars));
+
+				return bars;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		Market::Bar Market::parse(const std::string & s) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Bar_Parser < std::string::const_iterator > parser;
+
+				auto first = std::begin(s);
+				auto last  = std::end(s);
+
+				Bar bar;
+
+				auto result = boost::spirit::qi::phrase_parse(
+					first, last, parser, boost::spirit::qi::blank, bar);
+
+				if (result)
+				{
+					return bar;
+				}
+				else
+				{
+					throw market_exception("cannot parse line " + s);
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		Market::path_t Market::get(const std::string & asset, const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				auto path = directory; path /= asset + "_" + scale + Extension::csv;
+				auto path = directory; path /= make_file_name(asset, scale);
 
 				shared::Python python;
 
@@ -180,19 +273,14 @@ namespace solution
 			}
 		}
 
-		Market::date_t Market::make_date(time_point_t time_point) const
+		std::string Market::make_file_name(
+			const std::string & asset, const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				auto time = clock_t::to_time_t(time_point);
-
-				std::stringstream sout;
-
-				sout << std::put_time(std::localtime(&time), "%y%m%d");
-
-				return sout.str();
+				return (asset + "_" + scale + Extension::csv);
 			}
 			catch (const std::exception & exception)
 			{

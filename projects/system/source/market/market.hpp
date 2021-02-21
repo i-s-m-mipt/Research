@@ -20,11 +20,19 @@
 #include <string>
 #include <sstream>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 #define BOOST_PYTHON_STATIC_LIB
 
+#include <boost/config/warning_disable.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/fusion/include/io.hpp>
 #include <boost/python.hpp>
+#include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_object.hpp>
 
 #include "../../../shared/source/logger/logger.hpp"
 #include "../../../shared/source/python/python.hpp"
@@ -55,12 +63,6 @@ namespace solution
 			using path_t = std::filesystem::path;
 
 		private:
-
-			using clock_t = std::chrono::system_clock;
-
-			using time_point_t = std::chrono::time_point < clock_t > ;
-
-			using date_t = std::string;
 
 			using assets_container_t = std::vector < std::string > ;
 
@@ -106,6 +108,69 @@ namespace solution
 
 		public:
 
+			struct Bar
+			{
+				using date_t = std::uint32_t;
+				using time_t = std::uint32_t;
+
+				using price_t = double;
+
+				using volume_t = std::uint64_t;
+
+				date_t date;
+				time_t time;
+
+				price_t price_open  = 0.0;
+				price_t price_high  = 0.0;
+				price_t price_low   = 0.0;
+				price_t price_close = 0.0;
+
+				volume_t volume = 0ULL;
+			};
+
+		private:
+
+			template < typename Iterator >
+			class Bar_Parser : public boost::spirit::qi::grammar < 
+				Iterator, Bar(), boost::spirit::qi::blank_type >
+			{
+			private:
+
+				using rule_t = boost::spirit::qi::rule < 
+					Iterator, Bar(), boost::spirit::qi::blank_type >;
+
+			public:
+
+				Bar_Parser() : Bar_Parser::base_type(start)
+				{
+					static const auto separator = ',';
+
+					start %=
+						boost::spirit::qi::uint_   >> separator >> // Date
+						boost::spirit::qi::uint_   >> separator >> // Time
+						boost::spirit::qi::double_ >> separator >> // Open
+						boost::spirit::qi::double_ >> separator >> // High
+						boost::spirit::qi::double_ >> separator >> // Low
+						boost::spirit::qi::double_ >> separator >> // Close
+						boost::spirit::qi::ulong_long;             // Volume
+				}
+
+				~Bar_Parser() noexcept = default;
+
+			private:
+
+				rule_t start;
+			};
+
+		private:
+
+			using bars_container_t = std::vector < Bar > ;
+
+			using charts_container_t = std::unordered_map < std::string,
+				std::unordered_map < std::string, bars_container_t > > ;
+
+		public:
+
 			Market()
 			{
 				initialize();
@@ -127,6 +192,12 @@ namespace solution
 
 			void load_scales();
 
+			void load_charts();
+
+			bars_container_t load_bars(const path_t & path) const;
+
+			Bar parse(const std::string & s) const;
+
 		public:
 
 			const auto & assets() const noexcept
@@ -139,18 +210,21 @@ namespace solution
 				return m_scales;
 			}
 
-		public:
+			const auto & charts() const noexcept
+			{
+				return m_charts;
+			}
 
-			path_t get(const std::string & asset, const std::string & scale, 
-				time_point_t first, time_point_t last) const;
-						
+		public:
+	
 			path_t get(const std::string & asset, const std::string & scale) const;
 
 			std::pair < path_t, std::size_t > get_all() const;
 
 		private:
 
-			date_t make_date(time_point_t time_point) const;
+			std::string make_file_name(
+				const std::string & asset, const std::string & scale) const;
 			
 		private:
 
@@ -161,10 +235,24 @@ namespace solution
 			assets_container_t m_assets;
 
 			scales_container_t m_scales;
+
+			charts_container_t m_charts;
 		};
 
 	} // namespace system
 
 } // namespace solution
+
+BOOST_FUSION_ADAPT_STRUCT
+(
+	 solution::system::Market::Bar,
+	(solution::system::Market::Bar::date_t,   date)
+	(solution::system::Market::Bar::time_t,   time)
+	(solution::system::Market::Bar::price_t,  price_open)
+	(solution::system::Market::Bar::price_t,  price_high)
+	(solution::system::Market::Bar::price_t,  price_low)
+	(solution::system::Market::Bar::price_t,  price_close)
+	(solution::system::Market::Bar::volume_t, volume)
+)
 
 #endif // #ifndef SOLUTION_SYSTEM_MARKET_HPP
