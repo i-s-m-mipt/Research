@@ -1,8 +1,11 @@
 #pragma once
 
+#include <exception>
 #include <functional>
-#include <tuple>
 #include <iostream>
+#include <stdexcept>
+#include <string>
+#include <tuple>
 
 #include "state_base.hpp"
 
@@ -79,7 +82,7 @@ namespace lua {
       typedef typename std::tuple_element<0, tuple_t>::type A;
       A value = at<A>(idx - I).get();
       return std::tuple_cat(std::tuple<A>(value), get_values_<I + 1,
-                            typename tuple_tail_type<tuple_t>::type>(idx));
+                            tuple_tail_t < tuple_t > >(idx));
     }
 
     template <typename tuple_t>
@@ -99,7 +102,7 @@ namespace lua {
       typedef typename std::tuple_element<0, tuple_t>::type A;
       A value = at<A>(idx - I + 1).get();
       return std::tuple_cat(std::tuple<A>(value), get_values_reverse_<
-                            typename tuple_tail_type<tuple_t>::type, I - 1>(idx));
+                            tuple_tail_t < tuple_t > , I - 1>(idx));
     }
     
     template <typename tuple_t>

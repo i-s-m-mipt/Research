@@ -232,9 +232,12 @@
   LUACPP_DETAIL_STATIC_FUNCTION_END(NAME)                               \
           
           
-namespace lua {
-  namespace function {
-    namespace detail {
+namespace lua 
+{
+  namespace function 
+  {
+    namespace detail 
+    {
       template<typename T>
       std::function<typename std::enable_if<std::is_function<T>::value, T>::type>
       make_std_function(T *t) {
@@ -252,7 +255,7 @@ namespace lua {
       inline static make_args_from_stack(const lua::state& s) {
         typedef typename std::tuple_element<0, tuple_t>::type A;
         return std::tuple_cat(std::make_tuple(A(s, I + 1)),
-                              make_args_from_stack<I + 1, typename ::lua::tuple_tail_type<tuple_t>::type>(s));
+                              make_args_from_stack<I + 1, tuple_tail_t<tuple_t> >(s));
       }
 
       template <typename Tag, typename F>

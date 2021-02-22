@@ -1,59 +1,59 @@
 #pragma once
 
 #include <cstddef>
+#include <exception>
+#include <stdexcept>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
-namespace lua {
-  template <typename... X>
-  struct tuple_tail_type;
+namespace lua 
+{
+    template < typename ... Types >
+    struct tuple_tail;
 
-  template <typename head_t>
-  struct tuple_tail_type<std::tuple<head_t>> {
-    typedef std::tuple<> type;
-  };
-
-  template <typename head_t, typename... tail_t>
-  struct tuple_tail_type<std::tuple<head_t, tail_t...> > {
-    typedef std::tuple<tail_t...> type;
-  };
-
-  // Credits: http://stackoverflow.com/a/12650100
-  
-  template<size_t N>
-  struct Apply {
-    template<typename F, typename T, typename... A>
-    static inline auto apply_tuple(F && f, T && t, A &&... a)
-      -> decltype(Apply<N-1>::apply_tuple(
-                                    ::std::forward<F>(f), ::std::forward<T>(t),
-                                    ::std::get<N-1>(::std::forward<T>(t)), ::std::forward<A>(a)...
-                                    ))
+    template < typename T >
+    struct tuple_tail < std::tuple < T > >
     {
-      return Apply<N-1>::apply_tuple(::std::forward<F>(f), ::std::forward<T>(t),
-                               ::std::get<N-1>(::std::forward<T>(t)), ::std::forward<A>(a)...
-                               );
-    }
-  };
+        using type = std::tuple <> ;
+    };
 
-  template<>
-  struct Apply<0> {
-    template<typename F, typename T, typename... A>
-    static inline auto apply_tuple(F && f, T &&, A &&... a)
-      -> decltype(::std::forward<F>(f)(::std::forward<A>(a)...))
+    template < typename T, typename ... Types >
+    struct tuple_tail < std::tuple < T, Types ... > >
     {
-      return ::std::forward<F>(f)(::std::forward<A>(a)...);
-    }
-  };
+        using type = std::tuple < Types ... > ;
+    };
 
-  template<typename F, typename T>
-  inline auto apply_tuple(F && f, T && t)
-    -> decltype(Apply< ::std::tuple_size<
-                typename ::std::decay<T>::type
-                >::value>::apply_tuple(::std::forward<F>(f), ::std::forward<T>(t)))
-  {
-    return Apply< ::std::tuple_size<
-      typename ::std::decay<T>::type
-      >::value>::apply_tuple(::std::forward<F>(f), ::std::forward<T>(t));
-  }  
-} 
+    template < typename T >
+    using tuple_tail_t = typename tuple_tail < T > ::type;
+
+    template < std::size_t N >
+    struct Apply
+    {
+        template < typename F, typename T, typename ... Args >
+        static inline decltype(auto) apply_tuple(F && f, T && t, Args && ... args)
+        {
+            return Apply < N - 1U > ::apply_tuple(std::forward < F > (f), std::forward < T > (t),
+                std::get < N - 1U > (std::forward < T > (t)), std::forward < Args > (args) ...);
+        }
+    };
+
+    template <>
+    struct Apply < 0U >
+    {
+        template < typename F, typename T, typename ... Args >
+        static inline decltype(auto) apply_tuple(F && f, T &&, Args && ... args)
+        {
+            return std::forward < F > (f)(std::forward < Args > (args) ...);
+        }
+    };
+
+    template < typename F, typename T >
+    inline decltype(auto) apply_tuple(F && f, T && t)
+    {
+        return Apply < std::tuple_size_v < std::decay_t < T > > > ::apply_tuple(
+            std::forward < F > (f), std::forward < T > (t));
+    }
+
+} // namespace lua 

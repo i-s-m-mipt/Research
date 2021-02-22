@@ -1,9 +1,11 @@
 #pragma once
 
 #include <exception>
+#include <stdexcept>
 #include <string>
 
-extern "C" {
+extern "C" 
+{
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
