@@ -12,20 +12,14 @@
 #include "declarations.hpp"
 
 namespace lua {  
-  struct state : public state_base {
+  struct State : public State_Base {
 
-    typedef state type;
-    using state_base::state_base;
+    using State_Base::State_Base;
 
-    void swap(state& other) {
-      state_base::swap(other);
-    }
+    //void swap(state& other) {
+    //  state_base::swap(other);
+    //}
 
-    state& operator=(const state& other) {
-      type tmp(other);
-      swap(tmp);
-      return *this;
-    }
 
     template <typename T>
     auto at(const int idx) const -> entity<type_policy<T>> {
@@ -102,7 +96,7 @@ namespace lua {
       typedef typename std::tuple_element<0, tuple_t>::type A;
       A value = at<A>(idx - I + 1).get();
       return std::tuple_cat(std::tuple<A>(value), get_values_reverse_<
-                            tuple_tail_t < tuple_t > , I - 1>(idx));
+          tuple_tail_t < tuple_t > , I - 1>(idx));
     }
     
     template <typename tuple_t>
@@ -116,8 +110,8 @@ namespace lua {
     inline void call_and_apply(callback_t f,
                                const int n_result,
                                const char* name, Args&&... args) const {
-      getglobal(name);
-      if (isfunction(-1)) {
+      get_global(name);
+      if (is_function(-1)) {
         push_variadic(std::forward<Args>(args)...);
         int rc = pcall(sizeof...(args), n_result, 0);
         if (rc == 0) {
@@ -135,8 +129,8 @@ namespace lua {
     
     template <typename return_tuple_t, typename... Args>
     inline return_tuple_t call(const char* name, Args&&... args) const {
-      getglobal(name);
-      if (isfunction(-1)) {
+      get_global(name);
+      if (is_function(-1)) {
         push_variadic(std::forward<Args>(args)...);
         int rc = pcall(sizeof...(args), std::tuple_size<return_tuple_t>::value, 0);
         if (rc == 0) {
@@ -156,8 +150,8 @@ namespace lua {
     template <typename... Args>
     inline int call_with_results_on_stack(const char* name, const int& result_sz,
                                                      Args&&... args) const {
-      getglobal(name);
-      if (isfunction(-1)) {
+      get_global(name);
+      if (is_function(-1)) {
         push_variadic(std::forward<Args>(args)...);
         int rc = pcall(sizeof...(args), result_sz, 0);
         if (rc == 0) {
