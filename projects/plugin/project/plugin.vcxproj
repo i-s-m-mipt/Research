@@ -31,6 +31,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\shared\source\logger\logger.hpp" />
     <ClInclude Include="..\source\config\config.hpp" />
+    <ClInclude Include="..\source\detail\lua\utility.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />
     <ClInclude Include="..\source\window\window.hpp">
