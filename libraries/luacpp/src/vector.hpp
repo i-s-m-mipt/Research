@@ -7,7 +7,7 @@ namespace lua {
     typedef vector_element<T> type;
     typedef T value_type;
     
-    vector_element(const lua::state s, const int idx, const int i) :
+    vector_element(const lua::State s, const int idx, const int i) :
       s_(s),
       idx_(idx),
       i_(i) {
@@ -63,7 +63,7 @@ namespace lua {
     void swap(vector_element<X>& lhs, vector_element<X>& other);
 
   private:
-    const lua::state s_;
+    const lua::State s_;
     const int idx_{0};
     const int i_;  // Index in vector in oligophrenic format
   };
@@ -81,7 +81,7 @@ namespace lua {
     typedef T value_type;
     typedef vector_element<T> element_type;
         
-    vector(const lua::state& s, const int idx) :
+    vector(const lua::State& s, const int idx) :
       s_(s),
       idx_(idx) {
       if (s_.isnil(idx)) {
@@ -126,7 +126,7 @@ namespace lua {
       n_pop_ = 0;
     }
   private:
-    lua::state s_;
+      lua::State s_;
     int idx_{0};
 
     mutable int n_pop_{0};

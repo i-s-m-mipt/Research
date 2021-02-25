@@ -182,7 +182,7 @@
 
 #define QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY2( RETURN_TYPE, NAME)     \
   void NAME(std::function<void(const ::lua::entity<::lua::type_policy<RETURN_TYPE>>&)> lambda) const { \
-    auto f = [&lambda] (const ::lua::state& s) {                        \
+    auto f = [&lambda] (const lua::State& s) {                        \
       auto v = s.at<RETURN_TYPE>(-1);                                   \
       lambda(v);                                                        \
       return 1;                                                         \
@@ -194,7 +194,7 @@
                                                  ARG1_TYPE, ARG1)       \
   void NAME(ARG1_TYPE ARG1,                                             \
             std::function<void(const ::lua::entity<::lua::type_policy<RETURN_TYPE>>&)> lambda) const { \
-    auto f = [&lambda] (const ::lua::state& s) {                        \
+    auto f = [&lambda] (const lua::State& s) {                        \
       auto v = s.at<RETURN_TYPE>(-1);                                   \
       lambda(v);                                                        \
       return 1;                                                         \
@@ -208,7 +208,7 @@
                                                  ARG2_TYPE, ARG2)       \
   void NAME(ARG1_TYPE ARG1, ARG2_TYPE ARG2,                             \
             std::function<void(const ::lua::entity<::lua::type_policy<RETURN_TYPE>>&)> lambda) const { \
-    auto f = [&lambda] (const ::lua::state& s) {                        \
+    auto f = [&lambda] (const lua::State& s) {                        \
       auto v = s.at<RETURN_TYPE>(-1);                                   \
       lambda(v);                                                        \
       return 1;                                                         \
@@ -222,7 +222,7 @@
                                                  ARG3_TYPE, ARG3)       \
   void NAME(ARG1_TYPE ARG1, ARG2_TYPE ARG2, ARG3_TYPE ARG3,             \
             std::function<void(const ::lua::entity<::lua::type_policy<RETURN_TYPE>>&)> lambda) const { \
-    auto f = [&lambda] (const ::lua::state& s) {                        \
+    auto f = [&lambda] (const lua::State& s) {                        \
       auto v = s.at<RETURN_TYPE>(-1);                                   \
       lambda(v);                                                        \
       return 1;                                                         \
@@ -238,7 +238,7 @@
   void NAME(ARG1_TYPE ARG1, ARG2_TYPE ARG2, ARG3_TYPE ARG3,             \
             ARG4_TYPE ARG4,                                             \
             std::function<void(const ::lua::entity<::lua::type_policy<RETURN_TYPE>>&)> lambda) const { \
-    auto f = [&lambda] (const ::lua::state& s) {                        \
+    auto f = [&lambda] (const lua::State& s) {                        \
       auto v = s.at<RETURN_TYPE>(-1);                                    \
       lambda(v);                                                        \
       return 1;                                                         \
@@ -255,7 +255,7 @@
   void NAME(ARG1_TYPE ARG1, ARG2_TYPE ARG2, ARG3_TYPE ARG3,             \
             ARG4_TYPE ARG4, ARG5_TYPE ARG5,                             \
             std::function<void(const ::lua::entity<::lua::type_policy<RETURN_TYPE>>&)> lambda) const { \
-    auto f = [&lambda] (const ::lua::state& s) {                        \
+    auto f = [&lambda] (const lua::State& s) {                        \
       auto v = s.at<RETURN_TYPE>(-1);                                   \
       lambda(v);                                                        \
       return 1;                                                         \

@@ -17,7 +17,7 @@
 namespace qlua {
   struct api {
     typedef api type;
-    api(const lua::state& l) :
+    api(const lua::State& l) :
       l_(l) {
     }
     
@@ -41,8 +41,8 @@ namespace qlua {
 
     template <typename Constant>
     Constant constant(const char* name) const {
-      l_.getglobal(name);
-      if (!l_.isnil(-1)) {
+      l_.get_global(name);
+      if (!l_.is_nil(-1)) {
         auto rslt = l_.at<Constant>(-1).get();
         l_.pop(1);
         return rslt;
@@ -52,7 +52,7 @@ namespace qlua {
       }
     }
 
-    const lua::state& lua_state() const {
+    const lua::State& lua_state() const {
       return l_;
     }
     
@@ -80,6 +80,6 @@ namespace qlua {
 #include "api/bitmask.hpp"
     
   protected:
-    lua::state l_;
+    lua::State l_;
   };
 }

@@ -9,21 +9,21 @@ namespace lua {
       // Char pointer array should always be read as const
       typedef const char* read_type;
       
-      inline static bool type_matches(::lua::state s, int idx) {
-        return s.isstring(idx);
+      inline static bool type_matches(lua::State s, int idx) {
+        return s.is_string(idx);
       }
     
-      inline static read_type get_unsafe(::lua::state s, int idx) {
-        return s.tostring(idx);
+      inline static read_type get_unsafe(lua::State s, int idx) {
+        return s.to_string(idx);
       }
 
       template <typename F>
-      inline static void apply_unsafe(::lua::state s, int idx, F f) {
+      inline static void apply_unsafe(lua::State s, int idx, F f) {
         f(s, idx);
       }
 
-      inline static void set(::lua::state s, int idx, T value) {
-        s.pushstring(write_type(value));
+      inline static void set(lua::State s, int idx, T value) {
+        s.push_string(write_type(value));
         if (idx != 0) s.replace(idx - 1);
       }
     };
@@ -33,12 +33,12 @@ namespace lua {
       typedef T write_type;
       typedef typename std::remove_reference<T>::type read_type;
       
-      inline static bool type_matches(::lua::state s, int idx) {
-        return s.isstring(idx);
+      inline static bool type_matches(lua::State s, int idx) {
+        return s.is_string(idx);
       }
     
-      inline static read_type get_unsafe(::lua::state s, int idx) {
-        auto pchar = s.tostring(idx);
+      inline static read_type get_unsafe(lua::State s, int idx) {
+        auto pchar = s.to_string(idx);
         if (pchar == nullptr) {
           throw std::runtime_error("Luacpp get unsafe std::string failed: can't construct the string from nullptr");
         }
@@ -46,12 +46,12 @@ namespace lua {
       }
 
       template <typename F>
-      inline static void apply_unsafe(::lua::state s, int idx, F f) {
+      inline static void apply_unsafe(lua::State s, int idx, F f) {
         f(s, idx);
       }
 
-      inline static void set(::lua::state s, int idx, write_type value) {
-        s.pushstring(value.c_str());
+      inline static void set(lua::State s, int idx, write_type value) {
+        s.push_string(value.c_str());
         if (idx != 0) s.replace(idx - 1);
       }
     };

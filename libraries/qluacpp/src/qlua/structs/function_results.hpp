@@ -327,15 +327,15 @@ namespace qlua {
     public ::lua::detail::table_field_policy_base<const char*, std::string> {
       using base_type = ::lua::detail::table_field_policy_base<const char*, std::string>;
 
-      static inline read_type get_unsafe(::lua::state s, int idx)  {
+      static inline read_type get_unsafe(lua::State s, int idx)  {
         return base_type::get_unsafe(s, idx, "param_value");
       }
 
-      static inline void apply_unsafe(::lua::state s, int idx, std::function<void(const lua::state&, int)> f) {
+      static inline void apply_unsafe(lua::State s, int idx, std::function<void(const lua::State&, int)> f) {
         base_type::apply_unsafe(s, idx, f, "param_value");
       }
 
-      static inline void set(::lua::state s, int idx, const std::string& value)   {
+      static inline void set(lua::State s, int idx, const std::string& value)   {
         base_type::set(s, idx, value, "param_value");
       }
     };

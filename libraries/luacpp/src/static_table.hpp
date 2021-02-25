@@ -3,20 +3,20 @@
 #define LUACPP_STATIC_TABLE_BEGIN( TABLE_NAME ) \
   class TABLE_NAME {                            \
 private:                                        \
- const lua::state s_;                           \
+ const lua::State s_;                           \
  const int idx_;                                \
 public:                                         \
- TABLE_NAME(const lua::state& s, int idx) :     \
+ TABLE_NAME(const lua::State& s, int idx) :     \
    s_(s),                                       \
    idx_(idx) {                                  \
    }                                            \
                                                 \
  inline void create() const {                   \
-   s_.newtable();                               \
+   s_.new_table();                               \
  }                                              \
                                                 \
  inline bool is_nil() const {                   \
-   return s_.isnil(idx_);                       \
+   return s_.is_nil(idx_);                       \
  }                                              \
  
 #define LUACPP_TABLE_FIELD_STR_KEY(NAME, KEY_TYPE, VALUE_TYPE )         \
@@ -24,15 +24,15 @@ public:                                         \
     public ::lua::detail::table_field_policy_base<KEY_TYPE, VALUE_TYPE> { \
     using base_type = ::lua::detail::table_field_policy_base<KEY_TYPE, VALUE_TYPE>; \
                                                                         \
-    static inline read_type get_unsafe(::lua::state s, int idx)  {      \
+    static inline read_type get_unsafe(lua::State s, int idx)  {      \
       return base_type::get_unsafe(s, idx, #NAME);                      \
     }                                                                   \
                                                                         \
-    static inline void apply_unsafe(::lua::state s, int idx, std::function<void(const lua::state&, int)> f) { \
+    static inline void apply_unsafe(lua::State s, int idx, std::function<void(const lua::State&, int)> f) { \
       base_type::apply_unsafe(s, idx, f, #NAME);                        \
     }                                                                   \
                                                                         \
-    static inline void set(::lua::state s, int idx, VALUE_TYPE value)   { \
+    static inline void set(lua::State s, int idx, VALUE_TYPE value)   { \
       base_type::set(s, idx, value, #NAME);                             \
     }                                                                   \
   };                                                                    \
@@ -52,26 +52,26 @@ public:                                         \
   typedef ROOT_QUALIFIED_TABLE_NAME write_type;                         \
   typedef ROOT_QUALIFIED_TABLE_NAME read_type;                          \
                                                                         \
-  static inline bool type_matches(::lua::state s, int idx) {            \
+  static inline bool type_matches(lua::State s, int idx) {            \
     /* It may be not created yet  */                                    \
-    return s.isnil(idx) || s.istable(idx);                              \
+    return s.is_nil(idx) || s.is_table(idx);                              \
   }                                                                     \
                                                                         \
-  static inline read_type get_unsafe(::lua::state s, int idx) {         \
-    if (s.isnil(idx)) {                                                 \
+  static inline read_type get_unsafe(lua::State s, int idx) {         \
+    if (s.is_nil(idx)) {                                                 \
       /* Assume we are pointing at correct place to create the table */ \
-      s.newtable();                                                     \
+      s.new_table();                                                     \
       s.replace(idx);                                                   \
     }                                                                   \
     return read_type(s, idx);                                           \
   }                                                                     \
                                                                         \
   template <typename F>                                                 \
-  static inline void apply_unsafe(::lua::state s, int idx, F f) {       \
+  static inline void apply_unsafe(lua::State s, int idx, F f) {       \
     f(s, idx);                                                          \
   }                                                                     \
                                                                         \
-  static inline void set(::lua::state s, int idx, write_type value) {   \
+  static inline void set(lua::State s, int idx, write_type value) {   \
     throw std::runtime_error(std::string("Luacpp table ") + #ROOT_QUALIFIED_TABLE_NAME + " error: setting not implemented" ); \
   }                                                                     \
   };                                                                    \

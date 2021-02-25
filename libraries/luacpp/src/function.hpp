@@ -167,14 +167,14 @@
 #define LUACPP_DETAIL_STATIC_FUNCTION_END(NAME)                         \
                                                                         \
   template <typename client_function_t>                                 \
-  static void register_in_lua(const lua::state& s, client_function_t f) { \
+  static void register_in_lua(const lua::State& s, client_function_t f) { \
     auto std_f = detail::make_std_function<>(f);                        \
     NAME##_function_descriptor::instance().client_c_function = std_f;   \
     base_type::register_in_lua<NAME##_function_descriptor>              \
       (s, #NAME, &wrapper_c_function);                                  \
   }                                                                     \
                                                                         \
-  static void unregister_from_lua(const lua::state& s) {                \
+  static void unregister_from_lua(const lua::State& s) {                \
     base_type::unregister_from_lua(s, #NAME);                           \
   }                                                                     \
   };                                                                    \
@@ -246,13 +246,13 @@ namespace lua
       
       template <std::size_t I = 0, typename tuple_t>
       typename std::enable_if<0 == std::tuple_size<tuple_t>::value, std::tuple<>>::type
-      inline static make_args_from_stack(const lua::state& s) {
+      inline static make_args_from_stack(const lua::State& s) {
         return std::tuple<>();
       }
 
       template <std::size_t I = 0, typename tuple_t>
       typename std::enable_if<0 != std::tuple_size<tuple_t>::value, tuple_t>::type 
-      inline static make_args_from_stack(const lua::state& s) {
+      inline static make_args_from_stack(const lua::State& s) {
         typedef typename std::tuple_element<0, tuple_t>::type A;
         return std::tuple_cat(std::make_tuple(A(s, I + 1)),
                               make_args_from_stack<I + 1, tuple_tail_t<tuple_t> >(s));
@@ -274,7 +274,7 @@ namespace lua
       template <typename T>
       struct apply {
         template <typename function_t, typename args_tuple_t>
-        static int call(::lua::state s, function_t f, args_tuple_t a) {
+        static int call(lua::State s, function_t f, args_tuple_t a) {
           auto rslt = apply_tuple(f, a);
           s.pop(std::tuple_size<args_tuple_t>::value - 1); // State variable was in args, but is not on stack
           s.push_tuple(rslt);
@@ -286,7 +286,7 @@ namespace lua
       template <>
       struct apply<void> {
         template <typename function_t, typename args_tuple_t>
-        static int call(::lua::state s, function_t f, args_tuple_t a) {
+        static int call(lua::State s, function_t f, args_tuple_t a) {
           apply_tuple(f, a);
           s.pop(std::tuple_size<args_tuple_t>::value - 1); // State variable was in args, but is not on stack
           return 0;
@@ -307,21 +307,21 @@ namespace lua
 
         template <typename function_descriptor_t, typename... Args>
         static int wrapper_c_function(lua_State* l, const char* name) {
-          ::lua::state s(l);
-          s.getglobal(desc_table_name());
-          if (!s.isnil(-1)) {
-            if (s.istable(-1)) {
+          lua::State s(l);
+          s.get_global(desc_table_name());
+          if (!s.is_nil(-1)) {
+            if (s.is_table(-1)) {
               s.push<>(name);
-              s.gettable(-2);
-              if (!s.isnil(-1)) {
-                if (s.islightuserdata(-1)) {
+              s.get_table(-2);
+              if (!s.is_nil(-1)) {
+                if (s.is_light_user_data(-1)) {
                   auto fd = (function_descriptor_t*)s.at<void*>(-1)();
                   s.pop(2);
-                  const auto n_args = s.gettop();
+                  const auto n_args = s.get_top();
                   const auto n_args_expected = sizeof...(Args);
                   if (n_args == n_args_expected) {
                     typedef std::tuple<Args...> args_tuple_type;
-                    auto args = std::tuple_cat(std::tuple<state>(s), 
+                    auto args = std::tuple_cat(std::tuple<State>(s), 
                                                make_args_from_stack<0, args_tuple_type>(s));
 
                                
@@ -355,47 +355,47 @@ namespace lua
         }
 
         template <typename function_descriptor_t, typename wrapper_c_function_t>
-        static void register_in_lua(const lua::state& s, const char* name,
+        static void register_in_lua(const lua::State& s, const char* name,
                                     wrapper_c_function_t wrapper_c_function) {
-          s.getglobal(desc_table_name());
-          if (s.isnil(-1)) {
+          s.get_global(desc_table_name());
+          if (s.is_nil(-1)) {
             // If the function descriptor table does not exit, create it
-            s.pop(1);
-            s.newtable();
-            s.setglobal(desc_table_name());
-            s.getglobal(desc_table_name());
+            s.pop();
+            s.new_table();
+            s.set_global(desc_table_name());
+            s.get_global(desc_table_name());
           }
-          if (s.istable(-1)) {
+          if (s.is_table(-1)) {
             s.push<>(name);
-            s.pushlightuserdata((void*)&function_descriptor_t::instance());
-            s.settable(-3);
-            s.pop(1);
+            s.push_light_user_data((void*)&function_descriptor_t::instance());
+            s.set_table(-3);
+            s.pop();
             s.register_lua(name, wrapper_c_function);
           } else {
-            s.pop(1);
+            s.pop();
             throw std::runtime_error("Luacpp function register is called for " + std::string(name) +
                                      ", but " + std::string(desc_table_name()) + " is not a table");
           }
         }
         
-        static void unregister_from_lua(const lua::state& s, const char* name) {
-          s.getglobal(desc_table_name());
-          if (!s.isnil(-1)) {
-            if (s.istable(-1)) {
+        static void unregister_from_lua(const lua::State& s, const char* name) {
+          s.get_global(desc_table_name());
+          if (!s.is_nil(-1)) {
+            if (s.is_table(-1)) {
               // Remove pointer from descriptor table
               s.push<>(name);
-              s.pushnil();
-              s.settable(-3);
-              s.pop(1);
+              s.push_nil();
+              s.set_table(-3);
+              s.pop();
               // Remove Lua_CFunction registration
-              s.pushnil();                                                  
-              s.setglobal(name);                                   
+              s.push_nil();                                                  
+              s.set_global(name);                                   
             } else {
               throw std::runtime_error("Luacpp function " + std::string(name) + " unregister called, but "
                                        + std::string(desc_table_name()) + " is not a table in Lua globals");
             }
           } else {
-            s.pop(1);
+            s.pop();
             throw std::runtime_error("Luacpp function " + std::string(name) + " unregister called, but "
                                      + std::string(desc_table_name()) + " Lua global is nil");
           }

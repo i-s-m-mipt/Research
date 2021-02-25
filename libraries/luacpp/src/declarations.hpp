@@ -2,7 +2,7 @@
 
 namespace lua {
   // Main interface class
-  struct state;
+  struct State;
 
   // Generic lua entity (primitive types, tables, functions) holder
   template <typename policy_t>

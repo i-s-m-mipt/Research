@@ -5,7 +5,7 @@
 template <typename Table>
 void getItem(unsigned int Index,
              std::function<void(const ::lua::entity<::lua::type_policy<Table>>&)> lambda) const {
-  auto f = [&lambda] (const ::lua::state& s) {
+  auto f = [&lambda] (const lua::State& s) {
     auto v = s.at<Table>(-1);
     lambda(v);
     return 1;

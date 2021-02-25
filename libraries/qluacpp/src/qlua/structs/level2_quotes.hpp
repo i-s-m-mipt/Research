@@ -19,16 +19,16 @@ namespace qlua {
     };
     
     struct level2_quotes {
-      level2_quotes(const lua::state& l, const size_t idx) :
+      level2_quotes(const lua::State& l, const size_t idx) :
         l_(l), idx_(int(idx)) {
-        if (!l_.istable(idx_)) {
+        if (!l_.is_table(idx_)) {
           throw std::runtime_error("level2_quotes: can't create, not a table");
         }
       }
 
       const std::string bid_count() const {
         l_.push<const char*>("bid_count");
-        l_.rawget(idx_ - 1);
+        l_.raw_get(idx_ - 1);
         auto rslt = ::lua::entity<::lua::type_policy<const std::string>>(l_, -1).get();
         l_.pop(1);
         return rslt;
@@ -36,7 +36,7 @@ namespace qlua {
 
       const std::string offer_count() const {
         l_.push<const char*>("offer_count");
-        l_.rawget(idx_ - 1);
+        l_.raw_get(idx_ - 1);
         auto rslt = ::lua::entity<::lua::type_policy<const std::string>>(l_, -1).get();
         l_.pop(1);
         return rslt;
@@ -51,17 +51,17 @@ namespace qlua {
       }
       
     private:
-      const lua::state& l_;
+      const lua::State& l_;
       const int idx_;
 
       const std::vector<level2_quotes_record> get_table(const char* name) const {
         std::vector<level2_quotes_record> rslt;
         l_.push<const char*>(name);
-        l_.rawget(idx_ - 1);
-        if (l_.istable(-1)) {
-          auto sz = l_.objlen(-1);
+        l_.raw_get(idx_ - 1);
+        if (l_.is_table(-1)) {
+          auto sz = l_.raw_len(-1);
           for (int i = 0; i < sz; ++i) {
-            l_.rawgeti(-1, i + 1);
+            l_.raw_get_field(-1, i + 1);
             auto rec = ::lua::entity<::lua::type_policy<::qlua::table::level2_quotes_lua_record>>(l_, -1)();
             rslt.push_back({rec.price(), rec.quantity()});
             l_.pop(1);

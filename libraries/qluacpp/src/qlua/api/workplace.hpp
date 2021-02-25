@@ -65,7 +65,7 @@ QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(::qlua::table::futures_client_holding,
 void getQuoteLevel2(const char* class_code,
                     const char* sec_code,
                     std::function<void(const ::qlua::table::level2_quotes &)> lambda) const {
-  auto f = [&lambda] (const ::lua::state& s) {
+  auto f = [&lambda] (const lua::State& s) {
     auto v = ::qlua::table::level2_quotes(s, -1);
     lambda(v);
     return 1;
@@ -87,25 +87,25 @@ QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY2(::qlua::table::date_,
 // sendTransaction - функция для работы с заявками
 void sendTransaction(const std::map<std::string, std::string>& transaction // Поля таблицы в соответствии с описанием .tri файла по quik.chm
                      ) {
-  l_.getglobal("sendTransaction");
-  l_.newtable();
+  l_.get_global("sendTransaction");
+  l_.new_table();
   for (const auto& p : transaction) {
-    l_.pushstring(p.first.c_str());
-    l_.pushstring(p.second.c_str());
-    l_.settable(-3);
+    l_.push_string(p.first.c_str());
+    l_.push_string(p.second.c_str());
+    l_.set_table(-3);
   }
   l_.pcall(1, 1, 0);
-  if (l_.isstring(-1)) {
+  if (l_.is_string(-1)) {
     const auto& msg = l_.at<const char*>(-1)();
     if (msg[0] == 0) {
-      l_.pop(1);
+      l_.pop();
     } else {
       const std::string msg_str = msg;
-      l_.pop(1);
+      l_.pop();
       throw std::runtime_error("sendTransaction error: " + msg_str);
     }
   } else {
-    l_.pop(1);
+    l_.pop();
     throw std::runtime_error("sendTransaction returned unexpected type");
   }
 }

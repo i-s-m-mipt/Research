@@ -27,7 +27,7 @@ namespace lua {
     using read_type = typename policy_t::read_type;
     using write_type = typename policy_t::write_type;
 
-    entity(const ::lua::state& s, const int idx) :
+    entity(const lua::State & s, const int idx) :
       s_(s),
       idx_(idx) {
     }
@@ -84,7 +84,7 @@ namespace lua {
     }
 
     // Accessors
-    const lua::state& lua_state() const {
+    const auto & lua_state() const {
       return s_;
     }
 
@@ -92,13 +92,13 @@ namespace lua {
       return idx_;
     }
   protected:
-    const lua::state s_;
+    const lua::State s_;
     const int idx_{0};
 
   private:
     std::string make_typecheck_error_msg(const std::string& operation) const {
-      auto actual_type_pc = s_.typename_lua(s_.type_lua(idx_));
-      auto actual_content_pc = s_.tostring(idx_);
+      auto actual_type_pc = s_.type_name(idx_);
+      auto actual_content_pc = s_.to_string(idx_);
       std::string actual_type;
       std::string actual_content;
       if (actual_type_pc == nullptr) 

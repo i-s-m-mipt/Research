@@ -21,10 +21,10 @@ void getCandlesByIndex(const char* tag, // строковый идентифик
                         const ::lua::entity<::lua::type_policy<const char*>>& // легенда (подпись) графика
                        )> lambda
                        ) const {
-  auto f = [&lambda] (const ::lua::state& s) {
-    unsigned int len = s.objlen(-3);
+  auto f = [&lambda] (const lua::State& s) {
+    unsigned int len = s.raw_len(-3);
     for (unsigned int i = 0; i < len; ++i) {
-      s.rawgeti(-3, i + 1);
+      s.raw_get_field(-3, i + 1);
       const auto& t = s.at<::qlua::table::candle>(-1);
       const auto& l = s.at<const char*>(-2);
       const auto& n = s.at<unsigned int>(-3);

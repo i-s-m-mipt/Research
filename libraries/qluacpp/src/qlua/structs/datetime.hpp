@@ -65,19 +65,19 @@ namespace qlua {
         using write_type = const c_date_time&;
         using read_type = c_date_time;
 
-        static inline bool type_matches(::lua::state s, int idx) {
-          return s.istable(idx); // Check that we're at a table
+        static inline bool type_matches(lua::State s, int idx) {
+          return s.is_table(idx); // Check that we're at a table
         }
 
-        static inline read_type get_unsafe(::lua::state s, int idx) {
+        static inline read_type get_unsafe(lua::State s, int idx) {
           read_type rslt{0};
           int table_idx = idx;
           s.push<const char*>(FieldName);
           if (idx <= 0)
-            s.gettable(idx - 1);
+            s.get_table(idx - 1);
           else
-            s.gettable(idx);
-          if (s.istable(-1)) {
+            s.get_table(idx);
+          if (s.is_table(-1)) {
             rslt.mcs = get_field<int>(s, "mcs");
             rslt.ms = get_field<int>(s, "ms");
             rslt.sec = get_field<int>(s, "sec");
@@ -88,26 +88,26 @@ namespace qlua {
             rslt.month = get_field<int>(s, "month");
             rslt.year = get_field<int>(s, "year"); 
           } else {
-            s.pop(1);
+            s.pop();
             throw std::runtime_error("table does not have "+std::string(FieldName)+" table member");
           }
-          s.pop(1);
+          s.pop();
           return rslt;
         }
 
-        static inline void apply_unsafe(::lua::state s, int idx, std::function<void(const lua::state&, int)> f) {
+        static inline void apply_unsafe(lua::State s, int idx, std::function<void(const lua::State&, int)> f) {
           throw std::runtime_error("apply_unsafe is not implemented for datetime");
         }
 
-        static inline void set(::lua::state s, int idx, c_date_time value) {
+        static inline void set(lua::State s, int idx, c_date_time value) {
           throw std::runtime_error("set is not implemented for datetime");
         }
       
       private:
         template <typename T>
-        static inline const T get_field(::lua::state s, const char* name) {
+        static inline const T get_field(lua::State s, const char* name) {
           s.push<const char*>(name);
-          s.rawget(-2);
+          s.raw_get(-2);
           auto rslt = ::lua::entity<::lua::type_policy<T>>(s, -1).get();
           s.pop(1);
           return rslt;

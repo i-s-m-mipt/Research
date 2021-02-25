@@ -4,49 +4,49 @@
    sync_name - name of the sync object, has to be unique in global namespace
    function_name_in_lua - name of the function to call with prototype: bool func(T, T)
    In C++/QLuaCPP it corresponds, for example to:
-   std::tuple<bool> func(const lua::state& l,
+   std::tuple<bool> func(const lua::State& l,
    ::lua::entity<::lua::type_policy<const int>>,
    ::lua::entity<::lua::type_policy<const int>>)
    Two int parameters are unused but must be present in the declaration.
    The value of returned bool is unimportant (preferably true).
    Declare/register it as usual with LuaCPP macros/calls.
 */
-static void thread_safe_exec(const lua::state& l,
+static void thread_safe_exec(const lua::State& l,
                              const char* sync_name, 
                              const std::string& function_name_in_lua) {
-  l.getglobal("table");
+  l.get_global("table");
   int i = 1;
-  if (l.istable(-1)) {
-    l.getfield(-1, "ssort");
+  if (l.is_table(-1)) {
+    l.get_field(-1, "ssort");
     ++i;
-    if (l.isfunction(-1)) {
-      l.getglobal(sync_name);
+    if (l.is_function(-1)) {
+      l.get_global(sync_name);
       ++i;
       // Create table if doesn't exist
-      if (l.isnil(-1)) {
+      if (l.is_nil(-1)) {
         l.pop(1);
         --i;
-        l.newtable();
-        l.setglobal(sync_name);
-        l.getglobal(sync_name);
+        l.new_table();
+        l.set_global(sync_name);
+        l.get_global(sync_name);
         ++i;
-        if (l.istable(-1)) {
+        if (l.is_table(-1)) {
           l.push<int>(1);
-          l.rawseti(-2, 1);
+          l.raw_set_field(-2, 1);
           l.push<int>(2);
-          l.rawseti(-2, 2);
+          l.raw_set_field(-2, 2);
         } else {
           l.pop(i);
           throw std::runtime_error("quik_thread_safe - failed to create table");
         }
       }
 
-      if (l.istable(-1)) {
-        auto len = lua_rawlen(l.C_state(), -1);
+      if (l.is_table(-1)) {
+        auto len = lua_rawlen(l.state(), -1);
         if (len == 2) {
-          l.getglobal(function_name_in_lua.c_str());
+          l.get_global(function_name_in_lua.c_str());
           ++i;
-          if (l.isfunction(-3) && l.isfunction(-1)) {
+          if (l.is_function(-3) && l.is_function(-1)) {
             l.pcall(2, 0, 0);
             i -= 3;
             l.pop(i);
