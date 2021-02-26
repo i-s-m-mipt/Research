@@ -22,7 +22,7 @@ void getCandlesByIndex(const char* tag, // строковый идентифик
                        )> lambda
                        ) const {
   auto f = [&lambda] (const lua::State& s) {
-    unsigned int len = s.raw_len(-3);
+    unsigned int len = s.raw_length(-3);
     for (unsigned int i = 0; i < len; ++i) {
       s.raw_get_field(-3, i + 1);
       const auto& t = s.at<::qlua::table::candle>(-1);

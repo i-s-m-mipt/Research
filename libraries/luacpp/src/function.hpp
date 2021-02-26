@@ -370,7 +370,7 @@ namespace lua
             s.push_light_user_data((void*)&function_descriptor_t::instance());
             s.set_table(-3);
             s.pop();
-            s.register_lua(name, wrapper_c_function);
+            s.register_function(name, wrapper_c_function);
           } else {
             s.pop();
             throw std::runtime_error("Luacpp function register is called for " + std::string(name) +

@@ -59,7 +59,7 @@ namespace qlua {
         l_.push<const char*>(name);
         l_.raw_get(idx_ - 1);
         if (l_.is_table(-1)) {
-          auto sz = l_.raw_len(-1);
+          auto sz = l_.raw_length(-1);
           for (int i = 0; i < sz; ++i) {
             l_.raw_get_field(-1, i + 1);
             auto rec = ::lua::entity<::lua::type_policy<::qlua::table::level2_quotes_lua_record>>(l_, -1)();
