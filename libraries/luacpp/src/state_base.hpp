@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdarg>
+#include <cstddef>
 #include <exception>
 #include <stdexcept>
 #include <string>
@@ -12,25 +13,55 @@ extern "C"
 #include "lualib.h"
 }
 
+#include "general.hpp"
 #include "utility.hpp"
 
-namespace lua 
+namespace lua
 {
-    class State_Base 
+    class State_Base
     {
     public:
 
-        using state_t = lua_State * ;
+        using state_t = lua_State *;
 
     public:
 
-        State_Base() : m_state(luaL_newstate()) 
-        {}
+        State_Base()
+        {
+            initialize();
+        }
 
-        State_Base(state_t state) : m_state(state)
-        {}
+        State_Base(state_t state)
+        {
+            initialize(state);
+        }
 
-        ~State_Base() noexcept = default;
+        ~State_Base() noexcept
+        {
+            try
+            {
+                uninitialize();
+            }
+            catch (...)
+            {
+                // std::abort();
+            }
+        }
+
+    private:
+
+        void initialize(state_t state = nullptr)
+        {
+            m_state = (state ? state : luaL_newstate());
+        }
+
+        void uninitialize()
+        {
+            if (m_state)
+            {
+                // close();
+            }
+        }
 
     public:
 
@@ -39,7 +70,81 @@ namespace lua
             return m_state;
         }
 
-    public:
+    public: // state manipulations
+
+        auto new_state(allocator_t allocator, void * ptr) const
+        {
+            return State_Base(lua_newstate(allocator, ptr));
+        }
+
+        void close()
+        {
+            lua_close(m_state);
+        }
+
+        auto new_thread() const
+        {
+            return State_Base(lua_newthread(m_state));
+        }
+
+        auto update_panic_function(function_t function) const
+        {
+            return lua_atpanic(m_state, function);
+        }
+
+        auto version() const
+        {
+            return lua_version(m_state);
+        }
+
+    public: // basic stack manipulations
+
+        auto abs(int index) const
+        {
+            return lua_absindex(m_state, index);
+        }
+
+        auto get_top() const
+        {
+            return lua_gettop(m_state);
+        }
+
+        void set_top(int index) const
+        {
+            lua_settop(m_state, index);
+        }
+
+        void pop(int n = 1) const
+        {
+            set_top(-1 * n - 1);
+        }
+
+        void push_value(int index) const
+        {
+            lua_pushvalue(m_state, index);
+        }
+
+        void rotate(int index, int rotation) const
+        {
+            lua_rotate(m_state, index, rotation);
+        }
+
+        void copy(int index_from, int index_to) const
+        {
+            lua_copy(m_state, index_from, index_to);
+        }
+
+        auto check_stack(int required_size) const
+        {
+            return lua_checkstack(m_state, required_size);
+        }
+
+        void move(state_t state_from, state_t state_to, int size) const
+        {
+            lua_xmove(state_from, state_to, size);
+        }
+
+    public: // access functions
 
         auto is_number(int index) const
         {
@@ -76,22 +181,81 @@ namespace lua
             return lua_typename(m_state, type_code(index));
         }
 
-        void register_lua(const char * name, lua_CFunction f) const 
+        auto to_number(int index) const
         {
-            return lua_register(m_state, name, f);
+            return lua_tonumberx(m_state, index, nullptr);
         }
+
+        auto to_integer(int index) const
+        {
+            return lua_tointegerx(m_state, index, nullptr);
+        }
+
+        auto to_boolean(int index) const
+        {
+            return lua_toboolean(m_state, index);
+        }
+
+        auto to_string(int index) const
+        {
+            return lua_tolstring(m_state, index, nullptr);
+        }
+
+        auto raw_length(int index) const
+        {
+            return lua_rawlen(m_state, index);
+        }
+
+        auto to_function(int index) const
+        {
+            return lua_tocfunction(m_state, index);
+        }
+
+        auto to_user_data(int index) const
+        {
+            return lua_touserdata(m_state, index);
+        }
+
+        auto to_thread(int index) const
+        {
+            return lua_tothread(m_state, index);
+        }
+
+        auto to_pointer(int index) const
+        {
+            return lua_topointer(m_state, index);
+        }
+
+    public: // arithmetic functions
+
+        void apply_operation(Operation_Code operation_code) const
+        {
+            lua_arith(m_state, static_cast <int> (operation_code));
+        }
+
+        auto raw_equal(int index_lhs, int index_rhs) const
+        {
+            return lua_rawequal(m_state, index_lhs, index_rhs);
+        }
+
+        auto compare(int index_lhs, int index_rhs, Operation_Code operation_code) const
+        {
+            return lua_compare(m_state, index_lhs, index_rhs, static_cast <int> (operation_code));
+        }
+
+    public: // push functions
 
         void push_nil() const
         {
             lua_pushnil(m_state);
         }
 
-        void push_number(lua_Number number) const
+        void push_number(number_t number) const
         {
             lua_pushnumber(m_state, number);
         }
 
-        void push_integer(lua_Integer integer) const
+        void push_integer(integer_t integer) const
         {
             lua_pushinteger(m_state, integer);
         }
@@ -124,12 +288,12 @@ namespace lua
             return result;
         }
 
-        void push_closure(lua_CFunction function, int arguments_counter) const
+        void push_closure(function_t function, int n_arguments) const
         {
-            lua_pushcclosure(m_state, function, arguments_counter);
+            lua_pushcclosure(m_state, function, n_arguments);
         }
 
-        void push_function(lua_CFunction function) const
+        void push_function(function_t function) const
         {
             push_closure(function, 0);
         }
@@ -138,7 +302,7 @@ namespace lua
         {
             lua_pushboolean(m_state, boolean);
         }
-        
+
         void push_light_user_data(void * data) const
         {
             lua_pushlightuserdata(m_state, data);
@@ -149,62 +313,7 @@ namespace lua
             return lua_pushthread(m_state);
         }
 
-        auto abs_index(int index) const
-        {
-            return lua_absindex(m_state, index);
-        }
-
-        auto get_top() const
-        {
-            return lua_gettop(m_state);
-        }
-
-        void set_top(int index) const
-        {
-            lua_settop(m_state, index);
-        }
-
-        void push_value(int index) const
-        {
-            lua_pushvalue(m_state, index);
-        }
-
-        void rotate(int index, int rotation) const
-        {
-            lua_rotate(m_state, index, rotation);
-        }
-
-        void copy(int index_from, int index_to) const
-        {
-            lua_copy(m_state, index_from, index_to);
-        }
-
-        auto check_stack(int required_size) const
-        {
-            return lua_checkstack(m_state, required_size);
-        }
-
-        void pop(int n = 1) const
-        {
-            set_top(-1 * n - 1);
-        }
-
-        void insert(int index) const
-        {
-            rotate(index, 1);
-        }
-
-        void remove(int index) const
-        {
-            rotate(index, -1);
-            pop();
-        }
-
-        void replace(int index) const
-        {
-            copy(-1, index);
-            pop();
-        }
+    public: // get functions
 
         auto get_global(const char * name) const
         {
@@ -221,7 +330,7 @@ namespace lua
             return lua_getfield(m_state, index, key);
         }
 
-        auto get_field(int index, lua_Integer position) const
+        auto get_field(int index, integer_t position) const
         {
             return lua_geti(m_state, index, position);
         }
@@ -231,7 +340,7 @@ namespace lua
             return lua_rawget(m_state, index);
         }
 
-        auto raw_get_field(int index, lua_Integer position) const
+        auto raw_get_field(int index, integer_t position) const
         {
             return lua_rawgeti(m_state, index, position);
         }
@@ -244,6 +353,11 @@ namespace lua
         void create_table(int columns, int rows) const
         {
             lua_createtable(m_state, columns, rows);
+        }
+
+        void new_table() const
+        {
+            create_table(0, 0);
         }
 
         auto new_user_data(std::size_t size) const
@@ -261,7 +375,9 @@ namespace lua
             return lua_getuservalue(m_state, index);
         }
 
-        void set_global(const char* name) const
+    public: // set functions
+
+        void set_global(const char * name) const
         {
             lua_setglobal(m_state, name);
         }
@@ -276,17 +392,17 @@ namespace lua
             lua_setfield(m_state, index, key);
         }
 
-        void set_field(int index, lua_Integer position) const
+        void set_field(int index, integer_t position) const
         {
             lua_seti(m_state, index, position);
         }
-        
+
         void raw_set(int index) const
         {
             lua_rawset(m_state, index);
         }
 
-        void raw_set_field(int index, lua_Integer position) const
+        void raw_set_field(int index, integer_t position) const
         {
             lua_rawseti(m_state, index, position);
         }
@@ -306,109 +422,62 @@ namespace lua
             lua_setuservalue(m_state, index);
         }
 
-        auto is_none(int index) const
+    public: // load and call functions
+
+        auto call(int n_arguments, int n_results) const
         {
-            return (type_code(index) == LUA_TNONE); // -1
+            return lua_callk(m_state, n_arguments, n_results, 0, nullptr);
         }
 
-        auto is_nil(int index) const
+        auto pcall(int n_arguments, int n_results, int error_code) const
         {
-            return (type_code(index) == LUA_TNIL); // 0
+            return lua_pcallk(m_state, n_arguments, n_results, error_code, 0, nullptr);
         }
 
-        auto is_boolean(int index) const
+        auto load(reader_t reader, void * data, const char * chunk_name, const char * mode) const
         {
-            return (type_code(index) == LUA_TBOOLEAN); // 1
+            return lua_load(m_state, reader, data, chunk_name, mode);
         }
 
-        auto is_light_user_data(int index) const
+        auto dump(writer_t writer, void * data, int strip) const
         {
-            return (type_code(index) == LUA_TLIGHTUSERDATA); // 2
+            return lua_dump(m_state, writer, data, strip);
         }
 
-        //auto is_number(int index) const
-        //{
-        //    return (type_code(index) == LUA_TNUMBER); // 3
-        //}
+    public: // coroutine functions
 
-        //auto is_string(int index) const
-        //{
-        //    return (type_code(index) == LUA_TSTRING); // 4
-        //}
-
-        auto is_table(int index) const
+        auto yield(int n_results) const
         {
-            return (type_code(index) == LUA_TTABLE); // 5
+            return lua_yieldk(m_state, n_results, 0, nullptr);
         }
 
-        auto is_function(int index) const
+        auto resume(state_t from, int n_arguments) const
         {
-            return (type_code(index) == LUA_TFUNCTION); // 6
-        }
-        
-        //auto is_user_data(int index) const
-        //{
-        //    return (type_code(index) == LUA_TUSERDATA); // 7
-        //}
-
-        auto is_thread(int index) const
-        {
-            return (type_code(index) == LUA_TTHREAD); // 8
+            return lua_resume(m_state, from, n_arguments);
         }
 
-        auto is_none_or_nil(int index) const
+        auto status() const
         {
-            return (is_none(index) || is_nil(index));
+            return lua_status(m_state);
         }
 
-        auto to_number(int index) const
+        auto is_yieldable() const
         {
-            return lua_tonumberx(m_state, index, nullptr);
+            return lua_isyieldable(m_state);
         }
 
-        auto to_integer(int index) const
+    public: // garbage-collection function
+
+        auto garbage_collect(int what, int data) const
         {
-            return lua_tointegerx(m_state, index, nullptr);
+            return lua_gc(m_state, what, data);
         }
 
-        auto to_boolean(int index) const
-        {
-            return lua_toboolean(m_state, index);
-        }
+    public: // miscellaneous functions
 
-        auto to_string(int index) const
+        auto error() const
         {
-            return lua_tolstring(m_state, index, nullptr);
-        }
-
-        auto raw_len(int index) const
-        {
-            return lua_rawlen(m_state, index);
-        }
-
-        auto to_function(int index) const
-        {
-            return lua_tocfunction(m_state, index);
-        }
-
-        auto to_user_data(int index) const
-        {
-            return lua_touserdata(m_state, index);
-        }
-
-        auto to_thread(int index) const
-        {
-            return lua_tothread(m_state, index);
-        }
-
-        auto to_pointer(int index) const
-        {
-            return lua_topointer(m_state, index);
-        }
-
-        void new_table() const
-        {
-            create_table(0, 0);
+            return lua_error(m_state);
         }
 
         auto next(int index) const
@@ -416,9 +485,118 @@ namespace lua
             return lua_next(m_state, index);
         }
 
-        auto pcall(int n_arguments, int n_results, int error_code) const
+        void concat(int size) const
         {
-            return lua_pcallk(m_state, n_arguments, n_results, error_code, 0, nullptr);
+            lua_concat(m_state, size);
+        }
+
+        void length(int index) const
+        {
+            lua_len(m_state, index);
+        }
+
+        auto string_to_number(const char * string) const
+        {
+            return lua_stringtonumber(m_state, string);
+        }
+
+        auto get_allocator(void ** ptr) const
+        {
+            return lua_getallocf(m_state, ptr);
+        }
+
+        void set_allocator(allocator_t allocator, void * ptr) const
+        {
+            lua_setallocf(m_state, allocator, ptr);
+        }
+
+    public: // additional functions
+
+        void register_function(const char * name, function_t function) const
+        {
+            push_function(function);
+
+            set_global(name);
+        }
+
+        auto is_none(int index) const
+        {
+            return (type_code(index) == static_cast <int> (Type_Code::none));
+        }
+
+        auto is_nil(int index) const
+        {
+            return (type_code(index) == static_cast <int> (Type_Code::nil));
+        }
+
+        auto is_boolean(int index) const
+        {
+            return (type_code(index) == static_cast <int> (Type_Code::boolean));
+        }
+
+        auto is_light_user_data(int index) const
+        {
+            return (type_code(index) == static_cast <int> (Type_Code::light_user_data));
+        }
+
+        /*
+        auto is_number(int index) const
+        {
+            return (type_code(index) == static_cast < int > (Type_Code::number));
+        }
+        */
+
+        /*
+        auto is_string(int index) const
+        {
+            return (type_code(index) == static_cast < int > (Type_Code::string));
+        }
+        */
+
+        auto is_table(int index) const
+        {
+            return (type_code(index) == static_cast <int> (Type_Code::table));
+        }
+
+        auto is_function(int index) const
+        {
+            return (type_code(index) == static_cast <int> (Type_Code::function));
+        }
+
+        /*
+        auto is_user_data(int index) const
+        {
+            return (type_code(index) == static_cast < int > (Type_Code::user_data));
+        }
+        */
+
+        auto is_thread(int index) const
+        {
+            return (type_code(index) == static_cast <int> (Type_Code::thread));
+        }
+
+        auto is_none_or_nil(int index) const
+        {
+            return (is_none(index) || is_nil(index));
+        }
+
+        void insert(int index) const
+        {
+            rotate(index, 1);
+        }
+
+        void remove(int index) const
+        {
+            rotate(index, -1);
+
+            pop();
+        }
+
+        void replace(int index) const
+        {
+            copy(-1, index);
+
+            pop();
         }
 
     protected:
