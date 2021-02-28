@@ -6,167 +6,157 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
-
-#include "state_base.hpp"
+#include <type_traits>
 
 #include "declarations.hpp"
+#include "state_base.hpp"
+#include "utility.hpp"
 
-namespace lua {  
-  struct State : public State_Base {
+namespace lua 
+{
+    class State : public State_Base 
+    {
+    public:
 
-    using State_Base::State_Base;
+        explicit State(state_t state = nullptr) : State_Base(state)
+        {}
 
-    //void swap(state& other) {
-    //  state_base::swap(other);
-    //}
+        ~State() noexcept = default;
 
+    public:
 
-    template <typename T>
-    auto at(const int idx) const -> entity<type_policy<T>> {
-      return entity<type_policy<T>>(*this, idx);
-    }
-    
-    template <typename T>
-    void push(T value) const {
-      at<T>(0) = value;
-    }
-
-    // Meta-functions to push onto stack
-    template <typename T, typename... Ts>
-    void push_variadic(const T& value, Ts... values) const {
-      push<T>(value);
-      push_variadic(values...);
-    }
-
-    template <typename T>
-    void push_variadic(const T& value) const {
-      push<T>(value);
-    }
-
-    void push_variadic() const {};
-    
-    template <std::size_t I = 0, typename... Tp>
-    typename std::enable_if<I == sizeof...(Tp), void>::type
-    inline push_tuple(const std::tuple<Tp...>& t) const {
-    }
-
-    template <std::size_t I = 0, typename... Tp>
-    typename std::enable_if<I < sizeof...(Tp), void>::type
-    inline push_tuple(const std::tuple<Tp...>& t) const {
-      typedef decltype(std::get<I>(t)) A;
-      push<A>(std::get<I>(t));
-      push_tuple<I + 1, Tp...>(t);
-    }
-
-      template <typename tuple_t>
-      inline void push_tuple(const tuple_t& t) const {
-        push_tuple<0, tuple_t>(t);
-      }
-
-    // Meta-functions to read from stack
-    template <std::size_t I = 0, typename tuple_t>
-    typename std::enable_if<0 == std::tuple_size<tuple_t>::value, tuple_t>::type
-    inline get_values_(int idx = -1) const {
-      return std::tuple<>();
-    }
-
-    template <std::size_t I = 0, typename tuple_t>
-    typename std::enable_if<0 != std::tuple_size<tuple_t>::value, tuple_t>::type
-    inline get_values_(int idx = -1) const {
-      typedef typename std::tuple_element<0, tuple_t>::type A;
-      A value = at<A>(idx - I).get();
-      return std::tuple_cat(std::tuple<A>(value), get_values_<I + 1,
-                            tuple_tail_t < tuple_t > >(idx));
-    }
-
-    template <typename tuple_t>
-    tuple_t inline get_values(int idx = -1) const {
-      return get_values_<0, tuple_t>(idx);
-    }    
-
-    template <typename tuple_t, std::size_t I = std::tuple_size<tuple_t>::value>
-    typename std::enable_if<0 == std::tuple_size<tuple_t>::value, tuple_t>::type
-    inline get_values_reverse_(int idx = -1) const {
-      return std::tuple<>();
-    }
-
-    template <typename tuple_t, std::size_t I = std::tuple_size<tuple_t>::value>
-    typename std::enable_if<0 != std::tuple_size<tuple_t>::value, tuple_t>::type
-    inline get_values_reverse_(int idx = -1) const {
-      typedef typename std::tuple_element<0, tuple_t>::type A;
-      A value = at<A>(idx - I + 1).get();
-      return std::tuple_cat(std::tuple<A>(value), get_values_reverse_<
-          tuple_tail_t < tuple_t > , I - 1>(idx));
-    }
-    
-    template <typename tuple_t>
-    tuple_t inline get_values_reverse(int idx = -1) const {
-      return get_values_reverse_<tuple_t>(idx);
-    }
-
-    // Call functions
-    template <typename callback_t,
-              typename... Args>
-    inline void call_and_apply(callback_t f,
-                               const int n_result,
-                               const char* name, Args&&... args) const {
-      get_global(name);
-      if (is_function(-1)) {
-        push_variadic(std::forward<Args>(args)...);
-        int rc = pcall(sizeof...(args), n_result, 0);
-        if (rc == 0) {
-          int correct_stack_size = f(*this);
-          pop(correct_stack_size);
-        } else {
-          throw std::runtime_error(std::string("Luacpp call_and_apply error: call to ")
-                                   + name + " failed with error " + std::to_string(rc));
+        template < typename T >
+        auto at(int index) const 
+        {
+            return Entity < Type_Adapter < T > > (*this, index);
         }
-      } else {
-        throw std::runtime_error(std::string("Luacpp call_and_apply error: ") + name
-                                 + " is not a function name in Lua global list, can't pcall");
-      }
-    }
-    
-    template <typename return_tuple_t, typename... Args>
-    inline return_tuple_t call(const char* name, Args&&... args) const {
-      get_global(name);
-      if (is_function(-1)) {
-        push_variadic(std::forward<Args>(args)...);
-        int rc = pcall(sizeof...(args), std::tuple_size<return_tuple_t>::value, 0);
-        if (rc == 0) {
-          auto rslt = get_values_reverse<return_tuple_t>();
-          pop(std::tuple_size<return_tuple_t>::value);
-          return rslt;
-        } else {
-          throw std::runtime_error(std::string("Luacpp call error: call to ")
-                                   + name + " failed with error " + std::to_string(rc));
-        }
-      } else {
-        throw std::runtime_error(std::string("Luacpp call error: ") + name
-                                 + " is not a function name in Lua global list, can't pcall");
-      }
-    }
-    
-    template <typename... Args>
-    inline int call_with_results_on_stack(const char* name, const int& result_sz,
-                                                     Args&&... args) const {
-      get_global(name);
-      if (is_function(-1)) {
-        push_variadic(std::forward<Args>(args)...);
-        int rc = pcall(sizeof...(args), result_sz, 0);
-        if (rc == 0) {
-          return result_sz;
-        } else {
-          throw std::runtime_error(std::string("Luacpp call error: call to ")
-                                   + name + " failed with error " + std::to_string(rc));
-        }
-      } else {
-        throw std::runtime_error(std::string("Luacpp call error: ") + name
-                                 + " is not a function name in Lua global list, can't pcall");
-      }
-    }
 
-  };
-  
+        template < typename T >
+        void push(T value) const 
+        {
+            at < T > (0) = value;
+        }
 
-}
+    public:
+
+        template < typename T >
+        void push_values(T value) const
+        {
+            push(value);
+        }
+
+        template < typename T, typename ... Types >
+        void push_values(T value, Types ... values) const 
+        {
+            push(value);
+            push_values(values...);
+        }
+
+    public:
+
+        template < std::size_t Index = 0, typename ... Types >
+        std::enable_if_t < Index == sizeof...(Types), void >
+            push_tuple(const std::tuple < Types ... > & tuple) const
+        {}
+
+        template < std::size_t Index = 0, typename ... Types >
+        std::enable_if_t < Index < sizeof...(Types), void >
+            push_tuple(const std::tuple < Types ... > & tuple) const
+        {
+            push(std::get < Index > (tuple));
+            push_tuple < Index + 1, Types ... > (tuple);
+        }
+
+    public: // TODO : tuple -> variadic
+
+        template < std::size_t Index = 0, typename T >
+        std::enable_if_t < std::tuple_size_v < T > == 0, T >
+            get(int index = -1) const 
+        {
+            return std::make_tuple();
+        }
+
+        template < std::size_t Index = 0, typename T >
+        std::enable_if_t < std::tuple_size_v < T > != 0, T >
+            get(int index = -1) const 
+        {
+            using value_t = std::tuple_element_t < 0, T > ;
+
+            return std::tuple_cat(std::make_tuple(at < value_t > (index - Index).get()),
+                get < Index + 1, tuple_tail_t < T > > (index));
+        }
+
+    public: // TODO : tuple -> variadic
+
+        template < typename T, std::size_t Index = std::tuple_size_v < T > >
+        std::enable_if_t < std::tuple_size_v < T > == 0, T >
+            get_reversed(int index = -1) const 
+        {
+            return std::make_tuple();
+        }
+
+        template < typename T, std::size_t Index = std::tuple_size_v < T > >
+        std::enable_if_t < std::tuple_size_v < T > != 0, T >
+            get_reversed(int index = -1) const 
+        {
+            using value_t = std::tuple_element_t < 0, T > ;
+
+            return std::tuple_cat(std::make_tuple(at < value_t > (index - Index + 1).get()), 
+                get_reversed < tuple_tail_t < T >, Index - 1 > (index));
+        }
+
+    public:
+
+        template < typename callback_t, typename... Types >
+        void call_and_apply(callback_t function, int n_results, const char * name, Types ... args) const 
+        {
+            get_global(name);
+
+            if constexpr (sizeof...(args) > 0)
+            {
+                push_values(args...);
+            }
+
+            pcall(sizeof...(args), n_results, 0);
+
+            pop(function(*this));
+        }
+
+        template < typename Tuple, typename ... Types >
+        auto call(const char * name, Types ... args) const 
+        {
+            get_global(name);
+
+            if constexpr (sizeof...(args) > 0)
+            {
+                push_values(args...);
+            }
+
+            auto size = std::tuple_size_v < Tuple >;
+
+            pcall(sizeof...(args), size, 0);
+           
+            auto result = get_reversed < Tuple > ();
+
+            pop(size);
+
+            return result;
+        }
+
+        template < typename ... Types >
+        auto call_with_results_on_stack(const char * name, int n_results, Types ... args) const 
+        {
+            get_global(name);
+
+            if constexpr (sizeof...(args) > 0)
+            {
+                push_values(args...);
+            }
+
+            pcall(sizeof...(args), n_results, 0);
+
+            return n_results;
+        }
+    };
+
+} // namespace lua
