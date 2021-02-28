@@ -1,134 +1,172 @@
 #pragma once
 
-namespace lua {
- 
-  template <typename T>
-  struct vector_element {
-    typedef vector_element<T> type;
-    typedef T value_type;
-    
-    vector_element(const lua::State s, const int idx, const int i) :
-      s_(s),
-      idx_(idx),
-      i_(i) {
-      if (!s_.istable(idx_))
-        throw std::runtime_error("Luacpp error: can't construct lua vector element from non-table stack value");
+#include <exception>
+#include <stdexcept>
+#include <string>
+
+#include "declarations.hpp"
+
+namespace lua 
+{
+    template < typename T >
+    class Element 
+    {
+    public:
+
+        using type = Element < T > ;
+
+        using value_t = T;
+
+    public:
+
+        explicit Element(State state, int index, int position) :
+            m_state(state), m_index(index), m_position(position)
+        {}
+
+        ~Element() noexcept = default;
+
+    public:
+
+        void swap(Element & other) noexcept
+        {
+            std::swap(m_state,    other.m_state);
+            std::swap(m_index,    other.m_index);
+            std::swap(m_position, other.m_position);
+        }
+
+    public:
+
+        auto & operator=(value_t value) const
+        {
+            set(value);
+
+            return (*this);
+        }
+
+    public:
+
+        auto get() const 
+        {
+            m_state.raw_get_field(m_index, m_position);
+
+            auto result = Entity < Type_Adapter < value_t > > (m_state, -1).get();
+
+            m_state.pop();
+
+            return result;
+        }
+
+        void set(value_t value) const
+        {
+            m_state.push(value);
+
+            m_state.raw_set_field(-2, m_position);
+        }
+
+        template < typename F >
+        void apply(F function) const 
+        {
+            m_state.raw_get_field(m_index, m_position);
+
+            function(m_state, -1);
+
+            m_state.pop();
+        }
+
+    private:
+
+        State m_state;
+        int   m_index;
+        int   m_position;
+    };
+
+    template < typename T >
+    void swap(Element < T > & lhs, Element < T > & rhs) noexcept
+    {
+        lhs.swap(rhs);
     }
 
-    vector_element(const type& other) :
-      s_(other.s_),
-      idx_(other.idx_),
-      i_(other.i_) {
-    }
+    // =========================================================================
 
-    vector_element(type&& other) :
-      s_(std::move(other.s_)),
-      idx_(std::move(other.idx_)),
-      i_(other.i_) {
-    }
+    template < typename T >
+    class Vector 
+    {
+    public:
 
-    value_type get() const {
-      s_.rawgeti(idx_, i_);
-      auto rslt = entity<type_policy<value_type>>(s_, -1)();
-      s_.pop();
-      return rslt;
-    }
+        using type = Vector < T > ;
 
-    value_type operator()() const {
-      return get();
-    }
+        using value_t = T;
+        using element_t = Element < T > ;
 
-    template <typename F, typename... Args>
-    void apply(F f, Args... args) const {
-      s_.rawgeti(idx_, i_);
-      f(s_, -1);
-      s_.pop();
-    }
+    public:
 
-    void set(value_type value) const {
-      s_.push<>(value);
-      s_.rawseti(-2 , i_);
-    }
+        explicit Vector(State state, int index) :
+            m_state(state), m_index(index), m_size(0)
+        {
+            if (m_state.is_nil(index)) 
+            {
+                m_state.new_table();
+                m_state.replace(index - 1);
+            }
+        }
 
-    void operator=(value_type value) const {
-      set(value);
-    }
+        ~Vector() noexcept 
+        {
+            try
+            {
+                m_state.pop(m_size);
+            }
+            catch (...)
+            {
+                // std::abort();
+            }
+        }
 
-    void operator=(value_type value) {
-      set(value);
-    }
+    public:
 
-    template <typename X>
-    friend 
-    void swap(vector_element<X>& lhs, vector_element<X>& other);
+        auto size() const 
+        {
+            return m_state.raw_length(m_index);
+        }
 
-  private:
-    const lua::State s_;
-    const int idx_{0};
-    const int i_;  // Index in vector in oligophrenic format
-  };
+        auto operator[](int position) const
+        {
+            return element_t(m_state, m_index, position + 1);
+        }
 
-  template <typename X>
-  void swap(vector_element<X>& lhs, vector_element<X>& rhs) {
-    std::swap(lhs.s_, rhs.s_);
-    std::swap(lhs.idx_, rhs.idx_);
-    std::swap(lhs.i_, rhs.i_);
-  }
+        void push_back(value_t value) const 
+        {
+            auto position = m_state.raw_length(m_index) + 1;
 
-  template <typename T>
-  struct vector {
-    typedef vector<T> type;
-    typedef T value_type;
-    typedef vector_element<T> element_type;
-        
-    vector(const lua::State& s, const int idx) :
-      s_(s),
-      idx_(idx) {
-      if (s_.isnil(idx)) {
-        s_.newtable();
-        s_.replace(idx - 1);
-      } else {
-        if (!s_.istable(idx_)) throw std::runtime_error("Luacpp error: can't construct lua vector from non-table stack value");
-      }
-    }
+            m_state.push(value);
 
-    ~vector() {
-      s_.pop(n_pop_);
-    }
+            m_state.raw_set_field(m_index - 1, position);
+        }
 
-    size_t size() const {
-      return s_.objlen(idx_);
-    }
+        void pop() const 
+        {
+            int position = m_state.raw_length(m_index);
 
-    element_type at(const int i) const {
-      return element_type(s_, idx_, i + 1);
-    }
+            m_state.push_nil();
 
-    element_type operator[](const int i) const {
-      return at(i);
-    }
+            m_state.raw_set_field(m_index - 1, position);
+        }
 
-    void push_back(const value_type& value) const {
-      int i = s_.objlen(idx_);
-      i += 1; // Adjust for oligophrenic indexing
-      s_.push<>(value);
-      s_.rawseti(idx_ - 1, i);
-    }
+        void clear_stack() const
+        {
+            m_state.pop(m_size);
 
-    void pop() const {
-      int i = s_.objlen(idx_);
-      s_.pushnil();
-      s_.rawseti(idx_ - 1, i);
-    }
-    
-    void balance_stack() {
-      s_.pop(n_pop_);
-      n_pop_ = 0;
-    }
-  private:
-      lua::State s_;
-    int idx_{0};
+            m_size = 0;
+        }
 
-    mutable int n_pop_{0};
-  };
-}
+    private:
+
+        State m_state;
+        int   m_index;
+
+    private:
+
+        mutable int m_size;
+    };
+
+} // namespace lua
