@@ -96,7 +96,7 @@ void sendTransaction(const std::map<std::string, std::string>& transaction // П
   }
   l_.pcall(1, 1, 0);
   if (l_.is_string(-1)) {
-    const auto& msg = l_.at<const char*>(-1)();
+    const auto& msg = l_.at<const char*>(-1).get();
     if (msg[0] == 0) {
       l_.pop();
     } else {

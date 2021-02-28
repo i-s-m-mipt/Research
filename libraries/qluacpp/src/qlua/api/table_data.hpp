@@ -4,7 +4,7 @@
 // getItem - Функция возвращает таблицу Lua, содержащую информацию о данных из строки с номером «Index» из таблицы с именем «TableName». 
 template <typename Table>
 void getItem(unsigned int Index,
-             std::function<void(const ::lua::entity<::lua::type_policy<Table>>&)> lambda) const {
+             std::function<void(const lua::Entity < lua::Type_Adapter<Table>>&)> lambda) const {
   auto f = [&lambda] (const lua::State& s) {
     auto v = s.at<Table>(-1);
     lambda(v);

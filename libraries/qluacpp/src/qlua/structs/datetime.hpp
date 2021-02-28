@@ -4,7 +4,7 @@
 
 #define QLUACPP_DATETIME_TABLE_FIELD( NAME )    \
   static constexpr const char _##NAME##_field_name[] = #NAME; \
-  ::lua::entity<detail::datetime_type_policy<_##NAME##_field_name>> NAME{s_, idx_}; \
+  ::lua::Entity<detail::datetime_type_policy<_##NAME##_field_name>> NAME{m_state, m_index}; \
 
 
 // --- Direct macro table generators ---
@@ -12,33 +12,33 @@
 // date
 namespace qlua {
   namespace table {
-    LUACPP_STATIC_TABLE_BEGIN(date_)
-    LUACPP_TABLE_FIELD(date, std::string)
-    LUACPP_TABLE_FIELD(year, unsigned int)
-    LUACPP_TABLE_FIELD(month, unsigned int)
-    LUACPP_TABLE_FIELD(day, unsigned int)
-    LUACPP_STATIC_TABLE_END()
+    LUA_TABLE_BEGIN(date_)
+    LUA_TABLE_FIELD(date, std::string)
+    LUA_TABLE_FIELD(year, unsigned int)
+    LUA_TABLE_FIELD(month, unsigned int)
+    LUA_TABLE_FIELD(day, unsigned int)
+    LUA_TABLE_END()
   }
 }
-LUACPP_STATIC_TABLE_TYPE_POLICY(::qlua::table::date_)
+LUA_TABLE_TYPE_ADAPTER(::qlua::table::date_)
 
 // datetime "Формат даты и времени, используемый таблицах"
 namespace qlua {
   namespace table {
-    LUACPP_STATIC_TABLE_BEGIN(datetime)
-    LUACPP_TABLE_FIELD(mcs, int)
-    LUACPP_TABLE_FIELD(ms, int)
-    LUACPP_TABLE_FIELD(sec, int)
-    LUACPP_TABLE_FIELD(min, int)
-    LUACPP_TABLE_FIELD(hour, int)
-    LUACPP_TABLE_FIELD(day, int)
-    LUACPP_TABLE_FIELD(week_day, int)
-    LUACPP_TABLE_FIELD(month, int)
-    LUACPP_TABLE_FIELD(year, int)
-    LUACPP_STATIC_TABLE_END()
+    LUA_TABLE_BEGIN(datetime)
+    LUA_TABLE_FIELD(mcs, int)
+    LUA_TABLE_FIELD(ms, int)
+    LUA_TABLE_FIELD(sec, int)
+    LUA_TABLE_FIELD(min, int)
+    LUA_TABLE_FIELD(hour, int)
+    LUA_TABLE_FIELD(day, int)
+    LUA_TABLE_FIELD(week_day, int)
+    LUA_TABLE_FIELD(month, int)
+    LUA_TABLE_FIELD(year, int)
+    LUA_TABLE_END()
   }
 }
-LUACPP_STATIC_TABLE_TYPE_POLICY(::qlua::table::datetime)
+LUA_TABLE_TYPE_ADAPTER(::qlua::table::datetime)
 
 // --- For nested tables ---
 
@@ -64,6 +64,7 @@ namespace qlua {
       struct datetime_type_policy {
         using write_type = const c_date_time&;
         using read_type = c_date_time;
+        using type = c_date_time;
 
         static inline bool type_matches(lua::State s, int idx) {
           return s.is_table(idx); // Check that we're at a table
@@ -108,7 +109,7 @@ namespace qlua {
         static inline const T get_field(lua::State s, const char* name) {
           s.push<const char*>(name);
           s.raw_get(-2);
-          auto rslt = ::lua::entity<::lua::type_policy<T>>(s, -1).get();
+          auto rslt = lua::Entity<lua::Type_Adapter<T>>(s, -1).get();
           s.pop(1);
           return rslt;
         }

@@ -20,19 +20,19 @@ namespace qlua {
     struct OnAccountBalance {   //  изменение позиции по счету
       static const char* name() { static const char name[] = "OnAccountBalance"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::account_balance>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::account_balance>>> args_type;
     };
     
     struct OnAccountPosition {   //  изменение позиции по счету
       static const char* name() { static const char name[] = "OnAccountPosition"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::account_positions>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::account_positions>>> args_type;
     };
     
     struct OnAllTrade {   //  новая обезличенная сделка 
       static const char* name() { static const char name[] = "OnAllTrade"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::all_trades>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::all_trades>>> args_type;
     };
     
     struct OnCleanUp {   //  смена торговой сессии
@@ -50,19 +50,19 @@ namespace qlua {
     struct OnConnected {   //  установление связи с сервером QUIK 
       static const char* name() { static const char name[] = "OnConnected"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<bool>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<bool>>> args_type;
     };
     
     struct OnDepoLimit {   //  изменение бумажного лимита
       static const char* name() { static const char name[] = "OnDepoLimit"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::depo_limits>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::depo_limits>>> args_type;
     };
     
     struct OnDepoLimitDelete {   //  удаление бумажного лимита
       static const char* name() { static const char name[] = "OnDepoLimitDelete"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::depo_limit_delete>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::depo_limit_delete>>> args_type;
     };
     
     struct OnDisconnected {   //  отключение от сервера QUIK
@@ -74,69 +74,69 @@ namespace qlua {
     struct OnFirm {   //  получение описания новой фирмы
       static const char* name() { static const char name[] = "OnFirm"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::firms>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::firms>>> args_type;
     };
     
     struct OnFuturesClientHolding {   //  изменение позиции по срочному рынку
       static const char* name() { static const char name[] = "OnFuturesClientHolding"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::futures_client_holding>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::futures_client_holding>>> args_type;
     };
     
     struct OnFuturesLimitChange {   //  изменение ограничений по срочному рынку 
       static const char* name() { static const char name[] = "OnFuturesLimitChange"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::futures_client_limits>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::futures_client_limits>>> args_type;
     };
     
     struct OnFuturesLimitDelete {   //  удаление лимита по срочному рынку 
       static const char* name() { static const char name[] = "OnFuturesLimitDelete"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::futures_limit_delete>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::futures_limit_delete>>> args_type;
     };
     
     struct OnInit {   //  инициализация функции main 
       static const char* name() { static const char name[] = "OnInit"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<std::string>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<std::string>>> args_type;
     };
     
     struct OnMoneyLimit {   //  изменение денежного лимита 
       static const char* name() { static const char name[] = "OnMoneyLimit"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::money_limits>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::money_limits>>> args_type;
     };
     
     struct OnMoneyLimitDelete {   //  удаление денежного лимита 
       static const char* name() { static const char name[] = "OnMoneyLimitDelete"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::money_limit_delete>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::money_limit_delete>>> args_type;
     };
     
     struct OnNegDeal {   //  новая заявка на внебиржевую сделку или изменение параметров существующей заявки на внебиржевую сделку 
       static const char* name() { static const char name[] = "OnNegDeal"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::neg_deals>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::neg_deals>>> args_type;
     };
     
     struct OnNegTrade {   //  новая сделка для исполнения или изменение существующей сделки для исполнения 
       static const char* name() { static const char name[] = "OnNegTrade"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::neg_trades>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::neg_trades>>> args_type;
     };
     
     struct OnOrder {   //  новая заявка или изменение параметров существующей заявки 
       static const char* name() { static const char name[] = "OnOrder"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::orders>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::orders>>> args_type;
     };
     
     struct OnParam {   //  изменение текущих параметров 
       static const char* name() { static const char name[] = "OnParam"; return name; }
       typedef void return_type;
       typedef std::tuple<
-        ::lua::entity<::lua::type_policy<std::string>>,
-        ::lua::entity<::lua::type_policy<std::string>>
+        lua::Entity < lua::Type_Adapter<std::string>>,
+        lua::Entity < lua::Type_Adapter<std::string>>
       > args_type;
     };
     
@@ -144,33 +144,33 @@ namespace qlua {
       static const char* name() { static const char name[] = "OnQuote"; return name; }
       typedef void return_type;
       typedef std::tuple<
-        ::lua::entity<::lua::type_policy<std::string>>,
-        ::lua::entity<::lua::type_policy<std::string>>
+        lua::Entity < lua::Type_Adapter<std::string>>,
+        lua::Entity < lua::Type_Adapter<std::string>>
       > args_type;
     };
     
     struct OnStop {   //  остановка скрипта из диалога управления 
       static const char* name() { static const char name[] = "OnStop"; return name; }
       typedef int return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<int>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<int>>> args_type;
     };
     
     struct OnStopOrder {   //  новая стоп-заявка или изменение параметров существующей стоп-заявки 
       static const char* name() { static const char name[] = "OnStopOrder"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::stop_orders>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::stop_orders>>> args_type;
     };
     
     struct OnTrade {   //  новая сделка или изменение параметров существующей сделки 
       static const char* name() { static const char name[] = "OnTrade"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::trades>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::trades>>> args_type;
     };
     
     struct OnTransReply {   //  ответ на транзакцию 
       static const char* name() { static const char name[] = "OnTransReply"; return name; }
       typedef void return_type;
-      typedef std::tuple<::lua::entity<::lua::type_policy<table::trans_reply>>> args_type;
+      typedef std::tuple<lua::Entity < lua::Type_Adapter<table::trans_reply>>> args_type;
     };
   }
 

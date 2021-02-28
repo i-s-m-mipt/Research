@@ -44,7 +44,7 @@ namespace qlua {
         } else  {
           auto err = l_.at<const char*>(-1);
           std::string msg("Failed to create datasource, qlua returned: ");
-          msg += err();
+          msg += err.get();
           l_.pop(2);
           throw std::runtime_error(msg.c_str());
         }
@@ -113,8 +113,8 @@ namespace qlua {
           const int nres = 1;
           l_.pcall(nargs, nres, 0);
           i = i - 1 + nres; // 1 for function name popped by pcall
-          auto t = l_.at<table::chart_time>(-1)();
-          time rslt =  {t.year(), t.month(), t.day(), t.week_day(), t.hour(), t.min(), t.sec(), t.ms(), t.count()};
+          auto t = l_.at<table::chart_time>(-1).get();
+          time rslt =  {t.year.get(), t.month.get(), t.day.get(), t.week_day.get(), t.hour.get(), t.min.get(), t.sec.get(), t.ms.get(), t.count.get() };
           l_.pop(i);
           return rslt;
         } else {
@@ -148,7 +148,7 @@ namespace qlua {
           if (l_.is_function(-1)) {
             l_.pcall(2, 1, 0);
             ++i;
-            auto rslt = l_.at<bool>(-1)();
+            auto rslt = l_.at<bool>(-1).get();
             l_.pop(i - 3); // Function address and arguments
             return rslt;
           } else {
@@ -205,7 +205,7 @@ namespace qlua {
           const int nres = 1;
           l_.pcall(nargs, nres, 0);
           i = i - 1 + nres; // 1 for function name popped by pcall
-          auto rslt = l_.at<T>(-1)();
+          auto rslt = l_.at<T>(-1).get();
           l_.pop(i);
           return rslt;
         } else {
@@ -237,7 +237,7 @@ namespace qlua {
           const int nres = 1;
           l_.pcall(nargs, nres, 0);
           i = i - 1 + nres; // 1 for function name popped by pcall
-          auto rslt = l_.at<T>(-1)();
+          auto rslt = l_.at<T>(-1).get();
           l_.pop(i);
           return rslt;
         } else {

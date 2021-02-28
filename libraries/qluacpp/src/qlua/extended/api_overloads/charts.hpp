@@ -21,10 +21,10 @@ void getCandlesByIndex(const std::string& tag,
                        unsigned int first_candle,
                        unsigned int count,
                        std::function<void
-                       (const ::lua::entity<::lua::type_policy<::qlua::table::candle>>&,
+                       (const lua::Entity < lua::Type_Adapter<::qlua::table::candle>>&,
                         const unsigned int index,
-                        const ::lua::entity<::lua::type_policy<unsigned int>>&,
-                        const ::lua::entity<::lua::type_policy<const char*>>&
+                        const lua::Entity < lua::Type_Adapter<unsigned int>>&,
+                        const lua::Entity < lua::Type_Adapter<const char*>>&
                         )> lambda
                        ) const {
   return api::getCandlesByIndex(tag.c_str(), line, first_candle, count, lambda);
@@ -35,10 +35,10 @@ void getCandlesByIndex(const char* tag,
                        unsigned int first_candle,
                        unsigned int count,
                        std::function<void
-                       (const ::lua::entity<::lua::type_policy<::qlua::table::candle>>&,
+                       (const lua::Entity < lua::Type_Adapter<::qlua::table::candle>>&,
                         const unsigned int index,
-                        const ::lua::entity<::lua::type_policy<unsigned int>>&,
-                        const ::lua::entity<::lua::type_policy<const char*>>&
+                        const lua::Entity < lua::Type_Adapter<unsigned int>>&,
+                        const lua::Entity < lua::Type_Adapter<const char*>>&
                         )> lambda
                        ) const {
   return api::getCandlesByIndex(tag, line, first_candle, count, lambda);

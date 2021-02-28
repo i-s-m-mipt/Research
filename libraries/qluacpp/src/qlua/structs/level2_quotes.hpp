@@ -3,13 +3,13 @@
 // level2_quotes_record
 namespace qlua {
   namespace table {
-    LUACPP_STATIC_TABLE_BEGIN(level2_quotes_lua_record)
-    LUACPP_TABLE_FIELD(price, std::string)
-    LUACPP_TABLE_FIELD(quantity, std::string)
-    LUACPP_STATIC_TABLE_END()
+    LUA_TABLE_BEGIN(level2_quotes_lua_record)
+    LUA_TABLE_FIELD(price, std::string)
+    LUA_TABLE_FIELD(quantity, std::string)
+    LUA_TABLE_END()
   }
 }
-LUACPP_STATIC_TABLE_TYPE_POLICY(::qlua::table::level2_quotes_lua_record)
+LUA_TABLE_TYPE_ADAPTER(::qlua::table::level2_quotes_lua_record)
 
 namespace qlua {
   namespace table {
@@ -29,15 +29,15 @@ namespace qlua {
       const std::string bid_count() const {
         l_.push<const char*>("bid_count");
         l_.raw_get(idx_ - 1);
-        auto rslt = ::lua::entity<::lua::type_policy<const std::string>>(l_, -1).get();
-        l_.pop(1);
-        return rslt;
+        auto result = lua::Entity < lua::Type_Adapter < std::string > > (l_, -1).get();
+        l_.pop();
+        return result;
       }
 
       const std::string offer_count() const {
         l_.push<const char*>("offer_count");
         l_.raw_get(idx_ - 1);
-        auto rslt = ::lua::entity<::lua::type_policy<const std::string>>(l_, -1).get();
+        auto rslt = lua::Entity<lua::Type_Adapter<std::string>>(l_, -1).get();
         l_.pop(1);
         return rslt;
       }
@@ -62,8 +62,8 @@ namespace qlua {
           auto sz = l_.raw_length(-1);
           for (int i = 0; i < sz; ++i) {
             l_.raw_get_field(-1, i + 1);
-            auto rec = ::lua::entity<::lua::type_policy<::qlua::table::level2_quotes_lua_record>>(l_, -1)();
-            rslt.push_back({rec.price(), rec.quantity()});
+            auto rec = lua::Entity<lua::Type_Adapter<::qlua::table::level2_quotes_lua_record>>(l_, -1).get();
+            rslt.push_back({rec.price.get(), rec.quantity.get()});
             l_.pop(1);
           }
         } else {

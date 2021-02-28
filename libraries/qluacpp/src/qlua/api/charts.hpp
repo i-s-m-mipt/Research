@@ -15,10 +15,10 @@ void getCandlesByIndex(const char* tag, // строковый идентифик
                        unsigned int first_candle, // индекс первой свечки. Первая (самая левая) свечка имеет индекс 0
                        unsigned int count, // количество запрашиваемых свечек
                        std::function<void
-                       (const ::lua::entity<::lua::type_policy<::qlua::table::candle>>&, // структура (lua-таблица) со свечкой
+                       (const lua::Entity < lua::Type_Adapter<::qlua::table::candle>>&, // структура (lua-таблица) со свечкой
                         const unsigned int index, // индекс свечки
-                        const ::lua::entity<::lua::type_policy<unsigned int>>&, // количество свечек в таблице t
-                        const ::lua::entity<::lua::type_policy<const char*>>& // легенда (подпись) графика
+                        const lua::Entity < lua::Type_Adapter<unsigned int>>&, // количество свечек в таблице t
+                        const lua::Entity < lua::Type_Adapter<const char*>>& // легенда (подпись) графика
                        )> lambda
                        ) const {
   auto f = [&lambda] (const lua::State& s) {
