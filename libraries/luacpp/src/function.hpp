@@ -23,7 +23,7 @@
                                                      ARG1_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
   
@@ -32,8 +32,8 @@
                                                      ARG2_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>>, \
-                                         entity<type_policy<ARG2_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>>, \
+                                         Entity < Type_Adapter<ARG2_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
   
@@ -43,9 +43,9 @@
                                                      ARG3_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>>, \
-                                         entity<type_policy<ARG2_TYPE>>, \
-                                         entity<type_policy<ARG3_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>>, \
+                                         Entity < Type_Adapter<ARG2_TYPE>>, \
+                                         Entity < Type_Adapter<ARG3_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
   
@@ -56,10 +56,10 @@
                                                      ARG4_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>>, \
-                                         entity<type_policy<ARG2_TYPE>>, \
-                                         entity<type_policy<ARG3_TYPE>>, \
-                                         entity<type_policy<ARG4_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>>, \
+                                         Entity < Type_Adapter<ARG2_TYPE>>, \
+                                         Entity < Type_Adapter<ARG3_TYPE>>, \
+                                         Entity < Type_Adapter<ARG4_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
   
@@ -71,11 +71,11 @@
                                                      ARG5_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>>, \
-                                         entity<type_policy<ARG2_TYPE>>, \
-                                         entity<type_policy<ARG3_TYPE>>, \
-                                         entity<type_policy<ARG4_TYPE>>, \
-                                         entity<type_policy<ARG5_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>>, \
+                                         Entity < Type_Adapter<ARG2_TYPE>>, \
+                                         Entity < Type_Adapter<ARG3_TYPE>>, \
+                                         Entity < Type_Adapter<ARG4_TYPE>>, \
+                                         Entity < Type_Adapter<ARG5_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
   
@@ -88,12 +88,12 @@
                                                      ARG6_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>>, \
-                                         entity<type_policy<ARG2_TYPE>>, \
-                                         entity<type_policy<ARG3_TYPE>>, \
-                                         entity<type_policy<ARG4_TYPE>>, \
-                                         entity<type_policy<ARG5_TYPE>>, \
-                                         entity<type_policy<ARG6_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>>, \
+                                         Entity < Type_Adapter<ARG2_TYPE>>, \
+                                         Entity < Type_Adapter<ARG3_TYPE>>, \
+                                         Entity < Type_Adapter<ARG4_TYPE>>, \
+                                         Entity < Type_Adapter<ARG5_TYPE>>, \
+                                         Entity < Type_Adapter<ARG6_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
   
@@ -107,13 +107,13 @@
                                                      ARG7_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>>, \
-                                         entity<type_policy<ARG2_TYPE>>, \
-                                         entity<type_policy<ARG3_TYPE>>, \
-                                         entity<type_policy<ARG4_TYPE>>, \
-                                         entity<type_policy<ARG5_TYPE>>, \
-                                         entity<type_policy<ARG6_TYPE>>, \
-                                         entity<type_policy<ARG7_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>>, \
+                                         Entity < Type_Adapter<ARG2_TYPE>>, \
+                                         Entity < Type_Adapter<ARG3_TYPE>>, \
+                                         Entity < Type_Adapter<ARG4_TYPE>>, \
+                                         Entity < Type_Adapter<ARG5_TYPE>>, \
+                                         Entity < Type_Adapter<ARG6_TYPE>>, \
+                                         Entity < Type_Adapter<ARG7_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
   
@@ -128,14 +128,14 @@
                                                      ARG8_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>>, \
-                                         entity<type_policy<ARG2_TYPE>>, \
-                                         entity<type_policy<ARG3_TYPE>>, \
-                                         entity<type_policy<ARG4_TYPE>>, \
-                                         entity<type_policy<ARG5_TYPE>>, \
-                                         entity<type_policy<ARG6_TYPE>>, \
-                                         entity<type_policy<ARG7_TYPE>>, \
-                                         entity<type_policy<ARG8_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>>, \
+                                         Entity < Type_Adapter<ARG2_TYPE>>, \
+                                         Entity < Type_Adapter<ARG3_TYPE>>, \
+                                         Entity < Type_Adapter<ARG4_TYPE>>, \
+                                         Entity < Type_Adapter<ARG5_TYPE>>, \
+                                         Entity < Type_Adapter<ARG6_TYPE>>, \
+                                         Entity < Type_Adapter<ARG7_TYPE>>, \
+                                         Entity < Type_Adapter<ARG8_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
   
@@ -151,15 +151,15 @@
                                                      ARG9_TYPE)         \
   static int wrapper_c_function(lua_State* l) {                         \
     return base_type::wrapper_c_function<NAME##_function_descriptor,    \
-                                         entity<type_policy<ARG1_TYPE>>, \
-                                         entity<type_policy<ARG2_TYPE>>, \
-                                         entity<type_policy<ARG3_TYPE>>, \
-                                         entity<type_policy<ARG4_TYPE>>, \
-                                         entity<type_policy<ARG5_TYPE>>, \
-                                         entity<type_policy<ARG6_TYPE>>, \
-                                         entity<type_policy<ARG7_TYPE>>, \
-                                         entity<type_policy<ARG8_TYPE>> \
-                                         entity<type_policy<ARG9_TYPE>> \
+                                         Entity < Type_Adapter<ARG1_TYPE>>, \
+                                         Entity < Type_Adapter<ARG2_TYPE>>, \
+                                         Entity < Type_Adapter<ARG3_TYPE>>, \
+                                         Entity < Type_Adapter<ARG4_TYPE>>, \
+                                         Entity < Type_Adapter<ARG5_TYPE>>, \
+                                         Entity < Type_Adapter<ARG6_TYPE>>, \
+                                         Entity < Type_Adapter<ARG7_TYPE>>, \
+                                         Entity < Type_Adapter<ARG8_TYPE>> \
+                                         Entity < Type_Adapter<ARG9_TYPE>> \
                                          >(l, #NAME);                   \
   }                                                                     \
 
@@ -315,7 +315,7 @@ namespace lua
               s.get_table(-2);
               if (!s.is_nil(-1)) {
                 if (s.is_light_user_data(-1)) {
-                  auto fd = (function_descriptor_t*)s.at<void*>(-1)();
+                  auto fd = (function_descriptor_t*)s.at<void*>(-1).get();
                   s.pop(2);
                   const auto n_args = s.get_top();
                   const auto n_args_expected = sizeof...(Args);
