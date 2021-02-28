@@ -1,18 +1,23 @@
 #pragma once
 
-namespace lua {
-  // Main interface class
-  struct State;
+#include <exception>
+#include <stdexcept>
+#include <string>
 
-  // Generic lua entity (primitive types, tables, functions) holder
-  template <typename policy_t>
-  struct entity;
-  
-  // Type adapter, maps C++ type to corresponding entity type.
-  template <typename T>
-  struct type_policy;
+namespace lua
+{
+	class State;
 
-  // Iterable vector-like entities
-  template <typename T>
-  struct vector_element;
-}
+	template < typename T >
+	class Entity;
+
+	template < typename T >
+	struct Type_Adapter;
+
+	template < typename T >
+	class Element;
+
+	template < typename T >
+	class Vector;
+
+} // namespace lua
