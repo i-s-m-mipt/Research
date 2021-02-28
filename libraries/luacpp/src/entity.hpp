@@ -1,118 +1,81 @@
 #pragma once
 
+#include <exception>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+
 #include "declarations.hpp"
 
-namespace lua {
-  
-  /* Generic stack entity.
-     Type policies should follow the concept::
+namespace lua
+{
+    template < typename T >
+    class Entity 
+    {
+    public:
 
-    All reading functions should correct the stack on return
+        using type_adapter_t = T;
 
-    // Checks if the value on stack looks like the right type
-    inline static bool type_matches(::lua::state s, int idx)
-    // Reads the value on stack without the check,
-    // the return value is copy-constructed
-    inline static T get_unsafe(::lua::state s, int idx);
-    // Places the value on the stack if needed, and calls function f(const lua::state&, idx),
-    // no copying should occur in the process
-    template <typename F>
-    inline static void apply_unsafe(::lua::state s, int idx, F f, args...);
-    // Puts the value on stack
-    inline static void set(::lua::state s, int idx, T value, args...);
-   */
+        using type = typename type_adapter_t::type;
 
-  template <typename policy_t>
-  struct entity {
-    using read_type = typename policy_t::read_type;
-    using write_type = typename policy_t::write_type;
+    public:
 
-    entity(const lua::State & s, const int idx) :
-      s_(s),
-      idx_(idx) {
-    }
+        explicit Entity(State state, int index) :
+            m_state(state), m_index(index) 
+        {}
 
-    // -- Forwarding to policy -
-    template <typename... Args>
-    inline bool type_matches(Args&&... args) const {
-      return policy_t::type_matches(s_, idx_, args...);
-    }
+        ~Entity() noexcept = default;
 
-    template <typename... Args>
-    inline read_type get_unsafe(Args&&... args) const {
-      return policy_t::get_unsafe(s_, idx_, args...);
-    }
+    public:
 
-    template <typename... Args>
-    inline void set(write_type value, Args&&... args) const {
-      policy_t::set(s_, idx_, value, args...);
-    }
+        const auto state() const noexcept
+        {
+            return m_state;
+        }
 
-    template <typename F, typename... Args>
-    inline void apply_unsafe(F f, Args&&... args) const {
-      policy_t::apply_unsafe(s_, idx_, f, args...);
-    }
+        const auto index() const noexcept
+        {
+            return m_index;
+        }
 
-    // -- Syntactic suger --
-    
-    template <typename... Args>
-    inline read_type get(Args... args) const {
-      if (type_matches(args...)) {
-        return get_unsafe(args...);
-      } else {
-        throw std::runtime_error(make_typecheck_error_msg("entity get"));
-      }
-    }
+    public:
 
-    template <typename F, typename... Args>
-    inline void apply(F f, Args... args) const {
-      if (type_matches(args...)) {
-        apply_unsafe(args...);
-      } else {
-        throw std::runtime_error(make_typecheck_error_msg("entity apply"));
-      }
-    }
-    
-    template <typename... Args>
-    inline read_type operator()(Args... args) const {
-      return get(args...);
-    }
+        auto & operator=(type value) const
+        {
+            set(value);
 
-    // Note that operator= sets the entity's content, does not assign one entity to another
-    inline void operator=(write_type value) const {
-      set(value);
-    }
+            return (*this);
+        }
 
-    // Accessors
-    const auto & lua_state() const {
-      return s_;
-    }
+    public:
 
-    const int& index() const {
-      return idx_;
-    }
-  protected:
-    const lua::State s_;
-    const int idx_{0};
+        inline auto type_matches() const 
+        {
+            return type_adapter_t::type_matches(m_state, m_index);
+        }
 
-  private:
-    std::string make_typecheck_error_msg(const std::string& operation) const {
-      auto actual_type_pc = s_.type_name(idx_);
-      auto actual_content_pc = s_.to_string(idx_);
-      std::string actual_type;
-      std::string actual_content;
-      if (actual_type_pc == nullptr) 
-        actual_type = "<Oops, got null from Lua when tried to get actual type name string>";
-      else
-        actual_type = actual_type_pc;
-      if (actual_content_pc == nullptr) 
-        actual_content = "<Oops, got null from Lua when tried to get actual content as string>";
-      else
-        actual_content = actual_content_pc;
-        
-      return "Luacpp " + operation + ": typecheck failed (Lua type at stack index "
-        + std::to_string(idx_) + " is " + actual_type + "; content as string: " + actual_content + ")";
-    }
-  };
+        template < typename ... Types >
+        inline auto get(Types ... args) const 
+        {
+            return type_adapter_t::get(m_state, m_index, args...);
+        }
 
-}
+        template < typename ... Types >
+        inline void set(type value, Types ... args) const
+        {
+            type_adapter_t::set(m_state, m_index, value, args...);
+        }
+
+        template < typename F, typename ... Types >
+        inline void apply(F function, Types ... args) const
+        {
+            type_adapter_t::apply(m_state, m_index, function, args...);
+        }
+
+    protected: // TODO
+
+        State m_state;
+        int   m_index;
+    };
+
+} // namespace lua
