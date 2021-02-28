@@ -62,6 +62,9 @@ namespace lua
         is_running = 9
     };
 
+    using boolean_t = int;
+    using pointer_t = void * ;
+
     using number_t    = lua_Number;
     using integer_t   = lua_Integer;
     using unsigned_t  = lua_Unsigned;
