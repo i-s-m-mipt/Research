@@ -59,14 +59,5 @@
     <ClInclude Include="..\source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\detail\lua\utility.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\general.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\state_base.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
