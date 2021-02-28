@@ -126,7 +126,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\python\include;C:\Libraries\sfml\include;C:\Libraries\json\include;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <EnableModules>true</EnableModules>
+      <EnableModules>false</EnableModules>
       <DisableSpecificWarnings>4715</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -145,7 +145,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\python\include;C:\Libraries\sfml\include;C:\Libraries\json\include;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <EnableModules>true</EnableModules>
+      <EnableModules>false</EnableModules>
       <DisableSpecificWarnings>4715</DisableSpecificWarnings>
     </ClCompile>
     <Link>
