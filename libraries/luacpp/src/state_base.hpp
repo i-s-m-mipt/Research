@@ -14,7 +14,6 @@ extern "C"
 }
 
 #include "general.hpp"
-#include "utility.hpp"
 
 namespace lua
 {
@@ -31,7 +30,7 @@ namespace lua
             initialize();
         }
 
-        State_Base(state_t state)
+        explicit State_Base(state_t state)
         {
             initialize(state);
         }
@@ -223,7 +222,7 @@ namespace lua
 
         auto to_pointer(int index) const
         {
-            return lua_topointer(m_state, index);
+            return (pointer_t)lua_topointer(m_state, index); // TODO
         }
 
     public: // arithmetic functions
@@ -260,22 +259,22 @@ namespace lua
             lua_pushinteger(m_state, integer);
         }
 
-        const char * push_lstring(const char * string, std::size_t length) const
+        auto push_lstring(const char * string, std::size_t length) const
         {
             return lua_pushlstring(m_state, string, length);
         }
 
-        const char * push_string(const char * string) const
+        auto push_string(const char * string) const
         {
             return lua_pushstring(m_state, string);
         }
 
-        const char * push_vfstring(const char * format, va_list list) const
+        auto push_vfstring(const char * format, va_list list) const
         {
             return lua_pushvfstring(m_state, format, list);
         }
 
-        const char * push_fstring(const char * format, ...) const
+        auto push_fstring(const char * format, ...) const
         {
             va_list list;
 
@@ -311,6 +310,11 @@ namespace lua
         auto push_thread() const
         {
             return lua_pushthread(m_state);
+        }
+
+        void push_pointer(pointer_t pointer) const
+        {
+            push_light_user_data(pointer);
         }
 
     public: // get functions
@@ -578,6 +582,13 @@ namespace lua
         auto is_none_or_nil(int index) const
         {
             return (is_none(index) || is_nil(index));
+        }
+
+        auto is_pointer(int index) const
+        {
+            return (
+                is_light_user_data(index) || is_function(index) ||
+                is_cfunction      (index) || is_thread  (index));
         }
 
         void insert(int index) const
