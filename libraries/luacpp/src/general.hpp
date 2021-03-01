@@ -4,12 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-extern "C"
-{
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-}
+#include <lua.hpp>
 
 namespace lua 
 {
