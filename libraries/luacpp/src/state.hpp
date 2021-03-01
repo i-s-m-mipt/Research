@@ -10,10 +10,27 @@
 
 #include "declarations.hpp"
 #include "state_base.hpp"
-#include "utility.hpp"
 
 namespace lua 
 {
+    template < typename ... Types >
+    struct tuple_tail;
+
+    template < typename T >
+    struct tuple_tail < std::tuple < T > >
+    {
+        using type = std::tuple <>;
+    };
+
+    template < typename T, typename ... Types >
+    struct tuple_tail < std::tuple < T, Types ... > >
+    {
+        using type = std::tuple < Types ... >;
+    };
+
+    template < typename T >
+    using tuple_tail_t = typename tuple_tail < T > ::type;
+
     class State : public State_Base 
     {
     public:
