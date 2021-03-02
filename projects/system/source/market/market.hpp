@@ -144,7 +144,7 @@ namespace solution
 
 		public:
 
-			class Bar
+			class Candle
 			{
 			public:
 
@@ -194,17 +194,17 @@ namespace solution
 		private:
 
 			template < typename Iterator >
-			class Bar_Parser : public boost::spirit::qi::grammar < 
-				Iterator, Bar(), boost::spirit::qi::blank_type >
+			class Candle_Parser : public boost::spirit::qi::grammar < 
+				Iterator, Candle(), boost::spirit::qi::blank_type >
 			{
 			private:
 
 				using rule_t = boost::spirit::qi::rule < 
-					Iterator, Bar(), boost::spirit::qi::blank_type >;
+					Iterator, Candle(), boost::spirit::qi::blank_type >;
 
 			public:
 
-				Bar_Parser() : Bar_Parser::base_type(start)
+				Candle_Parser() : Candle_Parser::base_type(start)
 				{
 					static const auto separator = ',';
 
@@ -218,7 +218,7 @@ namespace solution
 						boost::spirit::qi::ulong_long;             // Volume
 				}
 
-				~Bar_Parser() noexcept = default;
+				~Candle_Parser() noexcept = default;
 
 			private:
 
@@ -227,10 +227,10 @@ namespace solution
 
 		private:
 
-			using bars_container_t = std::vector < Bar > ;
+			using candles_container_t = std::vector < Candle > ;
 
 			using charts_container_t = std::unordered_map < std::string,
-				std::unordered_map < std::string, bars_container_t > > ;
+				std::unordered_map < std::string, candles_container_t > > ;
 
 			using self_similarity_matrix_t = boost::multi_array < double, 2U > ;
 
@@ -264,9 +264,9 @@ namespace solution
 
 			void load_charts();
 
-			bars_container_t load_bars(const path_t & path) const;
+			candles_container_t load_candles(const path_t & path) const;
 
-			Bar parse(const std::string & s) const;
+			Candle parse(const std::string & s) const;
 
 		public:
 
@@ -329,14 +329,14 @@ namespace solution
 
 BOOST_FUSION_ADAPT_STRUCT
 (
-	 solution::system::Market::Bar,
-	(solution::system::Market::Bar::date_t,   date)
-	(solution::system::Market::Bar::time_t,   time)
-	(solution::system::Market::Bar::price_t,  price_open)
-	(solution::system::Market::Bar::price_t,  price_high)
-	(solution::system::Market::Bar::price_t,  price_low)
-	(solution::system::Market::Bar::price_t,  price_close)
-	(solution::system::Market::Bar::volume_t, volume)
+	 solution::system::Market::Candle,
+	(solution::system::Market::Candle::date_t,   date)
+	(solution::system::Market::Candle::time_t,   time)
+	(solution::system::Market::Candle::price_t,  price_open)
+	(solution::system::Market::Candle::price_t,  price_high)
+	(solution::system::Market::Candle::price_t,  price_low)
+	(solution::system::Market::Candle::price_t,  price_close)
+	(solution::system::Market::Candle::volume_t, volume)
 )
 
 #endif // #ifndef SOLUTION_SYSTEM_MARKET_HPP

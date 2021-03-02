@@ -125,7 +125,7 @@ namespace solution
 			}
 		}
 
-		void Market::Bar::update_date_time() noexcept
+		void Market::Candle::update_date_time() noexcept
 		{
 			RUN_LOGGER(logger);
 
@@ -249,7 +249,7 @@ namespace solution
 							continue;
 						}
 
-						m_charts[asset][scale] = load_bars(path);
+						m_charts[asset][scale] = load_candles(path);
 					}
 				}
 			}
@@ -259,13 +259,13 @@ namespace solution
 			}
 		}
 
-		Market::bars_container_t Market::load_bars(const path_t & path) const
+		Market::candles_container_t Market::load_candles(const path_t & path) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				bars_container_t bars;
+				candles_container_t candles;
 
 				std::fstream fin(path.string(), std::ios::in);
 
@@ -274,16 +274,16 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
-				std::string s;
+				std::string line;
 
-				while (std::getline(fin, s))
+				while (std::getline(fin, line))
 				{
-					bars.push_back(parse(s));
+					candles.push_back(parse(line));
 				}
 
-				std::reverse(std::begin(bars), std::end(bars));
+				std::reverse(std::begin(candles), std::end(candles));
 
-				return bars;
+				return candles;
 			}
 			catch (const std::exception & exception)
 			{
@@ -291,27 +291,27 @@ namespace solution
 			}
 		}
 
-		Market::Bar Market::parse(const std::string & s) const
+		Market::Candle Market::parse(const std::string & s) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				Bar_Parser < std::string::const_iterator > parser;
+				Candle_Parser < std::string::const_iterator > parser;
 
 				auto first = std::begin(s);
 				auto last  = std::end(s);
 
-				Bar bar;
+				Candle candle;
 
 				auto result = boost::spirit::qi::phrase_parse(
-					first, last, parser, boost::spirit::qi::blank, bar);
+					first, last, parser, boost::spirit::qi::blank, candle);
 
 				if (result)
 				{
-					bar.update_date_time();
+					candle.update_date_time();
 
-					return bar;
+					return candle;
 				}
 				else
 				{
@@ -420,7 +420,7 @@ namespace solution
 				auto self_similarity = 0.0;
 
 				// TODO
-				// USE 2 std::vector < Bar > : 
+				// USE 2 std::vector < Candle > : 
 				// m_charts[asset][scale_1].something
 				// m_charts[asset][scale_2].something
 
