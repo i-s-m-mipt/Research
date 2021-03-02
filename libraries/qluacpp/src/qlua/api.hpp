@@ -62,8 +62,6 @@ namespace qlua {
 #include "api/securities.hpp"
     // Workplace "Функции взаимодействия скрипта Lua и Рабочего места QUIK"
 #include "api/workplace.hpp"
-    // Current trades receive "Функции получения значений Таблицы текущих торгов"
-#include "api/current_trades_receive.hpp"
     // Charts "Функции для работы с графиками"
 #include "api/charts.hpp"
     // Table manipulations "Функции для работы с таблицами Рабочего места QUIK"
