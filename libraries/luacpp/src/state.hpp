@@ -597,12 +597,18 @@ namespace lua
             pop();
         }
 
-    public:
+    public: // special functions
 
         template < typename T >
         auto at(int index) const 
         {
             return Entity < Type_Adapter < T > > (*this, index);
+        }
+
+        template < typename T >
+        auto top() const
+        {
+            return at < T > (-1);
         }
 
         template < typename T >

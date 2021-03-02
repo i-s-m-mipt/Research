@@ -19,7 +19,7 @@ namespace solution
 	{
 		struct Config
 		{
-			using api_t = qlua::api;
+			using api_t = lua::API;
 		};
 
 	} // namespace plugin

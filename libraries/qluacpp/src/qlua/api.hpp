@@ -1,69 +1,103 @@
 #pragma once
 
-#include <map>
+#include <exception>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <luacpp/luacpp>
 
-#include "api/macros.h"
 #include "structs/datetime.hpp"
 #include "structs/tables.hpp"
 #include "structs/datasource.hpp"
 
-namespace qlua {
-    struct api {
-        typedef api type;
-        api(const lua::State & l) :
-            l_(l) {
+namespace lua 
+{
+    class API 
+    {
+    public:
+
+        API(State state) : m_state(state)
+        {}
+
+        ~API() noexcept = default;
+
+    public:
+
+        const auto state() const noexcept
+        {
+            return m_state;
         }
 
-        api(const type & other) :
-            l_(other.l_) {
+    public:
+
+        template < typename T >
+        auto constant(const std::string & name) const 
+        {
+            m_state.get_global(name.c_str());
+
+            auto result = m_state.top < T > ().get();
+
+            m_state.pop();
+
+            return result;
         }
 
-        api(type && other) :
-            l_(std::move(other.l_)) {
+    public:
+
+        auto is_connected() const
+        {
+            return std::get < 0 > (m_state.call < std::tuple < unsigned int > > ("isConnected"));
         }
 
-        void swap(type & other) {
-            std::swap(l_, other.l_);
+        auto send_message(const char * text) const
+        {
+            return std::get < 0 > (m_state.call < std::tuple < unsigned int > > ("message", text));
         }
 
-        type & operator=(const type & other) {
-            type tmp(other);
-            swap(tmp);
-            return *this;
+        auto get_security_info(const char * class_code, const char * asset_code) const
+        {
+            return std::get < 0 > (m_state.call < std::tuple < unsigned int > > (
+                "getSecurityInfo", class_code, asset_code));
         }
 
-        template <typename Constant>
-        Constant constant(const char * name) const {
-            l_.get_global(name);
-            if (!l_.is_nil(-1)) {
-                auto rslt = l_.at<Constant>(-1).get();
-                l_.pop(1);
-                return rslt;
+        auto send_transaction(const std::unordered_map < std::string, std::string > & transaction) 
+        {
+            m_state.get_global("sendTransaction");
+
+            m_state.new_table();
+
+            for (const auto & [field, value] : transaction) 
+            {
+                m_state.push_string(field.c_str());
+                m_state.push_string(value.c_str());
+
+                m_state.set_table(-3);
             }
-            else {
-                l_.pop(1);
-                throw std::runtime_error("QluaCpp error: QLua constant " + std::string(name) + " is nil in globals list");
-            }
+
+            m_state.call(1, 1);
+
+            return m_state.top < const char * > ().get();
         }
 
-        const lua::State & lua_state() const {
-            return l_;
+        auto get_portfolio(const char * client_id, const char * client_code) const
+        {
+            return std::get < 0 > (m_state.call < std::tuple < qlua::table::portfolio_info_getPortfolioInfo > > (
+                "getPortfolioInfo", client_id, client_code));
         }
 
-        // Service "Сервисные функции"
-#include "api/service.hpp"
-    // Table data access Функции для обращения к строкам произвольных таблиц QUIK
-#include "api/table_data.hpp"
-    // Workplace "Функции взаимодействия скрипта Lua и Рабочего места QUIK"
-#include "api/workplace.hpp"
-    // Charts "Функции для работы с графиками"
-#include "api/charts.hpp"
-    // Table manipulations "Функции для работы с таблицами Рабочего места QUIK"
-#include "api/table.hpp"
+        auto create_source(const char * class_code, const char * asset_code,
+            unsigned int interval) const 
+        {
+            return qlua::data_source(m_state, class_code, asset_code, interval);
+        }
 
-    protected:
-        lua::State l_;
+    private:
+
+        State m_state;
     };
-}
+
+} // namespace lua

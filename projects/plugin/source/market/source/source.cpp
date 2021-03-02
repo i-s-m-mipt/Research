@@ -15,7 +15,7 @@ namespace solution
 					const auto timeframe = api.constant < unsigned int > (("INTERVAL_" + m_scale_code).c_str());
 
 					m_source = std::make_unique < source_t > (
-						api.CreateDataSource(m_class_code.c_str(), m_asset_code.c_str(), timeframe));
+						api.create_source(m_class_code.c_str(), m_asset_code.c_str(), timeframe));
 
 					const auto shared_memory_name = make_shared_memory_name();
 
