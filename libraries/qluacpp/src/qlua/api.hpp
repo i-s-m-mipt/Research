@@ -66,8 +66,6 @@ namespace qlua {
 #include "api/charts.hpp"
     // Table manipulations "Функции для работы с таблицами Рабочего места QUIK"
 #include "api/table.hpp"
-    // Current trades request Функции для заказа параметров Таблицы текущих торгов
-#include "api/current_trades_request.hpp"
     // Bitmask Функции для работы с битовыми масками в структурах данных
 #include "api/bitmask.hpp"
     
