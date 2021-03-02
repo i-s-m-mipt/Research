@@ -66,8 +66,6 @@ namespace qlua {
 #include "api/charts.hpp"
     // Table manipulations "Функции для работы с таблицами Рабочего места QUIK"
 #include "api/table.hpp"
-    // Bitmask Функции для работы с битовыми масками в структурах данных
-#include "api/bitmask.hpp"
     
   protected:
     lua::State l_;
