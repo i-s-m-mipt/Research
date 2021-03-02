@@ -60,7 +60,7 @@ lua::Entity < NAME##_Table_Field > NAME{ m_state, m_index }; \
 
 #define LUA_TABLE_FIELD(NAME, VALUE_TYPE) LUA_TABLE_FIELD_KEY_VALUE(NAME, const char *, VALUE_TYPE)
 
-#define LUA_TABLE_END() };
+#define LUA_TABLE_END };
 
 #define LUA_TABLE_TYPE_ADAPTER(TABLE_TYPE) \
 namespace lua \

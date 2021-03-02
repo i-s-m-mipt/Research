@@ -9,8 +9,6 @@
 #include "structs/standalone.hpp"
 #include "structs/function_results.hpp"
 #include "structs/datasource.hpp"
-#include "structs/level2_quotes.hpp"
-#include "callbacks.hpp"
 
 // TODO: type policies in numeric_tuples.hpp
 
@@ -64,16 +62,12 @@ namespace qlua {
 #include "api/securities.hpp"
     // Workplace "Функции взаимодействия скрипта Lua и Рабочего места QUIK"
 #include "api/workplace.hpp"
-    // Current trades receive "Функции получения значений Таблицы текущих торгов"
-#include "api/current_trades_receive.hpp"
     // Charts "Функции для работы с графиками"
 #include "api/charts.hpp"
     // Table manipulations "Функции для работы с таблицами Рабочего места QUIK"
 #include "api/table.hpp"
     // "Функции для работы с метками"
 #include "api/labels.hpp"
-    // Level 2 quotes "Функции для заказа стакана котировок"
-#include "api/level2_quotes.hpp"
     // Current trades request Функции для заказа параметров Таблицы текущих торгов
 #include "api/current_trades_request.hpp"
     // Bitmask Функции для работы с битовыми масками в структурах данных
