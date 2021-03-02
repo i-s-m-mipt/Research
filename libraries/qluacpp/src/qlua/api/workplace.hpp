@@ -2,60 +2,6 @@
 
 #include "../structs/function_results.hpp"
 
-// regex  ^ +\(.*\) \([A-Za-z0-9]+?\) *(\(.*\))  ->  QLUACPP_DETAIL_API_FUNCTION(\1,JJ\2,JJ\3JJ)
- 
-// getDepo - функция для получения информации по бумажным лимитам
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(qlua::table::Depo,
-                            getDepo,
-                            const char*, client_code,
-                            const char*, firmid,
-                            const char*, sec_code,
-                            const char*, trdaccid
-                            )
-// getDepoEx - функция для получения информации по бумажным лимитам указанного типа
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY12(qlua::table::depo_limits,
-                            getDepoEx,
-                            const char*, firmid,
-                            const char*, client_code,
-                            const char*, sec_code,
-                            const char*, trdaccid,
-                            const int, limit_kind
-                            )
-   
-// getMoney - функция для получения информации по денежным лимитам
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(qlua::table::Money,
-                            getMoney,
-                            const char*, client_code,
-                            const char*, firmid,
-                            const char*, tag,
-                            const char*, currcode
-                            )
-// getMoneyEx - функция для получения информации по денежным лимитам указанного типа
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY12(::qlua::table::money_limits,
-                            getMoneyEx,
-                            const char*, firmid,
-                            const char*, client_code,
-                            const char*, tag,
-                            const char*, currcode,
-                            const int, limit_kind
-                            )
-// getFuturesLimit - функция для получения информации по фьючерсным лимитам
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(::qlua::table::futures_client_limits,
-                            getFuturesLimit,
-                            const char*, firmid,
-                            const char*, trdaccid,
-                            const int, limit_type,
-                            const char*, currcode
-                            )   
-// getFuturesHolding - функция для получения информации по фьючерсным позициям
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(::qlua::table::futures_client_holding,
-                            getFuturesHolding,
-                            const char*, firmid,
-                            const char*, trdaccid,
-                            const char*, sec_code,
-                            const int, type
-                            )
-
 // getSecurityInfo - функция для получения информации по инструменту
 QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY6(::qlua::table::securities,
                             getSecurityInfo,
@@ -111,13 +57,7 @@ QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY6(::qlua::table::portfolio_info_getPortfol
                             const char*, firm_id,
                             const char*, client_code
                             )
-// getPortfolioInfoEx - функция для получения значений параметров таблицы «Клиентский портфель» с учетом вида лимита
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY8(::qlua::table::portfolio_info_getPortfolioInfoEx,
-                            getPortfolioInfoEx,
-                            const char*, firm_id,
-                            const char*, client_code,
-                            const int, limit_kind
-                            )
+
 // getBuySellInfo - функция для получения параметров таблицы «Купить/Продать»
 QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY12(::qlua::table::buy_sell_info_getBuySellInfo,
                             getBuySellInfo,
@@ -126,13 +66,4 @@ QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY12(::qlua::table::buy_sell_info_getBuySell
                             const char*, class_code,
                             const char*, sec_code,
                             const double, price
-                            )
-// getBuySellInfoEx - функция для получения параметров (включая вид лимита) таблицы «Купить/Продать» 
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY12(::qlua::table::buy_sell_info_getBuySellInfoEx,
-                            getBuySellInfoEx,
-                             const char*, firm_id,
-                             const char*, client_code,
-                             const char*, class_code,
-                             const char*, sec_code,
-                             const double, price
                             )
