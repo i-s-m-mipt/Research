@@ -5,7 +5,7 @@
 // regex  ^ +\(.*\) \([A-Za-z0-9]+?\) *(\(.*\))  ->  QLUACPP_DETAIL_API_FUNCTION(\1,JJ\2,JJ\3JJ)
  
 // getDepo - функция для получения информации по бумажным лимитам
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(::qlua::table::depo_limits_getDepo,
+QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(qlua::table::Depo,
                             getDepo,
                             const char*, client_code,
                             const char*, firmid,
@@ -13,7 +13,7 @@ QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(::qlua::table::depo_limits_getDepo,
                             const char*, trdaccid
                             )
 // getDepoEx - функция для получения информации по бумажным лимитам указанного типа
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY12(::qlua::table::depo_limits,
+QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY12(qlua::table::depo_limits,
                             getDepoEx,
                             const char*, firmid,
                             const char*, client_code,
@@ -23,7 +23,7 @@ QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY12(::qlua::table::depo_limits,
                             )
    
 // getMoney - функция для получения информации по денежным лимитам
-QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(::qlua::table::money_limits_getMoney,
+QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(qlua::table::Money,
                             getMoney,
                             const char*, client_code,
                             const char*, firmid,
@@ -55,23 +55,6 @@ QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY10(::qlua::table::futures_client_holding,
                             const char*, sec_code,
                             const int, type
                             )
-
-// getQuoteLevel2 - функция для получения стакана по указанному классу и бумаге
-/*QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY6(::qlua::table::level2_quotes,
-                            getQuoteLevel2,
-                            const char*, class_code,
-                            const char*, sec_code
-                            )*/
-void getQuoteLevel2(const char* class_code,
-                    const char* sec_code,
-                    std::function<void(const ::qlua::table::level2_quotes &)> lambda) const {
-  auto f = [&lambda] (const lua::State& s) {
-    auto v = ::qlua::table::level2_quotes(s, -1);
-    lambda(v);
-    return 1;
-  };
-  l_.call_and_apply(f, 1, "getQuoteLevel2", class_code, sec_code);
-}
 
 // getSecurityInfo - функция для получения информации по инструменту
 QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY6(::qlua::table::securities,

@@ -21,7 +21,7 @@ namespace qlua {
     LUA_TABLE_FIELD(firm_name, std::string) // Название класса  
     LUA_TABLE_FIELD(status, unsigned int) // Статус  
     LUA_TABLE_FIELD(exchange, std::string) // Торговая площадка  
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::firms)
@@ -35,7 +35,7 @@ namespace qlua {
     LUA_TABLE_FIELD(code, std::string) // Код класса 
     LUA_TABLE_FIELD(npars, unsigned int) // Количество параметров в классе 
     LUA_TABLE_FIELD(nsecs, unsigned int) // Количество бумаг в классе
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::classes)
@@ -89,7 +89,7 @@ namespace qlua {
     LUA_TABLE_FIELD(stock_name, std::string) // Код деривативного контракта в формате QUIK  
     LUA_TABLE_FIELD(nextcoupon, int) // Дата выплаты купона  
     LUA_TABLE_FIELD(couponperiod, int) // Длительность купона  
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::securities)
@@ -121,7 +121,7 @@ namespace qlua {
     LUA_TABLE_FIELD(bank_acc_id, std::string) // Код дополнительной позиции по денежным средствам
     // Quik 8.1: Exists in qlua.chm help file, doesn't really exist in terminal
     //LUA_TABLE_FIELD(exec_market, std::string) // Идентификатор биржевой площадки 
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::trade_accounts)
@@ -157,7 +157,7 @@ namespace qlua {
     LUA_TABLE_FIELD(bank_acc_id, std::string) // Идентификатор счета  
     LUA_TABLE_FIELD(margincall, double) // Маржинальное требование на начало торгов  
     LUA_TABLE_FIELD(settlebal, double) // Плановая позиция после проведения расчетов  
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::account_positions)
@@ -259,7 +259,7 @@ namespace qlua {
  
     LUA_TABLE_FIELD(executing_trader_short_code, unsigned int) // Краткий идентификатор трейдера, исполнившего заявку 
 
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::orders)
@@ -301,7 +301,7 @@ namespace qlua {
                                                         «5» – основной клиринг: новая сессия назначена; 
                                                         «6» – завершился основной клиринг; 
                                                         «7» – завершилась вечерняя сессия */
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::futures_client_holding)
@@ -337,7 +337,7 @@ namespace qlua {
     LUA_TABLE_FIELD(kgo, double) // Коэффициент клиентского гарантийного обеспечения  
     LUA_TABLE_FIELD(currcode, std::string) // Валюта, в которой транслируется ограничение  
     LUA_TABLE_FIELD(real_varmargin, double) // Реально начисленная в ходе клиринга вариационная маржа. Отображается с точностью до 2 двух знаков. При этом в поле «varmargin» транслируется вариационная маржа, рассчитанная с учетом установленных границ изменения цены  
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::futures_client_limits)
@@ -372,7 +372,7 @@ namespace qlua {
     LUA_TABLE_FIELD(open_interest, double) // Открытый интерес 
     LUA_TABLE_FIELD(exchange_code, std::string) // Код биржи в торговой системе 
     LUA_TABLE_FIELD(exec_market, std::string) // Площадка исполнения 
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::all_trades)
@@ -393,7 +393,7 @@ namespace qlua {
                                                     «5» – «Лимит открытых позиций на спот-рынке»; 
                                                     «6» – «Суммарные залоговые средства в иностранной валюте (в рублях)»; 
                                                     «7» – «Залоговые средства в иностранной валюте» */
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::futures_limit_delete)
@@ -427,7 +427,7 @@ namespace qlua {
     LUA_TABLE_FIELD(wa_position_price, double) // Средневзвешенная цена приобретения позиции 
     LUA_TABLE_FIELD(orders_collateral, double) // Гарантийное обеспечение заявок  
     LUA_TABLE_FIELD(positions_collateral, double) // Гарантийное обеспечение позиций  
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::money_limits)
@@ -444,7 +444,7 @@ namespace qlua {
     LUA_TABLE_FIELD(limit_kind, int) /* Вид лимита. Возможные значения: 
                                            положительные целые числа, начиная с «0», соответствующие видам лимитов из таблицы «Лимиты по денежным средствам»: «0» – T0, «1» – T1, «2» – T2 и т.д.; 
                                            отрицательные целые числа – технологические лимиты (используются для внутренней работы системы QUIK)  */
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::money_limit_delete)
@@ -470,7 +470,7 @@ namespace qlua {
     LUA_TABLE_FIELD(limit_kind, int) /* Вид лимита. Возможные значения: 
                                            числа, начиная с «0», соответствующие видам лимитов из таблицы «Лимиты по бумагам»: «0» – T0, «1» – T1, «2» – T2 и т.д.; 
                                            числа – технологические лимиты (используются для внутренней работы системы QUIK)*/
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::depo_limits)
@@ -487,7 +487,7 @@ namespace qlua {
     LUA_TABLE_FIELD(limit_kind, int) /* Вид лимита. Возможные значения: 
                                            положительные целые числа, начиная с «0», соответствующие видам лимитов из таблицы «Лимиты по бумагам»: «0» – T0, «1» – T1, «2» – T2 и т.д.; 
                                            отрицательные целые числа – технологические лимиты (используются для внутренней работы системы QUIK)  */
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::depo_limit_delete)
@@ -662,7 +662,7 @@ namespace qlua {
  
     LUA_TABLE_FIELD(cross_rate, double) // Кросс-курс валюты цены сделки к валюте расчетов по сделке 
 
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::trades)
@@ -724,7 +724,7 @@ namespace qlua {
     QLUACPP_DATETIME_TABLE_FIELD(order_date_time) // Время выставления стоп-заявки
     QLUACPP_DATETIME_TABLE_FIELD(withdraw_datetime) // Время снятия стоп-заявки
     QLUACPP_DATETIME_TABLE_FIELD(activation_date_time) // Дата и время активации стоп-заявки 
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::stop_orders)
@@ -820,7 +820,7 @@ namespace qlua {
                                                                     «3» – Algorithm 
                                                                  */
     LUA_TABLE_FIELD(executing_trader_short_code, unsigned int) // Краткий идентификатор трейдера, исполнившего заявку 
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::neg_deals)
@@ -917,7 +917,7 @@ namespace qlua {
                                                */
     LUA_TABLE_FIELD(confirmreport, unsigned int) // Номер поручения 
     LUA_TABLE_FIELD(extref, std::string) // Внешняя ссылка, используется для обратной связи с внешними системами 
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::neg_trades)
@@ -944,7 +944,7 @@ namespace qlua {
     LUA_TABLE_FIELD(class_code, std::string) // Код класса 
     LUA_TABLE_FIELD(report_time, int) // Время отчета 
     QLUACPP_DATETIME_TABLE_FIELD(report_date_time) // Дата и время отчета
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::neg_deal_reports)
@@ -961,7 +961,7 @@ namespace qlua {
     LUA_TABLE_FIELD(plannedpossell, double) // Объем активных заявок на продажу, в ценных бумагах  
     LUA_TABLE_FIELD(usqtyb, double) // Куплено  
     LUA_TABLE_FIELD(usqtys, double) // Продано
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::firm_holding)
@@ -988,7 +988,7 @@ namespace qlua {
     LUA_TABLE_FIELD(firmuse, unsigned int) /* Признак счета обеспечения. Возможные значения: 
                                                  «0» – для обычных счетов, 
                                                  «1» – для счета обеспечения. */
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::account_balance)
@@ -1014,7 +1014,7 @@ namespace qlua {
     LUA_TABLE_FIELD(firm_use, double) /*  Тип раздела. Возможные значения: 
                                              «0» – торговый раздел; 
                                              «1» – раздел обеспечения */
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::ccp_holdings)
@@ -1037,7 +1037,7 @@ namespace qlua {
     LUA_TABLE_FIELD(planned_covered, double) // Плановая позиция Т+  
     LUA_TABLE_FIELD(debit_balance, double) // Размер денежных обязательств на начало дня, с точностью до 2 знака после десятичного разделителя  
     LUA_TABLE_FIELD(credit_balance, double) // Размер денежных требований на начало дня, с точностью до 2 знака после десятичного разделителя
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::rm_holdings)
@@ -1091,7 +1091,7 @@ namespace qlua {
     
     LUA_TABLE_FIELD(first_ordernum, double) // Номер первой заявки, которая выставлялась при автоматической замене кода клиента. Используется, если на сервере QUIK настроена замена кода клиента для кросс-сделки
     QLUACPP_DATETIME_TABLE_FIELD(gate_reply_time) // Дата и время получения шлюзом ответа на транзакцию
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::trans_reply)
@@ -1108,7 +1108,7 @@ namespace qlua {
     LUA_TABLE_FIELD(doesExist, unsigned int) /* Признак расчета индикатора при наличии свечки. Возможные значения:
                                                    «0» – индикатор не рассчитан,
                                                    «1» – индикатор рассчитан */
-    LUA_TABLE_END()
+    LUA_TABLE_END
   }
 }
 LUA_TABLE_TYPE_ADAPTER(::qlua::table::candle)

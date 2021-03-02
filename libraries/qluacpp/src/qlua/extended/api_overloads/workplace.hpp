@@ -4,7 +4,7 @@ void getDepo(const std::string& client_code,
              const std::string& firmid,
              const std::string& sec_code,
              const std::string& trdaccid,
-             std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::depo_limits_getDepo>>&)> lambda) const {
+             std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::Depo>>&)> lambda) const {
   api::getDepo(client_code.c_str(), firmid.c_str(), sec_code.c_str(), trdaccid.c_str(), lambda);
 }
 
@@ -12,7 +12,7 @@ void getDepo(const char* client_code,
              const char* firmid,
              const char* sec_code,
              const char* trdaccid,
-             std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::depo_limits_getDepo>>&)> lambda) const {
+             std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::Depo>>&)> lambda) const {
   api::getDepo(client_code, firmid, sec_code, trdaccid, lambda);
 }
 
@@ -38,7 +38,7 @@ void getMoney(const std::string& client_code,
               const std::string& firmid,
               const std::string& tag,
               const std::string& currcode,
-              std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::money_limits_getMoney>>&)> lambda) const {
+              std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::Money>>&)> lambda) const {
   api::getMoney(client_code.c_str(), firmid.c_str(), tag.c_str(), currcode.c_str(), lambda);
 }
 
@@ -46,7 +46,7 @@ void getMoney(const char* client_code,
               const char* firmid,
               const char* tag,
               const char* currcode,
-              std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::money_limits_getMoney>>&)> lambda) const {
+              std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::Money>>&)> lambda) const {
   api::getMoney(client_code, firmid, tag, currcode, lambda);
 }
 
@@ -98,18 +98,6 @@ void getFuturesHolding(const char* firmid,
                        const int type,
                        std::function<void(const lua::Entity < lua::Type_Adapter<::qlua::table::futures_client_holding>>&)> lambda) const {
   api::getFuturesHolding(firmid, trdaccid, sec_code, type, lambda);
-}
-
-void getQuoteLevel2(const std::string& class_code,
-                    const std::string& sec_code,
-                    std::function<void(const ::qlua::table::level2_quotes &)> lambda) const {
-  api::getQuoteLevel2(class_code.c_str(), sec_code.c_str(), lambda);
-}
-
-void getQuoteLevel2(const char* class_code,
-                    const char* sec_code,
-                    std::function<void(const ::qlua::table::level2_quotes &)> lambda) const {
-  api::getQuoteLevel2(class_code, sec_code, lambda);
 }
 
 void getSecurityInfo(const std::string& class_code,

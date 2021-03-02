@@ -9,7 +9,6 @@
 #include "structs/standalone.hpp"
 #include "structs/function_results.hpp"
 #include "structs/datasource.hpp"
-#include "structs/level2_quotes.hpp"
 
 // TODO: type policies in numeric_tuples.hpp
 
@@ -71,8 +70,6 @@ namespace qlua {
 #include "api/table.hpp"
     // "Функции для работы с метками"
 #include "api/labels.hpp"
-    // Level 2 quotes "Функции для заказа стакана котировок"
-#include "api/level2_quotes.hpp"
     // Current trades request Функции для заказа параметров Таблицы текущих торгов
 #include "api/current_trades_request.hpp"
     // Bitmask Функции для работы с битовыми масками в структурах данных
