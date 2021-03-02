@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../structs/function_results.hpp"
+#include "../structs/tables.hpp"
 
 // getSecurityInfo - функция для получения информации по инструменту
 QLUACPP_DETAIL_API_FUNCTION_RES1_APPLY6(::qlua::table::securities,

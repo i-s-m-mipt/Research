@@ -2,7 +2,7 @@
 
 // DataSource (раздел "Функции для работы с графиками" qlua.chm)
 
-#include "function_results.hpp"
+#include "tables.hpp"
 
 namespace qlua {
   struct data_source {
