@@ -125,6 +125,26 @@ namespace solution
 			}
 		}
 
+		void Market::Bar::update_date_time() noexcept
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				date_time.year   = (date / 100) / 100;
+				date_time.month  = (date / 100) % 100;
+				date_time.day    = (date % 100);
+
+				date_time.hour   = (time / 100) / 100;
+				date_time.minute = (time / 100) % 100;
+				date_time.second = (time % 100);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::initialize()
 		{
 			RUN_LOGGER(logger);
@@ -289,6 +309,8 @@ namespace solution
 
 				if (result)
 				{
+					bar.update_date_time();
+
 					return bar;
 				}
 				else

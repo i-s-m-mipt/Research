@@ -144,14 +144,39 @@ namespace solution
 
 		public:
 
-			struct Bar
+			class Bar
 			{
-				using date_t = std::uint32_t;
-				using time_t = std::uint32_t;
+			public:
+
+				using date_t = unsigned int;
+				using time_t = unsigned int;
 
 				using price_t = double;
 
-				using volume_t = std::uint64_t;
+				using volume_t = unsigned long long;
+
+			public:
+
+				struct Date_Time
+				{
+					date_t year;
+					date_t month;
+					date_t day;
+
+					time_t hour;
+					time_t minute;
+					time_t second;
+				};
+
+			public:
+
+				using date_time_t = Date_Time;
+
+			public:
+
+				void update_date_time() noexcept;
+
+			public:
 
 				date_t date = 0U;
 				time_t time = 0U;
@@ -162,6 +187,8 @@ namespace solution
 				price_t price_close = 0.0;
 
 				volume_t volume = 0ULL;
+
+				date_time_t date_time;
 			};
 
 		private:
