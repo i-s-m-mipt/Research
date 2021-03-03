@@ -10,9 +10,9 @@
 
 #include <luacpp/luacpp>
 
-#include "structs/datetime.hpp"
-#include "structs/tables.hpp"
-#include "structs/datasource.hpp"
+#include "date_time.hpp"
+#include "source.hpp"
+#include "tables.hpp"
 
 namespace lua 
 {
@@ -20,7 +20,7 @@ namespace lua
     {
     public:
 
-        API(State state) : m_state(state)
+        explicit API(State state) : m_state(state)
         {}
 
         ~API() noexcept = default;
