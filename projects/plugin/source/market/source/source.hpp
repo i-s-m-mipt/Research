@@ -62,7 +62,7 @@ namespace solution
 
 			private:
 
-				using source_t = qlua::data_source;
+				using source_t = lua::Source;
 
 				using shared_memory_t = boost::interprocess::managed_shared_memory;
 

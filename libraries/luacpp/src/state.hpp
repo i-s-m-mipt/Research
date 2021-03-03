@@ -17,34 +17,16 @@
 
 namespace lua 
 {
-    template < typename ... Types >
-    struct tuple_tail;
-
-    template < typename T >
-    struct tuple_tail < std::tuple < T > >
-    {
-        using type = std::tuple <>;
-    };
-
-    template < typename T, typename ... Types >
-    struct tuple_tail < std::tuple < T, Types ... > >
-    {
-        using type = std::tuple < Types ... >;
-    };
-
-    template < typename T >
-    using tuple_tail_t = typename tuple_tail < T > ::type;
-
     class State
     {
     public:
 
-        using state_t = lua_State *;
+        using state_t = lua_State * ;
 
     public:
 
         explicit State(state_t state = nullptr) :
-            m_state(state ? state : luaL_newstate())
+            m_state(state ? state : luaL_newstate()) // !
         {}
 
         ~State() noexcept = default;
@@ -256,6 +238,11 @@ namespace lua
             return lua_pushstring(m_state, string);
         }
 
+        auto push_string(const std::string & string) const
+        {
+            return push_string(string.c_str());
+        }
+
         auto push_vfstring(const char * format, va_list list) const
         {
             return lua_pushvfstring(m_state, format, list);
@@ -311,6 +298,11 @@ namespace lua
             return lua_getglobal(m_state, name);
         }
 
+        auto get_global(const std::string & name) const
+        {
+            return get_global(name.c_str());
+        }
+
         auto get_table(int index) const
         {
             return lua_gettable(m_state, index);
@@ -319,6 +311,11 @@ namespace lua
         auto get_field(int index, const char * key) const
         {
             return lua_getfield(m_state, index, key);
+        }
+
+        auto get_field(int index, const std::string & key) const
+        {
+            return get_field(index, key.c_str());
         }
 
         auto get_field(int index, integer_t position) const
@@ -373,6 +370,11 @@ namespace lua
             lua_setglobal(m_state, name);
         }
 
+        void set_global(const std::string & name) const
+        {
+            set_global(name.c_str());
+        }
+
         void set_table(int index) const
         {
             lua_settable(m_state, index);
@@ -381,6 +383,11 @@ namespace lua
         void set_field(int index, const char * key) const
         {
             lua_setfield(m_state, index, key);
+        }
+
+        void set_field(int index, const std::string & key) const
+        {
+            set_field(index, key.c_str());
         }
 
         void set_field(int index, integer_t position) const
@@ -491,6 +498,11 @@ namespace lua
             return lua_stringtonumber(m_state, string);
         }
 
+        auto string_to_number(const std::string & string) const
+        {
+            return string_to_number(string.c_str());
+        }
+
         auto get_allocator(void ** ptr) const
         {
             return lua_getallocf(m_state, ptr);
@@ -503,7 +515,7 @@ namespace lua
 
     public: // additional functions
 
-        void register_function(const char * name, function_t function) const
+        void register_function(const std::string & name, function_t function) const
         {
             push_function(function);
 
@@ -619,6 +631,40 @@ namespace lua
 
     public:
 
+        template < typename T, typename ... Types >
+        auto call(const std::string & name, Types ... args) const 
+        {
+            get_global(name);
+
+            if constexpr (sizeof...(args) > 0)
+            {
+                push_values(args...);
+            }
+
+            pcall(sizeof...(args), 1, 0);
+
+            auto result = top < T > ().get();
+
+            pop();
+
+            return result;
+        }
+
+        template < std::size_t N, typename ... Types >
+        void call(const std::string & name, Types ... args) const
+        {
+            get_global(name);
+
+            if constexpr (sizeof...(args) > 0)
+            {
+                push_values(args...);
+            }
+
+            pcall(sizeof...(args), N, 0);
+        }
+
+    private:
+
         template < typename T >
         void push_values(T value) const
         {
@@ -626,82 +672,11 @@ namespace lua
         }
 
         template < typename T, typename ... Types >
-        void push_values(T value, Types ... values) const 
+        void push_values(T value, Types ... values) const
         {
             push(value);
+
             push_values(values...);
-        }
-
-    public: // TODO : tuple -> variadic
-
-        template < typename T, std::size_t Index = std::tuple_size_v < T > >
-        std::enable_if_t < std::tuple_size_v < T > == 0, T >
-            get_reversed(int index = -1) const 
-        {
-            return std::make_tuple();
-        }
-
-        template < typename T, std::size_t Index = std::tuple_size_v < T > >
-        std::enable_if_t < std::tuple_size_v < T > != 0, T >
-            get_reversed(int index = -1) const 
-        {
-            using value_t = std::tuple_element_t < 0, T > ;
-
-            return std::tuple_cat(std::make_tuple(at < value_t > (index - Index + 1).get()), 
-                get_reversed < tuple_tail_t < T >, Index - 1 > (index));
-        }
-
-    public:
-
-        template < typename callback_t, typename... Types >
-        void call_and_apply(callback_t function, int n_results, const char * name, Types ... args) const 
-        {
-            get_global(name);
-
-            if constexpr (sizeof...(args) > 0)
-            {
-                push_values(args...);
-            }
-
-            pcall(sizeof...(args), n_results, 0);
-
-            pop(function(*this));
-        }
-
-        template < typename Tuple, typename ... Types >
-        auto call(const char * name, Types ... args) const 
-        {
-            get_global(name);
-
-            if constexpr (sizeof...(args) > 0)
-            {
-                push_values(args...);
-            }
-
-            auto size = std::tuple_size_v < Tuple >;
-
-            pcall(sizeof...(args), size, 0);
-           
-            auto result = get_reversed < Tuple > ();
-
-            pop(size);
-
-            return result;
-        }
-
-        template < typename ... Types >
-        auto call_with_results_on_stack(const char * name, int n_results, Types ... args) const 
-        {
-            get_global(name);
-
-            if constexpr (sizeof...(args) > 0)
-            {
-                push_values(args...);
-            }
-
-            pcall(sizeof...(args), n_results, 0);
-
-            return n_results;
         }
 
     private:

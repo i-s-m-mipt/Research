@@ -10,7 +10,6 @@
 
 #include <luacpp/luacpp>
 
-#include "date_time.hpp"
 #include "source.hpp"
 #include "tables.hpp"
 
@@ -18,6 +17,10 @@ namespace lua
 {
     class API 
     {
+    public:
+
+        using interval_t = Source::interval_t;
+
     public:
 
         explicit API(State state) : m_state(state)
@@ -34,12 +37,11 @@ namespace lua
 
     public:
 
-        template < typename T >
         auto constant(const std::string & name) const 
         {
-            m_state.get_global(name.c_str());
+            m_state.get_global(name);
 
-            auto result = m_state.top < T > ().get();
+            auto result = m_state.top < interval_t > ().get();
 
             m_state.pop();
 
@@ -50,21 +52,31 @@ namespace lua
 
         auto is_connected() const
         {
-            return std::get < 0 > (m_state.call < std::tuple < unsigned int > > ("isConnected"));
+            return m_state.call < unsigned int > ("isConnected");
         }
 
-        auto send_message(const char * text) const
+        auto send_message(const std::string & message) const
         {
-            return std::get < 0 > (m_state.call < std::tuple < unsigned int > > ("message", text));
+            return m_state.call < unsigned int > ("message", message);
         }
 
-        auto get_security_info(const char * class_code, const char * asset_code) const
+        auto create_source(const std::string & class_code, const std::string & asset_code,
+            interval_t interval) const
         {
-            return std::get < 0 > (m_state.call < std::tuple < unsigned int > > (
-                "getSecurityInfo", class_code, asset_code));
+            return lua::Source(m_state, class_code, asset_code, interval);
         }
 
-        auto send_transaction(const std::unordered_map < std::string, std::string > & transaction) 
+        auto get_portfolio(const std::string & client_id, const std::string & client_code) const
+        {
+            return m_state.call < lua::table::Portfolio > ("getPortfolioInfo", client_id, client_code);
+        }
+
+        auto get_security_info(const std::string & class_code, const std::string & asset_code) const
+        {
+            return m_state.call < unsigned int > ("getSecurityInfo", class_code, asset_code);
+        }
+
+        auto send_transaction(const std::unordered_map < std::string, std::string > & transaction) const
         {
             m_state.get_global("sendTransaction");
 
@@ -72,27 +84,15 @@ namespace lua
 
             for (const auto & [field, value] : transaction) 
             {
-                m_state.push_string(field.c_str());
-                m_state.push_string(value.c_str());
+                m_state.push_string(field);
+                m_state.push_string(value);
 
                 m_state.set_table(-3);
             }
 
             m_state.call(1, 1);
 
-            return m_state.top < const char * > ().get();
-        }
-
-        auto get_portfolio(const char * client_id, const char * client_code) const
-        {
-            return std::get < 0 > (m_state.call < std::tuple < qlua::table::portfolio_info_getPortfolioInfo > > (
-                "getPortfolioInfo", client_id, client_code));
-        }
-
-        auto create_source(const char * class_code, const char * asset_code,
-            unsigned int interval) const 
-        {
-            return qlua::data_source(m_state, class_code, asset_code, interval);
+            return m_state.top < std::string > ().get();
         }
 
     private:
