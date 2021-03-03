@@ -144,7 +144,7 @@ namespace solution
 
 		public:
 
-			class Candle
+			struct Candle
 			{
 			public:
 
@@ -153,19 +153,19 @@ namespace solution
 
 				using price_t = double;
 
-				using volume_t = unsigned long long;
+				using volume_t = double;
 
 			public:
 
 				struct Date_Time
 				{
-					date_t year;
-					date_t month;
-					date_t day;
+					date_t year   = 0U;
+					date_t month  = 0U;
+					date_t day    = 0U;
 
-					time_t hour;
-					time_t minute;
-					time_t second;
+					time_t hour   = 0U;
+					time_t minute = 0U;
+					time_t second = 0U;
 				};
 
 			public:
@@ -176,19 +176,21 @@ namespace solution
 
 				void update_date_time() noexcept;
 
-			public:
+			public: // internal
 
 				date_t date = 0U;
 				time_t time = 0U;
+
+			public:
+
+				date_time_t date_time;
 
 				price_t price_open  = 0.0;
 				price_t price_high  = 0.0;
 				price_t price_low   = 0.0;
 				price_t price_close = 0.0;
 
-				volume_t volume = 0ULL;
-
-				date_time_t date_time;
+				volume_t volume = 0.0;
 			};
 
 		private:
@@ -209,13 +211,13 @@ namespace solution
 					static const auto separator = ',';
 
 					start %=
-						boost::spirit::qi::uint_   >> separator >> // Date
-						boost::spirit::qi::uint_   >> separator >> // Time
+						boost::spirit::qi::int_    >> separator >> // Date
+						boost::spirit::qi::int_    >> separator >> // Time
 						boost::spirit::qi::double_ >> separator >> // Open
 						boost::spirit::qi::double_ >> separator >> // High
 						boost::spirit::qi::double_ >> separator >> // Low
 						boost::spirit::qi::double_ >> separator >> // Close
-						boost::spirit::qi::ulong_long;             // Volume
+						boost::spirit::qi::double_;                // Volume
 				}
 
 				~Candle_Parser() noexcept = default;
