@@ -1,73 +1,103 @@
 #pragma once
 
-#include <map>
+#include <exception>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <luacpp/luacpp>
 
-#include "api/macros.h"
-#include "structs/datetime.hpp"
-#include "structs/standalone.hpp"
-#include "structs/function_results.hpp"
-#include "structs/datasource.hpp"
+#include "source.hpp"
+#include "tables.hpp"
 
-// TODO: type policies in numeric_tuples.hpp
+namespace lua 
+{
+    class API 
+    {
+    public:
 
-namespace qlua {
-  struct api {
-    typedef api type;
-    api(const lua::State& l) :
-      l_(l) {
-    }
-    
-    api(const type& other) :
-      l_(other.l_) {
-    }
-    
-    api(type&& other) :
-      l_(std::move(other.l_)) {
-    }
-    
-    void swap(type& other) {
-      std::swap(l_, other.l_);
-    }
-    
-    type& operator=(const type& other) {
-      type tmp(other);
-      swap(tmp);
-      return *this;
-    }
+        using interval_t = Source::interval_t;
 
-    template <typename Constant>
-    Constant constant(const char* name) const {
-      l_.get_global(name);
-      if (!l_.is_nil(-1)) {
-        auto rslt = l_.at<Constant>(-1).get();
-        l_.pop(1);
-        return rslt;
-      } else {
-        l_.pop(1);
-        throw std::runtime_error("QluaCpp error: QLua constant " + std::string(name) + " is nil in globals list");
-      }
-    }
+    public:
 
-    const lua::State& lua_state() const {
-      return l_;
-    }
-    
-    // Service "Сервисные функции"
-#include "api/service.hpp"
-    // Table data access Функции для обращения к строкам произвольных таблиц QUIK
-#include "api/table_data.hpp"
-    // Securities "Функции для обращения к спискам доступных параметров"
-#include "api/securities.hpp"
-    // Workplace "Функции взаимодействия скрипта Lua и Рабочего места QUIK"
-#include "api/workplace.hpp"
-    // Charts "Функции для работы с графиками"
-#include "api/charts.hpp"
-    // Table manipulations "Функции для работы с таблицами Рабочего места QUIK"
-#include "api/table.hpp"
-    
-  protected:
-    lua::State l_;
-  };
-}
+        explicit API(State state) : m_state(state)
+        {}
+
+        ~API() noexcept = default;
+
+    public:
+
+        const auto state() const noexcept
+        {
+            return m_state;
+        }
+
+    public:
+
+        auto constant(const std::string & name) const 
+        {
+            m_state.get_global(name);
+
+            auto result = m_state.top < interval_t > ().get();
+
+            m_state.pop();
+
+            return result;
+        }
+
+    public:
+
+        auto is_connected() const
+        {
+            return m_state.call < unsigned int > ("isConnected");
+        }
+
+        auto send_message(const std::string & message) const
+        {
+            return m_state.call < unsigned int > ("message", message);
+        }
+
+        auto create_source(const std::string & class_code, const std::string & asset_code,
+            interval_t interval) const
+        {
+            return lua::Source(m_state, class_code, asset_code, interval);
+        }
+
+        auto get_portfolio(const std::string & client_id, const std::string & client_code) const
+        {
+            return m_state.call < lua::table::Portfolio > ("getPortfolioInfo", client_id, client_code);
+        }
+
+        auto get_security_info(const std::string & class_code, const std::string & asset_code) const
+        {
+            return m_state.call < unsigned int > ("getSecurityInfo", class_code, asset_code);
+        }
+
+        auto send_transaction(const std::unordered_map < std::string, std::string > & transaction) const
+        {
+            m_state.get_global("sendTransaction");
+
+            m_state.new_table();
+
+            for (const auto & [field, value] : transaction) 
+            {
+                m_state.push_string(field);
+                m_state.push_string(value);
+
+                m_state.set_table(-3);
+            }
+
+            m_state.call(1, 1);
+
+            return m_state.top < std::string > ().get();
+        }
+
+    private:
+
+        State m_state;
+    };
+
+} // namespace lua

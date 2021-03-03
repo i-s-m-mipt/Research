@@ -12,10 +12,10 @@ namespace solution
 
 				try
 				{
-					const auto timeframe = api.constant < unsigned int > (("INTERVAL_" + m_scale_code).c_str());
+					const auto timeframe = api.constant("INTERVAL_" + m_scale_code);
 
 					m_source = std::make_unique < source_t > (
-						api.CreateDataSource(m_class_code.c_str(), m_asset_code.c_str(), timeframe));
+						api.create_source(m_class_code, m_asset_code, timeframe));
 
 					const auto shared_memory_name = make_shared_memory_name();
 
@@ -77,7 +77,7 @@ namespace solution
 
 				try
 				{
-					const auto size = m_source->Size();
+					const auto size = m_source->size();
 
 					{
 						boost::interprocess::scoped_lock < mutex_t > lock(*m_mutex);
@@ -145,7 +145,7 @@ namespace solution
 
 					std::stringstream stream;
 
-					auto time = m_source->T(index);
+					auto time = m_source->time(index);
 
 					stream <<
 						std::setfill('0') << std::setw(4) << time.year  <<
@@ -157,18 +157,18 @@ namespace solution
 					stream.clear();
 
 					stream <<
-						std::setfill('0') << std::setw(2) << time.hour <<
-						std::setfill('0') << std::setw(2) << time.min  <<
-						std::setfill('0') << std::setw(2) << time.sec;
+						std::setfill('0') << std::setw(2) << time.hour   <<
+						std::setfill('0') << std::setw(2) << time.minute <<
+						std::setfill('0') << std::setw(2) << time.second;
 
 					stream >> bar.time;
 
-					bar.price_open  = m_source->O(index);
-					bar.price_high  = m_source->H(index);
-					bar.price_low   = m_source->L(index);
-					bar.price_close = m_source->C(index);
+					bar.price_open  = m_source->price_open(index);
+					bar.price_high  = m_source->price_high(index);
+					bar.price_low   = m_source->price_low(index);
+					bar.price_close = m_source->price_close(index);
 
-					bar.volume = static_cast < Bar::volume_t > (m_source->V(index));
+					bar.volume = static_cast < Bar::volume_t > (m_source->volume(index));
 
 					return bar;
 				}
