@@ -16,11 +16,13 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <math.h>
 #include <stdexcept>
 #include <string>
 #include <sstream>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #define BOOST_PYTHON_STATIC_LIB

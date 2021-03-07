@@ -417,14 +417,76 @@ namespace solution
 
 			try
 			{
-				auto self_similarity = 0.0;
+				auto size_scale_1 = std::size(m_charts.at(asset).at(scale_1));
+				auto size_scale_2 = std::size(m_charts.at(asset).at(scale_2));
+				
+				self_similarity_matrix_t dist_matrix(boost::extents[size_scale_1][size_scale_2]);
 
-				// TODO
-				// USE 2 std::vector < Candle > : 
-				// m_charts[asset][scale_1].something
-				// m_charts[asset][scale_2].something
+				for (auto i = 0U; i < size_scale_1; ++i)
+				{
+					for (auto j = 0U; j < size_scale_2; ++j)
+					{
+						dist_matrix[i][j] = std::pow(m_charts.at(asset).at(scale_1)[i].price_close - 
+							m_charts.at(asset).at(scale_1)[j].price_close, 2);
+					}
+				}
 
-				return self_similarity;
+				self_similarity_matrix_t deform_matrix(boost::extents[size_scale_1][size_scale_2]);
+
+				for (auto i = 0U; i < size_scale_1; ++i)
+				{
+					deform_matrix[i][0] = dist_matrix[i][0];
+				}
+
+				for (auto j = 0U; j < size_scale_2; ++j)
+				{
+					deform_matrix[0][j] = dist_matrix[0][j];
+				}
+
+				for (auto i = 1; i < size_scale_1; ++i)
+				{
+					for (auto j = 1; j < size_scale_2; ++j)
+					{
+						if (abs(i - j) < 10)
+						{
+							deform_matrix[i][j] = dist_matrix[i][j] + std::min(deform_matrix[i - 1][j],
+								std::min(deform_matrix[i - 1][j - 1], deform_matrix[i][j - 1]));
+						}
+						else
+						{
+							deform_matrix[i][j] = std::numeric_limits < double >::infinity();
+						}
+					}
+				}
+
+				auto i = size_scale_1 - 1;
+				auto j = size_scale_2 - 1;
+				double path_deform = deform_matrix[i][j];
+				int K = 0;
+
+				while (i * j != 0)
+				{
+					path_deform += std::min(deform_matrix[i - 1][j],
+						std::min(deform_matrix[i - 1][j - 1], deform_matrix[i][j - 1]));
+					K += 1;
+				}
+				while (i + j != 0)
+				{
+					if (i == 0)
+					{
+						path_deform += deform_matrix[0][j];
+						K += 1;
+						--j;
+					}
+					else
+					{
+						path_deform += deform_matrix[i][0];
+						K += 1;
+						--i;
+					}
+				}
+
+				return path_deform / K;
 			}
 			catch (const std::exception & exception)
 			{
