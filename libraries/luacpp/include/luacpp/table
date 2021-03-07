@@ -1,4 +1,0 @@
-#pragma once
-
-#include "../../src/types/table_field.hpp"
-#include "../../src/table.hpp"

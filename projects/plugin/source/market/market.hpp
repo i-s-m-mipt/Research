@@ -15,12 +15,12 @@
 #include <string>
 #include <vector>
 
-#include <qluacpp/qlua> // !
-
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 
 #include "source/source.hpp"
+
+#include "../detail/lua/api.hpp"
 
 #include "../../../shared/source/logger/logger.hpp"
 

@@ -27,7 +27,7 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/managed_windows_shared_memory.hpp>
 
-#include <qluacpp/qlua>
+#include "../../detail/lua/api.hpp"
 
 #include "../../config/config.hpp"
 
