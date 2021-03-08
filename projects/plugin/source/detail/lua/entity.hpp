@@ -1,81 +1,106 @@
-#pragma once
+#ifndef SOLUTION_PLUGIN_DETAIL_LUA_ENTITY_HPP
+#define SOLUTION_PLUGIN_DETAIL_LUA_ENTITY_HPP
+
+#include <boost/config.hpp>
+
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#  pragma once
+#endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 
 #include "declarations.hpp"
 
-namespace lua
+#include "../../../../shared/source/logger/logger.hpp"
+
+namespace detail
 {
-    template < typename T >
-    class Entity 
+    namespace lua
     {
-    public:
-
-        using type_adapter_t = T;
-
-        using type = typename type_adapter_t::type;
-
-    public:
-
-        explicit Entity(State state, int index) :
-            m_state(state), m_index(index) 
-        {}
-
-        ~Entity() noexcept = default;
-
-    public:
-
-        const auto state() const noexcept
+        class entity_exception : public std::exception
         {
-            return m_state;
-        }
+        public:
 
-        const auto index() const noexcept
+            explicit entity_exception(const std::string & message) noexcept :
+                std::exception(message.c_str())
+            {}
+
+            explicit entity_exception(const char * const message) noexcept :
+                std::exception(message)
+            {}
+
+            ~entity_exception() noexcept = default;
+        };
+
+        template < typename Type_Adapter >
+        class Entity
         {
-            return m_index;
-        }
+        public:
 
-    public:
+            using type = typename Type_Adapter::type;
 
-        auto & operator=(type value) const
-        {
-            set(value);
+        public:
 
-            return (*this);
-        }
+            explicit Entity(State state, int index) :
+                m_state(state), m_index(index)
+            {}
 
-    public:
+            ~Entity() noexcept = default;
 
-        inline auto type_matches() const 
-        {
-            return type_adapter_t::type_matches(m_state, m_index);
-        }
+        public:
 
-        template < typename ... Types >
-        inline auto get(Types ... args) const 
-        {
-            return type_adapter_t::get(m_state, m_index, args...);
-        }
+            const auto state() const noexcept
+            {
+                return m_state;
+            }
 
-        template < typename ... Types >
-        inline void set(type value, Types ... args) const
-        {
-            type_adapter_t::set(m_state, m_index, value, args...);
-        }
+            const auto index() const noexcept
+            {
+                return m_index;
+            }
 
-        template < typename F, typename ... Types >
-        inline void apply(F function, Types ... args) const
-        {
-            type_adapter_t::apply(m_state, m_index, function, args...);
-        }
+        public:
 
-    protected: // TODO
+            template < typename ... Types >
+            auto get(Types ... args) const
+            {
+                RUN_LOGGER(logger);
 
-        State m_state;
-        int   m_index;
-    };
+                try
+                {
+                    return Type_Adapter::get(m_state, m_index, args...);
+                }
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < entity_exception > (logger, exception);
+                }
+            }
 
-} // namespace lua
+            template < typename ... Types >
+            void set(type value, Types ... args) const
+            {
+                RUN_LOGGER(logger);
+
+                try
+                {
+                    Type_Adapter::set(m_state, m_index, value, args...);
+                }
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < entity_exception > (logger, exception);
+                }
+            }
+
+        private:
+
+            State m_state;
+            int   m_index;
+        };
+
+    } // namespace lua
+
+} // namespace detail
+
+#endif // #ifndef SOLUTION_PLUGIN_DETAIL_LUA_ENTITY_HPP
