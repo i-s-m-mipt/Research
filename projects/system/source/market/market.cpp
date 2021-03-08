@@ -435,12 +435,12 @@ namespace solution
 
 				deform_matrix[0][0] = dist_matrix[0][0];
 
-				for (auto i = U; i < size_scale_1; ++i)
+				for (auto i = 1U; i < size_scale_1; ++i)
 				{
 					deform_matrix[i][0] = dist_matrix[i][0];
 				}
 
-				for (auto j = U; j < size_scale_2; ++j)
+				for (auto j = 1U; j < size_scale_2; ++j)
 				{
 					deform_matrix[0][j] = dist_matrix[0][j];
 				}
@@ -451,7 +451,7 @@ namespace solution
 				{
 					for (auto j = 1; j < size_scale_2; ++j)
 					{
-						if (std::abs(i - j) < )
+						if (std::abs(i - j) < delta)
 						{
 							deform_matrix[i][j] = dist_matrix[i][j] + std::min(deform_matrix[i - 1][j],
 								std::min(deform_matrix[i - 1][j - 1], deform_matrix[i][j - 1]));
@@ -467,29 +467,42 @@ namespace solution
 				auto j = size_scale_2 - 1;
 
 				double path_deform = deform_matrix[i][j];
-
 				int K = 0;
 
-				while (i * j != 0)
-				{
-					path_deform += std::min(deform_matrix[i - 1][j],
-						std::min(deform_matrix[i - 1][j - 1], deform_matrix[i][j - 1]));
-					K += 1;
-				}
 				while (i + j != 0)
 				{
 					if (i == 0)
 					{
 						path_deform += deform_matrix[0][j];
-						K += 1;
 						--j;
+					}
+					else if (j == 0)
+					{
+						path_deform += deform_matrix[i][0];
+						--i;
 					}
 					else
 					{
-						path_deform += deform_matrix[i][0];
-						K += 1;
-						--i;
+						if (deform_matrix[i - 1][j - 1] > deform_matrix[i - 1][j] and
+							deform_matrix[i - 1][j - 1] > deform_matrix[i - 1][j])
+						{
+							path_deform += deform_matrix[i - 1][j - 1];
+							--i;
+							--j;
+						}
+						else if (deform_matrix[i][j - 1] > deform_matrix[i - 1][j - 1] and
+							deform_matrix[i][j - 1] > deform_matrix[i - 1][j])
+						{
+							path_deform += deform_matrix[i][j - 1];
+							--j;
+						}
+						else
+						{
+							path_deform += deform_matrix[i - 1][j];
+							--i;
+						}
 					}
+					++K;
 				}
 
 				return path_deform / K;
