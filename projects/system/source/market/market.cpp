@@ -398,7 +398,7 @@ namespace solution
 					{
 						for (auto j = 0U; j < std::size(m_scales); ++j)
 						{
-							m_self_similarities[asset][i][j] = ((i == j) ? 1.0 : // ?
+							m_self_similarities[asset][i][j] = ((i == j) ? 0.0 : // ?
 								compute_self_similarity(asset, m_scales[i], m_scales[j]));
 						}
 					}
@@ -427,27 +427,31 @@ namespace solution
 					for (auto j = 0U; j < size_scale_2; ++j)
 					{
 						dist_matrix[i][j] = std::pow(m_charts.at(asset).at(scale_1)[i].price_close - 
-							m_charts.at(asset).at(scale_1)[j].price_close, 2);
+							m_charts.at(asset).at(scale_1)[j].price_close, 2.0);
 					}
 				}
 
 				self_similarity_matrix_t deform_matrix(boost::extents[size_scale_1][size_scale_2]);
 
-				for (auto i = 0U; i < size_scale_1; ++i)
+				deform_matrix[0][0] = dist_matrix[0][0];
+
+				for (auto i = 1U; i < size_scale_1; ++i)
 				{
 					deform_matrix[i][0] = dist_matrix[i][0];
 				}
 
-				for (auto j = 0U; j < size_scale_2; ++j)
+				for (auto j = 1U; j < size_scale_2; ++j)
 				{
 					deform_matrix[0][j] = dist_matrix[0][j];
 				}
+
+				const auto delta = 10;
 
 				for (auto i = 1; i < size_scale_1; ++i)
 				{
 					for (auto j = 1; j < size_scale_2; ++j)
 					{
-						if (abs(i - j) < 10)
+						if (std::abs(i - j) < delta)
 						{
 							deform_matrix[i][j] = dist_matrix[i][j] + std::min(deform_matrix[i - 1][j],
 								std::min(deform_matrix[i - 1][j - 1], deform_matrix[i][j - 1]));
@@ -461,7 +465,9 @@ namespace solution
 
 				auto i = size_scale_1 - 1;
 				auto j = size_scale_2 - 1;
+
 				double path_deform = deform_matrix[i][j];
+
 				int K = 0;
 
 				while (i * j != 0)
