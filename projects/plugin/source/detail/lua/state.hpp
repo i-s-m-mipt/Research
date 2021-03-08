@@ -10,28 +10,37 @@
 #include <cstdarg>
 #include <cstddef>
 #include <exception>
-#include <functional>
-#include <iostream>
 #include <stdexcept>
 #include <string>
-#include <tuple>
-#include <type_traits>
 
 #include <lua.hpp>
 
 #include "declarations.hpp"
 #include "general.hpp"
 
+#include "../../../../shared/source/logger/logger.hpp"
+
 namespace detail
 {
     namespace lua
     {
-        class State
+        class state_exception : public std::exception
         {
         public:
 
-            using state_t = lua_State * ;
+            explicit state_exception(const std::string & message) noexcept :
+                std::exception(message.c_str())
+            {}
 
+            explicit state_exception(const char * const message) noexcept :
+                std::exception(message)
+            {}
+
+            ~state_exception() noexcept = default;
+        };
+
+        class State
+        {
         public:
 
             explicit State(state_t state = nullptr) :
@@ -618,24 +627,51 @@ namespace detail
                 pop();
             }
 
-        public: // special functions
+        public:
 
             template < typename T >
             auto at(int index) const
             {
-                return Entity < Type_Adapter < T > > (*this, index);
+                RUN_LOGGER(logger);
+
+                try
+                {
+                    return Entity < Type_Adapter < T > > (*this, index);
+                }
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < state_exception > (logger, exception);
+                }
             }
 
             template < typename T >
             auto top() const
             {
-                return at < T > (-1);
+                RUN_LOGGER(logger);
+
+                try
+                {
+                    return at < T > (-1);
+                }
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < state_exception > (logger, exception);
+                }
             }
 
             template < typename T >
             void push(T value) const
             {
-                at < T > (0) = value;
+                RUN_LOGGER(logger);
+
+                try
+                {
+                    at < T > (0).set(value);
+                }
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < state_exception > (logger, exception);
+                }
             }
 
         public:
@@ -643,33 +679,51 @@ namespace detail
             template < typename T, typename ... Types >
             auto call(const std::string & name, Types ... args) const
             {
-                get_global(name);
+                RUN_LOGGER(logger);
 
-                if constexpr (sizeof...(args) > 0)
+                try
                 {
-                    push_values(args...);
+                    get_global(name);
+
+                    if constexpr (sizeof...(args) > 0)
+                    {
+                        push_values(args...);
+                    }
+
+                    call(sizeof...(args), 1);
+
+                    auto result = top < T > ().get();
+
+                    pop();
+
+                    return result;
                 }
-
-                pcall(sizeof...(args), 1, 0);
-
-                auto result = top < T > ().get();
-
-                pop();
-
-                return result;
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < state_exception > (logger, exception);
+                }
             }
 
             template < std::size_t N, typename ... Types >
             void call(const std::string & name, Types ... args) const
             {
-                get_global(name);
+                RUN_LOGGER(logger);
 
-                if constexpr (sizeof...(args) > 0)
+                try
                 {
-                    push_values(args...);
-                }
+                    get_global(name);
 
-                pcall(sizeof...(args), N, 0);
+                    if constexpr (sizeof...(args) > 0)
+                    {
+                        push_values(args...);
+                    }
+
+                    call(sizeof...(args), N);
+                }
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < state_exception > (logger, exception);
+                }
             }
 
         private:
@@ -677,15 +731,33 @@ namespace detail
             template < typename T >
             void push_values(T value) const
             {
-                push(value);
+                RUN_LOGGER(logger);
+
+                try
+                {
+                    push(value);
+                }
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < state_exception > (logger, exception);
+                }
             }
 
             template < typename T, typename ... Types >
             void push_values(T value, Types ... values) const
             {
-                push(value);
+                RUN_LOGGER(logger);
 
-                push_values(values...);
+                try
+                {
+                    push(value);
+
+                    push_values(values...);
+                }
+                catch (const std::exception & exception)
+                {
+                    shared::catch_handler < state_exception > (logger, exception);
+                }
             }
 
         private:
