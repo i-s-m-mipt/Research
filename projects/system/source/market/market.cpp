@@ -435,12 +435,12 @@ namespace solution
 
 				deform_matrix[0][0] = dist_matrix[0][0];
 
-				for (auto i = 1U; i < size_scale_1; ++i)
+				for (auto i = U; i < size_scale_1; ++i)
 				{
 					deform_matrix[i][0] = dist_matrix[i][0];
 				}
 
-				for (auto j = 1U; j < size_scale_2; ++j)
+				for (auto j = U; j < size_scale_2; ++j)
 				{
 					deform_matrix[0][j] = dist_matrix[0][j];
 				}
@@ -451,7 +451,7 @@ namespace solution
 				{
 					for (auto j = 1; j < size_scale_2; ++j)
 					{
-						if (std::abs(i - j) < delta)
+						if (std::abs(i - j) < )
 						{
 							deform_matrix[i][j] = dist_matrix[i][j] + std::min(deform_matrix[i - 1][j],
 								std::min(deform_matrix[i - 1][j - 1], deform_matrix[i][j - 1]));
