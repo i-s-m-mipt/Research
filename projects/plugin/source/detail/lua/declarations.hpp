@@ -1,23 +1,26 @@
-#pragma once
+#ifndef SOLUTION_PLUGIN_DETAIL_LUA_DECLARATIONS_HPP
+#define SOLUTION_PLUGIN_DETAIL_LUA_DECLARATIONS_HPP
 
-#include <exception>
-#include <stdexcept>
-#include <string>
+#include <boost/config.hpp>
 
-namespace lua
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#  pragma once
+#endif // #ifdef BOOST_HAS_PRAGMA_ONCE
+
+namespace detail
 {
-	class State;
+	namespace lua
+	{
+		class State;
 
-	template < typename T >
-	class Entity;
+		template < typename T >
+		class Entity;
 
-	template < typename T >
-	struct Type_Adapter;
+		template < typename T >
+		struct Type_Adapter;
 
-	template < typename T >
-	class Element;
+	} // namespace lua
 
-	template < typename T >
-	class Vector;
+} // namespace detail
 
-} // namespace lua
+#endif // #ifndef SOLUTION_PLUGIN_DETAIL_LUA_DECLARATIONS_HPP
