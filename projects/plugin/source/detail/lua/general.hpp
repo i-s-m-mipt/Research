@@ -9,77 +9,85 @@
 
 #include <lua.hpp>
 
-namespace detail
+namespace solution
 {
-    namespace lua
+    namespace plugin
     {
-        enum class Type_Code
+        namespace detail
         {
-            none = -1,
-            nil,
-            boolean,
-            light_user_data,
-            number,
-            string,
-            table,
-            function,
-            user_data,
-            thread,
-            size
-        };
+            namespace lua
+            {
+                enum class Type_Code
+                {
+                    none = -1,
+                    nil,
+                    boolean,
+                    light_user_data,
+                    number,
+                    string,
+                    table,
+                    function,
+                    user_data,
+                    thread,
+                    size
+                };
 
-        enum class Operation_Code
-        {
-            add = 0,
-            sub,
-            mul,
-            mod,
-            pow,
-            div,
-            idiv,
-            band,
-            bor,
-            bxor,
-            shl,
-            shr,
-            unm,
-            bnot,
-            eq = 0,
-            lt,
-            le
-        };
+                enum class Operation_Code
+                {
+                    add = 0,
+                    sub,
+                    mul,
+                    mod,
+                    pow,
+                    div,
+                    idiv,
+                    band,
+                    bor,
+                    bxor,
+                    shl,
+                    shr,
+                    unm,
+                    bnot,
+                    eq = 0,
+                    lt,
+                    le
+                };
 
-        enum class Garbage_Collection_Code
-        {
-            stop = 0,
-            restart,
-            collect,
-            count,
-            countb,
-            step,
-            set_pause,
-            set_step_mul,
-            is_running = 9
-        };
+                enum class Garbage_Collection_Code
+                {
+                    stop = 0,
+                    restart,
+                    collect,
+                    count,
+                    countb,
+                    step,
+                    set_pause,
+                    set_step_mul,
+                    is_running = 9
+                };
 
-        using state_t = lua_State * ;
+                using state_t = lua_State * ;
 
-        using boolean_t   = int;
-        using pointer_t   = void * ;
-        using reference_t = int;
+                using boolean_t   = int;
+                using pointer_t   = void * ;
+                using reference_t = int;
 
-        using number_t    = lua_Number;
-        using integer_t   = lua_Integer;
-        using unsigned_t  = lua_Unsigned;
-        using function_t  = lua_CFunction;
-        using allocator_t = lua_Alloc;
-        using reader_t    = lua_Reader;
-        using writer_t    = lua_Writer;
+                using number_t    = lua_Number;
+                using integer_t   = lua_Integer;
+                using unsigned_t  = lua_Unsigned;
+                using function_t  = lua_CFunction;
+                using allocator_t = lua_Alloc;
+                using reader_t    = lua_Reader;
+                using writer_t    = lua_Writer;
 
-        using registration_t = luaL_Reg;
+                using registration_t = luaL_Reg;
 
-    } // namespace lua 
+            } // namespace lua 
 
-} // namespace detail
+        } // namespace detail
+
+    } // namespace plugin
+
+} // namespace solution
 
 #endif // #ifndef SOLUTION_PLUGIN_DETAIL_LUA_GENERAL_HPP
