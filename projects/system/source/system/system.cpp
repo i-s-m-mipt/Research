@@ -26,7 +26,7 @@ namespace solution
 
 			try
 			{
-				std::cout << m_market.self_similarities().at("GAZP")[0][0] << std::endl;
+				// ...
 			}
 			catch (const std::exception & exception)
 			{
