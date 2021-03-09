@@ -15,9 +15,6 @@
 
 #include <lua.hpp>
 
-#include "adapter.hpp"
-#include "general.hpp"
-
 #include "../../../../shared/source/logger/logger.hpp"
 
 namespace solution
@@ -43,11 +40,79 @@ namespace solution
                     ~state_exception() noexcept = default;
                 };
 
-                template < typename T >
-                class Entity;
-
                 class State
                 {
+                public:
+
+                    using state_t = lua_State * ;
+
+                    using boolean_t   = int;
+                    using pointer_t   = void * ;
+                    using reference_t = int;
+
+                    using number_t    = lua_Number;
+                    using integer_t   = lua_Integer;
+                    using unsigned_t  = lua_Unsigned;
+                    using function_t  = lua_CFunction;
+                    using allocator_t = lua_Alloc;
+                    using reader_t    = lua_Reader;
+                    using writer_t    = lua_Writer;
+
+                public:
+
+                    enum class Type_Code
+                    {
+                        none = -1,
+                        nil,
+                        boolean,
+                        light_user_data,
+                        number,
+                        string,
+                        table,
+                        function,
+                        user_data,
+                        thread,
+                        size
+                    };
+
+                public:
+
+                    enum class Operation_Code
+                    {
+                        add = 0,
+                        sub,
+                        mul,
+                        mod,
+                        pow,
+                        div,
+                        idiv,
+                        band,
+                        bor,
+                        bxor,
+                        shl,
+                        shr,
+                        unm,
+                        bnot,
+                        eq = 0,
+                        lt,
+                        le
+                    };
+
+                public:
+
+                    enum class Garbage_Collection_Code
+                    {
+                        stop = 0,
+                        restart,
+                        collect,
+                        count,
+                        countb,
+                        step,
+                        set_pause,
+                        set_step_mul,
+                        is_running = 9
+                    };
+
                 public:
 
                     explicit State(state_t state = nullptr) :
@@ -107,9 +172,9 @@ namespace solution
                         lua_settop(m_state, index);
                     }
 
-                    void pop(int n = 1) const
+                    void pop(int size = 1) const
                     {
-                        set_top(-1 * n - 1);
+                        set_top(-1 * size - 1);
                     }
 
                     void push_value(int index) const
@@ -139,91 +204,91 @@ namespace solution
 
                 public: // access functions
 
-                    auto is_number(int index) const
+                    auto is_number(int index = -1) const
                     {
                         return lua_isnumber(m_state, index);
                     }
 
-                    auto is_string(int index) const
+                    auto is_string(int index = -1) const
                     {
                         return lua_isstring(m_state, index);
                     }
 
-                    auto is_cfunction(int index) const
+                    auto is_cfunction(int index = -1) const
                     {
                         return lua_iscfunction(m_state, index);
                     }
 
-                    auto is_integer(int index) const
+                    auto is_integer(int index = -1) const
                     {
                         return lua_isinteger(m_state, index);
                     }
 
-                    auto is_user_data(int index) const
+                    auto is_user_data(int index = -1) const
                     {
                         return lua_isuserdata(m_state, index);
                     }
 
-                    auto type_code(int index) const
+                    auto type_code(int index = -1) const
                     {
                         return lua_type(m_state, index);
                     }
 
-                    auto type_name(int index) const
+                    auto type_name(int index = -1) const
                     {
                         return lua_typename(m_state, type_code(index));
                     }
 
-                    auto to_number(int index) const
+                    auto to_number(int index = -1) const
                     {
                         return lua_tonumberx(m_state, index, nullptr);
                     }
 
-                    auto to_integer(int index) const
+                    auto to_integer(int index = -1) const
                     {
                         return lua_tointegerx(m_state, index, nullptr);
                     }
 
-                    auto to_boolean(int index) const
+                    auto to_boolean(int index = -1) const
                     {
-                        return lua_toboolean(m_state, index);
+                        return static_cast < bool > (lua_toboolean(m_state, index));
                     }
 
-                    auto to_string(int index) const
+                    auto to_string(int index = -1) const
                     {
-                        return lua_tolstring(m_state, index, nullptr);
+                        return std::string(lua_tolstring(m_state, index, nullptr));
                     }
 
-                    auto raw_length(int index) const
+                    auto raw_length(int index = -1) const
                     {
                         return lua_rawlen(m_state, index);
                     }
 
-                    auto to_function(int index) const
+                    auto to_function(int index = -1) const
                     {
                         return lua_tocfunction(m_state, index);
                     }
 
-                    auto to_user_data(int index) const
+                    auto to_user_data(int index = -1) const
                     {
                         return lua_touserdata(m_state, index);
                     }
 
-                    auto to_thread(int index) const
+                    auto to_thread(int index = -1) const
                     {
                         return lua_tothread(m_state, index);
                     }
 
-                    auto to_pointer(int index) const
+                    auto to_pointer(int index = -1) const
                     {
-                        return (pointer_t)lua_topointer(m_state, index); // ?
+                        return lua_topointer(m_state, index);
                     }
 
                 public: // arithmetic functions
 
                     void apply_operation(Operation_Code operation_code) const
                     {
-                        lua_arith(m_state, static_cast <int> (operation_code));
+                        lua_arith(m_state, static_cast < int > (operation_code));
                     }
 
                     auto raw_equal(int index_lhs, int index_rhs) const
@@ -233,7 +298,7 @@ namespace solution
 
                     auto compare(int index_lhs, int index_rhs, Operation_Code operation_code) const
                     {
-                        return lua_compare(m_state, index_lhs, index_rhs, static_cast <int> (operation_code));
+                        return lua_compare(m_state, index_lhs, index_rhs, static_cast < int > (operation_code));
                     }
 
                 public: // push functions
@@ -296,9 +361,9 @@ namespace solution
                         push_closure(function, 0);
                     }
 
-                    void push_boolean(int boolean) const
+                    void push_boolean(bool boolean) const
                     {
-                        lua_pushboolean(m_state, boolean);
+                        lua_pushboolean(m_state, static_cast < int > (boolean));
                     }
 
                     void push_light_user_data(void * data) const
@@ -328,7 +393,7 @@ namespace solution
                         return get_global(name.c_str());
                     }
 
-                    auto get_table(int index) const
+                    auto get_table(int index = -2) const
                     {
                         return lua_gettable(m_state, index);
                     }
@@ -348,7 +413,7 @@ namespace solution
                         return lua_geti(m_state, index, position);
                     }
 
-                    auto raw_get(int index) const
+                    auto raw_get(int index = -2) const
                     {
                         return lua_rawget(m_state, index);
                     }
@@ -400,7 +465,7 @@ namespace solution
                         set_global(name.c_str());
                     }
 
-                    void set_table(int index) const
+                    void set_table(int index = -3) const
                     {
                         lua_settable(m_state, index);
                     }
@@ -420,7 +485,7 @@ namespace solution
                         lua_seti(m_state, index, position);
                     }
 
-                    void raw_set(int index) const
+                    void raw_set(int index = -3) const
                     {
                         lua_rawset(m_state, index);
                     }
@@ -447,12 +512,12 @@ namespace solution
 
                 public: // load and call functions
 
-                    auto call(int n_arguments, int n_results) const
+                    auto call(int n_arguments, int n_results = 1) const
                     {
                         return lua_callk(m_state, n_arguments, n_results, 0, nullptr);
                     }
 
-                    auto pcall(int n_arguments, int n_results, int error_code) const
+                    auto pcall(int n_arguments, int n_results = 1, int error_code = 0) const
                     {
                         return lua_pcallk(m_state, n_arguments, n_results, error_code, 0, nullptr);
                     }
@@ -469,7 +534,7 @@ namespace solution
 
                 public: // coroutine functions
 
-                    auto yield(int n_results) const
+                    auto yield(int n_results = -1) const
                     {
                         return lua_yieldk(m_state, n_results, 0, nullptr);
                     }
@@ -547,68 +612,68 @@ namespace solution
                         set_global(name);
                     }
 
-                    auto is_none(int index) const
+                    auto is_none(int index = -1) const
                     {
-                        return (type_code(index) == static_cast <int> (Type_Code::none));
+                        return (type_code(index) == static_cast < int > (Type_Code::none));
                     }
 
-                    auto is_nil(int index) const
+                    auto is_nil(int index = -1) const
                     {
-                        return (type_code(index) == static_cast <int> (Type_Code::nil));
+                        return (type_code(index) == static_cast < int > (Type_Code::nil));
                     }
 
-                    auto is_boolean(int index) const
+                    auto is_boolean(int index = -1) const
                     {
-                        return (type_code(index) == static_cast <int> (Type_Code::boolean));
+                        return (type_code(index) == static_cast < int > (Type_Code::boolean));
                     }
 
-                    auto is_light_user_data(int index) const
+                    auto is_light_user_data(int index = -1) const
                     {
-                        return (type_code(index) == static_cast <int> (Type_Code::light_user_data));
+                        return (type_code(index) == static_cast < int > (Type_Code::light_user_data));
                     }
 
                     /*
-                    auto is_number(int index) const
+                    auto is_number(int index = -1) const
                     {
                         return (type_code(index) == static_cast < int > (Type_Code::number));
                     }
                     */
 
                     /*
-                    auto is_string(int index) const
+                    auto is_string(int index = -1) const
                     {
                         return (type_code(index) == static_cast < int > (Type_Code::string));
                     }
                     */
 
-                    auto is_table(int index) const
+                    auto is_table(int index = -1) const
                     {
-                        return (type_code(index) == static_cast <int> (Type_Code::table));
+                        return (type_code(index) == static_cast < int > (Type_Code::table));
                     }
 
-                    auto is_function(int index) const
+                    auto is_function(int index = -1) const
                     {
-                        return (type_code(index) == static_cast <int> (Type_Code::function));
+                        return (type_code(index) == static_cast < int > (Type_Code::function));
                     }
 
                     /*
-                    auto is_user_data(int index) const
+                    auto is_user_data(int index = -1) const
                     {
                         return (type_code(index) == static_cast < int > (Type_Code::user_data));
                     }
                     */
 
-                    auto is_thread(int index) const
+                    auto is_thread(int index = -1) const
                     {
-                        return (type_code(index) == static_cast <int> (Type_Code::thread));
+                        return (type_code(index) == static_cast < int > (Type_Code::thread));
                     }
 
-                    auto is_none_or_nil(int index) const
+                    auto is_none_or_nil(int index = -1) const
                     {
                         return (is_none(index) || is_nil(index));
                     }
 
-                    auto is_pointer(int index) const
+                    auto is_pointer(int index = -1) const
                     {
                         return (
                             is_light_user_data(index) || is_function(index) ||
@@ -632,139 +697,6 @@ namespace solution
                         copy(-1, index);
 
                         pop();
-                    }
-
-                public:
-
-                    template < typename T >
-                    auto at(int index) const
-                    {
-                        RUN_LOGGER(logger);
-
-                        try
-                        {
-                            return Entity < Adapter < T > > (*this, index);
-                        }
-                        catch (const std::exception & exception)
-                        {
-                            shared::catch_handler < state_exception > (logger, exception);
-                        }
-                    }
-
-                    template < typename T >
-                    auto top() const
-                    {
-                        RUN_LOGGER(logger);
-
-                        try
-                        {
-                            return at < T > (-1);
-                        }
-                        catch (const std::exception & exception)
-                        {
-                            shared::catch_handler < state_exception > (logger, exception);
-                        }
-                    }
-
-                    template < typename T >
-                    void push(T value) const
-                    {
-                        RUN_LOGGER(logger);
-
-                        try
-                        {
-                            at < T > (0).set(value);
-                        }
-                        catch (const std::exception & exception)
-                        {
-                            shared::catch_handler < state_exception > (logger, exception);
-                        }
-                    }
-
-                public:
-
-                    template < typename T, typename ... Types >
-                    auto call(const std::string & name, Types ... args) const
-                    {
-                        RUN_LOGGER(logger);
-
-                        try
-                        {
-                            get_global(name);
-
-                            if constexpr (sizeof...(args) > 0)
-                            {
-                                push_values(args...);
-                            }
-
-                            call(sizeof...(args), 1);
-
-                            auto result = top < T > ().get();
-
-                            pop();
-
-                            return result;
-                        }
-                        catch (const std::exception & exception)
-                        {
-                            shared::catch_handler < state_exception > (logger, exception);
-                        }
-                    }
-
-                    template < std::size_t N, typename ... Types >
-                    void call(const std::string & name, Types ... args) const
-                    {
-                        RUN_LOGGER(logger);
-
-                        try
-                        {
-                            get_global(name);
-
-                            if constexpr (sizeof...(args) > 0)
-                            {
-                                push_values(args...);
-                            }
-
-                            call(sizeof...(args), N);
-                        }
-                        catch (const std::exception & exception)
-                        {
-                            shared::catch_handler < state_exception > (logger, exception);
-                        }
-                    }
-
-                private:
-
-                    template < typename T >
-                    void push_values(T value) const
-                    {
-                        RUN_LOGGER(logger);
-
-                        try
-                        {
-                            push(value);
-                        }
-                        catch (const std::exception & exception)
-                        {
-                            shared::catch_handler < state_exception > (logger, exception);
-                        }
-                    }
-
-                    template < typename T, typename ... Types >
-                    void push_values(T value, Types ... values) const
-                    {
-                        RUN_LOGGER(logger);
-
-                        try
-                        {
-                            push(value);
-
-                            push_values(values...);
-                        }
-                        catch (const std::exception & exception)
-                        {
-                            shared::catch_handler < state_exception > (logger, exception);
-                        }
                     }
 
                 private:
