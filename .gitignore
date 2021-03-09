@@ -343,7 +343,11 @@ service/
 /__pycache__
 *.csv
 *.exe
+*.data
+*.json
+!scales.data
+!assets.data
+!config.json
 plugin.exp
 plugin.lib
 plugin.dll
-/market/output
