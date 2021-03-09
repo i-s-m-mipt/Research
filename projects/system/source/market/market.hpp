@@ -150,38 +150,38 @@ namespace solution
 			{
 			public:
 
-				using date_t = unsigned int;
-				using time_t = unsigned int;
-
-				using price_t = double;
-
-				using volume_t = double;
+				using raw_date_t = unsigned int;
+				using raw_time_t = unsigned int;
 
 			public:
 
 				struct Date_Time
 				{
-					date_t year   = 0U;
-					date_t month  = 0U;
-					date_t day    = 0U;
+					unsigned int year   = 0U;
+					unsigned int month  = 0U;
+					unsigned int day    = 0U;
 
-					time_t hour   = 0U;
-					time_t minute = 0U;
-					time_t second = 0U;
+					unsigned int hour   = 0U;
+					unsigned int minute = 0U;
+					unsigned int second = 0U;
 				};
 
 			public:
 
 				using date_time_t = Date_Time;
 
+				using price_t = double;
+
+				using volume_t = unsigned long long;
+
 			public:
 
 				void update_date_time() noexcept;
 
-			public: // internal
+			public:
 
-				date_t date = 0U;
-				time_t time = 0U;
+				raw_date_t raw_date = 0U;
+				raw_time_t raw_time = 0U;
 
 			public:
 
@@ -192,7 +192,7 @@ namespace solution
 				price_t price_low   = 0.0;
 				price_t price_close = 0.0;
 
-				volume_t volume = 0.0;
+				volume_t volume = 0ULL;
 			};
 
 		private:
@@ -213,13 +213,13 @@ namespace solution
 					static const auto separator = ',';
 
 					start %=
-						boost::spirit::qi::int_    >> separator >> // Date
-						boost::spirit::qi::int_    >> separator >> // Time
+						boost::spirit::qi::uint_   >> separator >> // Date
+						boost::spirit::qi::uint_   >> separator >> // Time
 						boost::spirit::qi::double_ >> separator >> // Open
 						boost::spirit::qi::double_ >> separator >> // High
 						boost::spirit::qi::double_ >> separator >> // Low
 						boost::spirit::qi::double_ >> separator >> // Close
-						boost::spirit::qi::double_;                // Volume
+						boost::spirit::qi::ulong_long;             // Volume
 				}
 
 				~Candle_Parser() noexcept = default;
@@ -270,7 +270,7 @@ namespace solution
 
 			candles_container_t load_candles(const path_t & path) const;
 
-			Candle parse(const std::string & s) const;
+			Candle parse(const std::string & line) const;
 
 		public:
 
@@ -334,13 +334,13 @@ namespace solution
 BOOST_FUSION_ADAPT_STRUCT
 (
 	 solution::system::Market::Candle,
-	(solution::system::Market::Candle::date_t,   date)
-	(solution::system::Market::Candle::time_t,   time)
-	(solution::system::Market::Candle::price_t,  price_open)
-	(solution::system::Market::Candle::price_t,  price_high)
-	(solution::system::Market::Candle::price_t,  price_low)
-	(solution::system::Market::Candle::price_t,  price_close)
-	(solution::system::Market::Candle::volume_t, volume)
+	(solution::system::Market::Candle::raw_date_t, raw_date)
+	(solution::system::Market::Candle::raw_time_t, raw_time)
+	(solution::system::Market::Candle::price_t,    price_open)
+	(solution::system::Market::Candle::price_t,    price_high)
+	(solution::system::Market::Candle::price_t,    price_low)
+	(solution::system::Market::Candle::price_t,    price_close)
+	(solution::system::Market::Candle::volume_t,   volume)
 )
 
 #endif // #ifndef SOLUTION_SYSTEM_MARKET_HPP
