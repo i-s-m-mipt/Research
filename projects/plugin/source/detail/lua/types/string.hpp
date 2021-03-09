@@ -1,121 +1,109 @@
-#pragma once
+#ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_STRING_HPP
+#define SOLUTION_PLUGIN_DETAIL_LUA_TYPES_STRING_HPP
+
+#include <boost/config.hpp>
+
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#  pragma once
+#endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 
 #include "../declarations.hpp"
 #include "../general.hpp"
 
-namespace lua 
+#include "../../../../../shared/source/logger/logger.hpp"
+
+namespace solution
 {
-    namespace types 
+    namespace plugin
     {
-        template < typename T >
-        class String_C 
+        namespace detail
         {
-        public:
-
-            using type = T;
-
-        public:
-
-            static auto type_matches(State state, int index) 
+            namespace lua
             {
-                return state.is_string(index);
-            }
-
-            static auto get(State state, int index) 
-            {
-                return state.to_string(index);
-            }
-
-            static void set(State state, int index, T value) 
-            {
-                state.push_string(value);
-
-                if (index != 0)
+                namespace types
                 {
-                    state.replace(index - 1);
-                }
-            }
+                    class string_exception : public std::exception
+                    {
+                    public:
 
-            template < typename F >
-            static void apply(State state, int index, F function)
-            {
-                function(state, index);
-            }
-        };
+                        explicit string_exception(const std::string & message) noexcept :
+                            std::exception(message.c_str())
+                        {}
 
-        class String
-        {
-        public:
+                        explicit string_exception(const char * const message) noexcept :
+                            std::exception(message)
+                        {}
 
-            using type = std::string;
+                        ~string_exception() noexcept = default;
+                    };
 
-        public:
+                    class String
+                    {
+                    public:
 
-            static auto type_matches(State state, int index) 
-            {
-                return state.is_string(index);
-            }
+                        using type = std::string;
 
-            static auto get(State state, int index) 
-            {
-                auto string = state.to_string(index);
+                    public:
 
-                if (string == nullptr)
-                {
-                    return std::string(); // ?
-                }
-                else
-                {
-                    return std::string(string);
-                }
-            }
+                        static auto get(State state, int index)
+                        {
+                            RUN_LOGGER(logger);
 
-            static void set(State state, int index, std::string value)
-            {
-                state.push_string(value.c_str());
+                            try
+                            {
+                                auto string = state.to_string(index);
 
-                if (index != 0)
-                {
-                    state.replace(index - 1);
-                }
-            }
+                                if (string == nullptr)
+                                {
+                                    return type(); // ?
+                                }
+                                else
+                                {
+                                    return type(string);
+                                }
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < string_exception > (logger, exception);
+                            }
+                        }
 
-            template < typename F >
-            static void apply(State state, int index, F function)
-            {
-                function(state, index);
-            }
-        };
+                        static void set(State state, int index, type value)
+                        {
+                            RUN_LOGGER(logger);
 
-    } // namespace types 
+                            try
+                            {
+                                state.push_string(value);
 
-    template <>
-    struct Type_Adapter< char * > : public types::String_C < char * > 
-    {};
+                                if (index != 0)
+                                {
+                                    state.replace(index - 1);
+                                }
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < string_exception > (logger, exception);
+                            }
+                        }
+                    };
 
-    template <>
-    struct Type_Adapter < const char * > : public types::String_C < const char * > 
-    {};
+                } // namespace types 
 
-    template < std::size_t N >
-    struct Type_Adapter < char[N] > : public types::String_C < char * > 
-    {};
+                template <>
+                struct Type_Adapter < std::string > : public types::String
+                {};
 
-    template < std::size_t N >
-    struct Type_Adapter < const char[N] > : public types::String_C < char * > 
-    {};
+            } // namespace lua
 
-    template < std::size_t N >
-    struct Type_Adapter < const char(&)[N] > : public types::String_C < const char * > 
-    {};
+        } // namespace detail
 
-    template <>
-    struct Type_Adapter < std::string > : public types::String
-    {};
+    } // namespace plugin
 
-} // namespace lua
+} // namespace solution
+
+#endif // #ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_STRING_HPP

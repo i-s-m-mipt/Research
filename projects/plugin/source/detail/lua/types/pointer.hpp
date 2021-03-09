@@ -1,61 +1,103 @@
-#pragma once
+#ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_POINTER_HPP
+#define SOLUTION_PLUGIN_DETAIL_LUA_TYPES_POINTER_HPP
+
+#include <boost/config.hpp>
+
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#  pragma once
+#endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 
 #include "../declarations.hpp"
 #include "../general.hpp"
 
-namespace lua 
+namespace solution
 {
-    namespace types 
+    namespace plugin
     {
-        template < typename T >
-        class Pointer 
+        namespace detail
         {
-        public:
-
-            using type = T;
-
-        public:
-
-            static auto type_matches(State state, int index) 
+            namespace lua
             {
-                return state.is_pointer(index);
-            }
-
-            static auto get(State state, int index)
-            {
-                return state.to_pointer(index); // TODO
-            }
-
-            static void set(State state, int index, T value)
-            {
-                state.push_pointer(value);
-
-                if (index != 0)
+                namespace types
                 {
-                    state.replace(index - 1);
-                }
-            }
+                    class pointer_exception : public std::exception
+                    {
+                    public:
 
-            template < typename F >
-            static void apply(State state, int index, F function)
-            {
-                function(state, index);
-            }
-        };
+                        explicit pointer_exception(const std::string & message) noexcept :
+                            std::exception(message.c_str())
+                        {}
 
-    } // namespace types
+                        explicit pointer_exception(const char * const message) noexcept :
+                            std::exception(message)
+                        {}
 
-    template <>
-    struct Type_Adapter < void * > : public types::Pointer < void * >
-    {};
+                        ~pointer_exception() noexcept = default;
+                    };
 
-    template <>
-    struct Type_Adapter < const void * > : public types::Pointer < const void * >
-    {};
+                    template < typename T >
+                    class Pointer
+                    {
+                    public:
 
-} // namespace lua
+                        using type = T;
+
+                    public:
+
+                        static auto get(State state, int index)
+                        {
+                            RUN_LOGGER(logger);
+
+                            try
+                            {
+                                return state.to_pointer(index);
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < pointer_exception > (logger, exception);
+                            }
+                        }
+
+                        static void set(State state, int index, type value)
+                        {
+                            RUN_LOGGER(logger);
+
+                            try
+                            {
+                                state.push_pointer(value);
+
+                                if (index != 0)
+                                {
+                                    state.replace(index - 1);
+                                }
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < pointer_exception > (logger, exception);
+                            }
+                        }
+                    };
+
+                } // namespace types
+
+                template <>
+                struct Type_Adapter < void * > : public types::Pointer < void * >
+                {};
+
+                template <>
+                struct Type_Adapter < const void * > : public types::Pointer < const void * >
+                {};
+
+            } // namespace lua
+
+        } // namespace detail
+
+    } // namespace plugin
+
+} // namespace solution
+
+#endif // #ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_POINTER_HPP

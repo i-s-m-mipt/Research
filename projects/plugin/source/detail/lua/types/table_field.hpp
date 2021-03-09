@@ -1,89 +1,120 @@
-#pragma once
+#ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_TABLE_FIELD_HPP
+#define SOLUTION_PLUGIN_DETAIL_LUA_TYPES_TABLE_FIELD_HPP
+
+#include <boost/config.hpp>
+
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#  pragma once
+#endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 
 #include "../declarations.hpp"
 #include "../general.hpp"
 
-namespace lua 
+#include "../../../../../shared/source/logger/logger.hpp"
+
+namespace solution
 {
-    namespace types 
+    namespace plugin
     {
-        template < typename K, typename V >
-        class Table_Field 
+        namespace detail
         {
-        public:
-
-            using type = V;
-
-            using key_t   = K;
-            using value_t = V;
-
-        public:
-
-            static auto type_matches(State state, int index) 
+            namespace lua
             {
-                return state.is_table(index);
-            }
-
-            static auto get(State state, int index, key_t key)
-            {
-                state.push(key);
-
-                if (index <= 0)
+                namespace types
                 {
-                    state.get_table(index - 1);
-                } 
-                else
-                {
-                    state.get_table(index);
-                }
-                    
-                auto result = Entity < Type_Adapter < value_t > > (state, -1).get();
+                    class table_field_exception: public std::exception
+                    {
+                    public:
 
-                state.pop();
+                        explicit table_field_exception(const std::string & message) noexcept :
+                            std::exception(message.c_str())
+                        {}
 
-                return result;
-            }
+                        explicit table_field_exception(const char * const message) noexcept :
+                            std::exception(message)
+                        {}
 
-            static void set(State state, int index, value_t value, key_t key)
-            {
-                state.push(key);
-                state.push(value);
+                        ~table_field_exception() noexcept = default;
+                    };
 
-                if (index <= 0)
-                {
-                    state.set_table(index - 2);
-                }
-                else
-                {
-                    state.set_table(index);
-                }
-            }
+                    template < typename K, typename V >
+                    class Table_Field
+                    {
+                    public:
 
-            template < typename F >
-            static void apply(State state, int index, F function, key_t key)
-            {
-                state.push(key);
+                        using type = V;
 
-                if (index <= 0)
-                {
-                    state.get_table(index - 1);
-                }
-                else
-                {
-                    state.get_table(index);
-                }
-                    
-                function(state, index);
+                        using key_t   = K;
+                        using value_t = V;
 
-                state.pop();
-            }
-        };
+                    public:
 
-    } // namespace types
+                        static auto get(State state, int index, key_t key)
+                        {
+                            RUN_LOGGER(logger);
 
-} // namespace lua
+                            try
+                            {
+                                state.push(key);
+
+                                if (index <= 0)
+                                {
+                                    state.get_table(index - 1);
+                                }
+                                else
+                                {
+                                    state.get_table(index);
+                                }
+
+                                auto result = Entity < Type_Adapter < value_t > > (state, -1).get();
+
+                                state.pop();
+
+                                return result;
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < table_field_exception > (logger, exception);
+                            }
+                        }
+
+                        static void set(State state, int index, value_t value, key_t key)
+                        {
+                            RUN_LOGGER(logger);
+
+                            try
+                            {
+                                state.push(key);
+                                state.push(value);
+
+                                if (index <= 0)
+                                {
+                                    state.set_table(index - 2);
+                                }
+                                else
+                                {
+                                    state.set_table(index);
+                                }
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < table_field_exception > (logger, exception);
+                            }
+                        }
+                    };
+
+                } // namespace types
+
+            } // namespace lua
+
+        } // namespace detail
+
+    } // namespace plugin
+
+} // namespace solution
+
+#endif // #ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_TABLE_FIELD_HPP

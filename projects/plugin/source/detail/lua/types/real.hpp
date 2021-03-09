@@ -1,61 +1,105 @@
-#pragma once
+#ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_REAL_HPP
+#define SOLUTION_PLUGIN_DETAIL_LUA_TYPES_REAL_HPP
+
+#include <boost/config.hpp>
+
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#  pragma once
+#endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 
 #include "../declarations.hpp"
 #include "../general.hpp"
 
-namespace lua 
+#include "../../../../../shared/source/logger/logger.hpp"
+
+namespace solution
 {
-    namespace types 
+    namespace plugin
     {
-        template < typename T >
-        class Real 
+        namespace detail
         {
-        public:
-
-            using type = T;
-
-        public:
-
-            static auto type_matches(State state, int index) 
+            namespace lua
             {
-                return state.is_number(index);
-            }
-
-            static auto get(State state, int index)
-            {
-                return static_cast < T > (state.to_number(index));
-            }
-
-            static void set(State state, int index, T value)
-            {
-                state.push_number(static_cast < number_t > (value));
-
-                if (index != 0)
+                namespace types
                 {
-                    state.replace(index - 1);
-                }
-            }
+                    class real_exception : public std::exception
+                    {
+                    public:
 
-            template < typename F >
-            static void apply(State state, int index, F function)
-            {
-                function(state, index);
-            }
-        };
+                        explicit real_exception(const std::string & message) noexcept :
+                            std::exception(message.c_str())
+                        {}
 
-    } // namespace types
+                        explicit real_exception(const char * const message) noexcept :
+                            std::exception(message)
+                        {}
 
-    template <>
-    struct Type_Adapter < float > : public types::Real < float >
-    {};
+                        ~real_exception() noexcept = default;
+                    };
 
-    template <>
-    struct Type_Adapter < double > : public types::Real < double >
-    {};
+                    template < typename T >
+                    class Real
+                    {
+                    public:
 
-} // namespace lua
+                        using type = T;
+
+                    public:
+
+                        static auto get(State state, int index)
+                        {
+                            RUN_LOGGER(logger);
+
+                            try
+                            {
+                                return static_cast < type > (state.to_number(index));
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < real_exception > (logger, exception);
+                            }
+                        }
+
+                        static void set(State state, int index, type value)
+                        {
+                            RUN_LOGGER(logger);
+
+                            try
+                            {
+                                state.push_number(static_cast <number_t> (value));
+
+                                if (index != 0)
+                                {
+                                    state.replace(index - 1);
+                                }
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < real_exception > (logger, exception);
+                            }
+                        }
+                    };
+
+                } // namespace types
+
+                template <>
+                struct Type_Adapter < float > : public types::Real < float >
+                {};
+
+                template <>
+                struct Type_Adapter < double > : public types::Real < double >
+                {};
+
+            } // namespace lua
+
+        } // namespace detail
+
+    } // namespace plugin
+
+} // namespace solution
+
+#endif // #ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_REAL_HPP

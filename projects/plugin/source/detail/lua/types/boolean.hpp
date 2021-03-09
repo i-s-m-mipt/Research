@@ -1,56 +1,98 @@
-#pragma once
+#ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_BOOLEAN_HPP
+#define SOLUTION_PLUGIN_DETAIL_LUA_TYPES_BOOLEAN_HPP
+
+#include <boost/config.hpp>
+
+#ifdef BOOST_HAS_PRAGMA_ONCE
+#  pragma once
+#endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 
 #include "../declarations.hpp"
 #include "../general.hpp"
 
-namespace lua
+namespace solution
 {
-    namespace types
+    namespace plugin
     {
-        class Boolean 
+        namespace detail
         {
-        public:
-
-            using type = bool;
-
-        public:
-
-            static auto type_matches(State state, int index) 
+            namespace lua
             {
-                return state.is_boolean(index);
-            }
-
-            static auto get(State state, int index)
-            {
-                return static_cast < bool > (state.to_boolean(index));
-            }
-
-            static void set(State state, int index, bool value)
-            {
-                state.push_boolean(static_cast < boolean_t > (value));
-
-                if (index != 0)
+                namespace types
                 {
-                    state.replace(index - 1);
-                }
-            }
+                    class boolean_exception : public std::exception
+                    {
+                    public:
 
-            template < typename F >
-            static void apply(State state, int index, F function)
-            {
-                function(state, index);
-            }
-        };
+                        explicit boolean_exception(const std::string & message) noexcept :
+                            std::exception(message.c_str())
+                        {}
 
-    } // namespace types
+                        explicit boolean_exception(const char * const message) noexcept :
+                            std::exception(message)
+                        {}
 
-    template <>
-    struct Type_Adapter < bool > : public types::Boolean
-    {};
+                        ~boolean_exception() noexcept = default;
+                    };
 
-} // namespace lua
+                    class Boolean
+                    {
+                    public:
+
+                        using type = bool;
+
+                    public:
+
+                        static auto get(State state, int index)
+                        {
+                            RUN_LOGGER(logger);
+
+                            try
+                            {
+                                return static_cast < type > (state.to_boolean(index));
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < boolean_exception > (logger, exception);
+                            }
+                        }
+
+                        static void set(State state, int index, type value)
+                        {
+                            RUN_LOGGER(logger);
+
+                            try
+                            {
+                                state.push_boolean(static_cast < boolean_t > (value));
+
+                                if (index != 0)
+                                {
+                                    state.replace(index - 1);
+                                }
+                            }
+                            catch (const std::exception & exception)
+                            {
+                                shared::catch_handler < boolean_exception > (logger, exception);
+                            }
+                        }
+                    };
+
+                } // namespace types
+
+                template <>
+                struct Type_Adapter < bool > : public types::Boolean
+                {};
+
+            } // namespace lua
+
+        } // namespace detail
+
+    } // namespace plugin
+
+} // namespace solution
+
+#endif // #ifndef SOLUTION_PLUGIN_DETAIL_LUA_TYPES_BOOLEAN_HPP
