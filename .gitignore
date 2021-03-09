@@ -346,4 +346,4 @@ service/
 plugin.exp
 plugin.lib
 plugin.dll
-market/output/
+/market/output
