@@ -7,8 +7,10 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
+#include <cmath>
 #include <exception>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -51,7 +53,7 @@ namespace solution
 			{
 			private:
 
-				using scale_constant_t = unsigned int;
+				using reference_t = detail::lua::State::reference_t;
 
 				using shared_memory_t = boost::interprocess::managed_shared_memory;
 
@@ -157,8 +159,6 @@ namespace solution
 
 			private:
 
-				scale_constant_t get_scale_constant() const;
-
 				std::string make_shared_memory_name() const;
 
 			public:
@@ -230,11 +230,17 @@ namespace solution
 
 				std::size_t lot_size() const;
 
+				Candle::price_t last_price() const;
+
+				std::size_t lots_per_transaction() const;
+
 			private:
 
 				static inline const std::string references = "references";
 
 				static inline const std::size_t default_size = 100U;
+
+				static inline const double money_per_transaction = 50'000.0;
 
 			private:
 
@@ -248,7 +254,7 @@ namespace solution
 
 			private:
 
-				detail::lua::reference_t m_reference;
+				reference_t m_reference;
 
 				shared_memory_t m_shared_memory;
 

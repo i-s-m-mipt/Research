@@ -51,7 +51,7 @@ namespace solution
 				{
 					m_state.get_global(references);
 
-					if (m_state.is_nil(-1))
+					if (m_state.is_nil())
 					{
 						m_state.pop();
 
@@ -61,7 +61,14 @@ namespace solution
 						m_state.get_global(references);
 					}
 
-					m_state.call < 2 > ("CreateDataSource", m_class_code, m_asset_code, get_scale_constant());
+					m_state.get_global("CreateDataSource");
+
+					m_state.push_string(m_class_code);
+					m_state.push_string(m_asset_code);
+
+					m_state.get_global("INTERVAL_" + m_scale_code);
+
+					m_state.call(3, 2);
 
 					m_state.push_value(-2);
 
@@ -94,26 +101,6 @@ namespace solution
 
 					m_deque = m_shared_memory.construct < deque_t > (boost::interprocess::unique_instance) (allocator);
 					m_mutex = m_shared_memory.construct < mutex_t > (boost::interprocess::unique_instance) ();
-				}
-				catch (const std::exception & exception)
-				{
-					shared::catch_handler < source_exception > (logger, exception);
-				}
-			}
-
-			Source::scale_constant_t Source::get_scale_constant() const
-			{
-				RUN_LOGGER(logger);
-
-				try
-				{
-					m_state.get_global("INTERVAL_" + m_scale_code);
-
-					auto result = m_state.top < scale_constant_t > ().get();
-
-					m_state.pop();
-
-					return result;
 				}
 				catch (const std::exception & exception)
 				{
@@ -201,13 +188,13 @@ namespace solution
 					m_state.get_global(references);
 
 					m_state.push_number(m_reference);
-					m_state.raw_get(-2);
+					m_state.raw_get();
 					m_state.push_string("Size");
-					m_state.raw_get(-2);
+					m_state.raw_get();
 					m_state.push_value(-2);
-					m_state.call(1, 1);
+					m_state.call(1);
 
-					auto result = m_state.top < std::size_t > ().get();
+					auto result = static_cast < std::size_t > (m_state.to_integer());
 
 					m_state.pop(3);
 
@@ -332,13 +319,13 @@ namespace solution
 					m_state.get_global(references);
 
 					m_state.push_number(m_reference);
-					m_state.raw_get(-2);
+					m_state.raw_get();
 					m_state.push_string(name);
-					m_state.raw_get(-2);
+					m_state.raw_get();
 					m_state.push_value(-2);
 					m_state.push_number(index);
 
-					m_state.call(2, 1);
+					m_state.call(2);
 
 					Candle::variant_t result;
 
@@ -358,13 +345,13 @@ namespace solution
 					}
 					else
 					{
-						if (name == "V")
+						if (name != "V")
 						{
-							result = m_state.top < Candle::volume_t > ().get();
+							result = static_cast < Candle::price_t > (m_state.to_number());
 						}
 						else
 						{
-							result = m_state.top < Candle::price_t > ().get();
+							result = static_cast < Candle::volume_t > (m_state.to_integer());
 						}
 					}
 
@@ -384,11 +371,11 @@ namespace solution
 
 				try
 				{
-					m_state.push(key);
+					m_state.push_string(key);
 
-					m_state.get_table(-2);
+					m_state.get_table();
 
-					auto value = m_state.top < unsigned int > ().get();
+					auto value = static_cast < unsigned int > (m_state.to_integer());
 
 					m_state.pop();
 
@@ -449,20 +436,57 @@ namespace solution
 				{
 					m_state.get_global("getSecurityInfo");
 
-					m_state.push(m_class_code);
-					m_state.push(m_asset_code);
+					m_state.push_string(m_class_code);
+					m_state.push_string(m_asset_code);
 
-					m_state.call(2, 1);
+					m_state.call(2);
 
-					m_state.push(std::string("lot_size"));
+					m_state.push_string("lot_size");
 
-					m_state.get_table(-2);
+					m_state.get_table();
 
-					auto result = m_state.top < std::size_t > ().get();
+					auto result = static_cast < std::size_t > (m_state.to_integer());
 
 					m_state.pop(2);
 
 					return result;
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::Candle::price_t Source::last_price() const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					return make_candle(max_size()).price_close;
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			std::size_t Source::lots_per_transaction() const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					auto lot_price = lot_size() * last_price();
+
+					if (lot_price < std::numeric_limits < double > ::epsilon())
+					{
+						return 0U;
+					}
+					else
+					{
+						return (static_cast < std::size_t > (std::ceil(money_per_transaction / lot_price)));
+					}					
 				}
 				catch (const std::exception & exception)
 				{
