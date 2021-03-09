@@ -49,10 +49,6 @@ namespace solution
 
 			using Source = market::Source;
 
-		public:
-
-			using api_t = Source::api_t;
-
 		private:
 
 			using scales_container_t = std::vector < std::string > ;
@@ -151,9 +147,9 @@ namespace solution
 
 		public:
 
-			explicit Market(const api_t & api)
+			explicit Market(detail::lua::State state) : m_state(state)
 			{
-				initialize(api);
+				initialize();
 			}
 
 			~Market() noexcept
@@ -170,7 +166,7 @@ namespace solution
 
 		private:
 
-			void initialize(const api_t & api);
+			void initialize();
 
 			void uninitialize();
 
@@ -201,6 +197,10 @@ namespace solution
 			void run();
 
 			void stop();
+
+		private:
+
+			const detail::lua::State m_state;
 
 		private:
 

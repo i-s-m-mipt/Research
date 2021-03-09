@@ -120,7 +120,7 @@ namespace solution
 		}
 		*/
 
-		void Market::initialize(const api_t & api)
+		void Market::initialize()
 		{
 			RUN_LOGGER(logger);
 
@@ -133,7 +133,7 @@ namespace solution
 					for (const auto & scale : m_scales)
 					{
 						m_sources.push_back(std::make_shared < Source > (
-							api, asset.first, asset.second, scale));
+							m_state, asset.first, asset.second, scale));
 					}
 				}
 
