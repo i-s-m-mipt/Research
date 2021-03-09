@@ -341,13 +341,14 @@ healthchecksdb
 
 service/
 /__pycache__
-*.csv
 *.exe
+*.dll
+!python39.dll
+*.exp
+*.lib
+*.csv
 *.data
 *.json
 !scales.data
 !assets.data
 !config.json
-plugin.exp
-plugin.lib
-plugin.dll
