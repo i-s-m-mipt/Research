@@ -96,6 +96,8 @@ namespace solution
 
 					using volume_t = unsigned long long;
 
+					using variant_t = std::variant < date_time_t, price_t, volume_t > ;
+
 				public:
 
 					index_t index = 0U;
@@ -199,8 +201,6 @@ namespace solution
 
 				Candle make_candle(index_t index) const;
 
-				record_t make_record(const Candle & candle) const;
-
 			private:
 
 				Candle::Date_Time get_date_time(index_t index) const;
@@ -217,8 +217,19 @@ namespace solution
 
 			private:
 
-				std::variant < Candle::Date_Time, Candle::price_t, Candle::volume_t >
-					call(const std::string & name, index_t index) const;
+				Candle::variant_t call(const std::string & name, index_t index) const;
+
+			private:
+
+				unsigned int get_date_time_field(const std::string & key) const;
+
+			private:
+
+				record_t make_record(const Candle & candle) const;
+
+			public:
+
+				std::size_t lot_size() const;
 
 			private:
 

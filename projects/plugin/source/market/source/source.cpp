@@ -239,47 +239,6 @@ namespace solution
 				}
 			}
 
-			Source::record_t Source::make_record(const Candle & candle) const
-			{
-				RUN_LOGGER(logger);
-
-				try
-				{
-					std::stringstream date;
-					
-					date <<
-						std::setfill('0') << std::setw(4) << candle.date_time.year  <<
-						std::setfill('0') << std::setw(2) << candle.date_time.month <<
-						std::setfill('0') << std::setw(2) << candle.date_time.day;
-
-					std::stringstream time;
-
-					time <<
-						std::setfill('0') << std::setw(2) << candle.date_time.hour   <<
-						std::setfill('0') << std::setw(2) << candle.date_time.minute <<
-						std::setfill('0') << std::setw(2) << candle.date_time.second;
-
-					std::stringstream sout;
-
-					static const char delimeter = ',';
-
-					sout << std::setprecision(6) << std::fixed <<
-						date.str()         << delimeter <<
-						time.str()         << delimeter <<
-						candle.price_open  << delimeter <<
-						candle.price_high  << delimeter <<
-						candle.price_low   << delimeter <<
-						candle.price_close << delimeter <<
-						candle.volume;
-
-					return record_t(sout.str().c_str(), m_shared_memory.get_segment_manager());
-				}
-				catch (const std::exception & exception)
-				{
-					shared::catch_handler < source_exception > (logger, exception);
-				}
-			}
-
 			Source::Candle::Date_Time Source::get_date_time(index_t index) const
 			{
 				RUN_LOGGER(logger);
@@ -364,8 +323,7 @@ namespace solution
 				}
 			}
 
-			std::variant < Source::Candle::Date_Time, Source::Candle::price_t, Source::Candle::volume_t >
-				Source::call(const std::string & name, index_t index) const
+			Source::Candle::variant_t Source::call(const std::string & name, index_t index) const
 			{
 				RUN_LOGGER(logger);
 
@@ -382,39 +340,129 @@ namespace solution
 
 					m_state.call(2, 1);
 
+					Candle::variant_t result;
+
 					if (name == "T")
 					{
-						//auto table = m_state.top < detail::lua::tables::Chart_Time > ().get();
+						Candle::Date_Time date_time;
 
-						//Candle::Date_Time result {
-						//	table.year.get(), table.month.get(), table.day.get(),
-						//	table.hour.get(), table.min.get(),   table.sec.get() };
+						date_time.year   = get_date_time_field("year");
+						date_time.month  = get_date_time_field("month");
+						date_time.day    = get_date_time_field("day");
 
-						Candle::Date_Time result { 0, 0, 0, 0, 0, 0 }; // TODO
+						date_time.hour   = get_date_time_field("hour");
+						date_time.minute = get_date_time_field("min");
+						date_time.second = get_date_time_field("sec");
 
-						m_state.pop(3);
-
-						return result;
+						result = date_time;
 					}
 					else
 					{
 						if (name == "V")
 						{
-							auto result = m_state.top < Candle::volume_t > ().get();
-
-							m_state.pop(3);
-
-							return result;
+							result = m_state.top < Candle::volume_t > ().get();
 						}
 						else
 						{
-							auto result = m_state.top < Candle::price_t > ().get();
-
-							m_state.pop(3);
-
-							return result;
+							result = m_state.top < Candle::price_t > ().get();
 						}
 					}
+
+					m_state.pop(3);
+
+					return result;
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			unsigned int Source::get_date_time_field(const std::string & key) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					m_state.push(key);
+
+					m_state.get_table(-2);
+
+					auto value = m_state.top < unsigned int > ().get();
+
+					m_state.pop();
+
+					return value;
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::record_t Source::make_record(const Candle & candle) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					std::stringstream date;
+
+					date <<
+						std::setfill('0') << std::setw(4) << candle.date_time.year  <<
+						std::setfill('0') << std::setw(2) << candle.date_time.month <<
+						std::setfill('0') << std::setw(2) << candle.date_time.day;
+
+					std::stringstream time;
+
+					time <<
+						std::setfill('0') << std::setw(2) << candle.date_time.hour   <<
+						std::setfill('0') << std::setw(2) << candle.date_time.minute <<
+						std::setfill('0') << std::setw(2) << candle.date_time.second;
+
+					std::stringstream sout;
+
+					static const char delimeter = ',';
+
+					sout << std::setprecision(6) << std::fixed <<
+						date.str()         << delimeter <<
+						time.str()         << delimeter <<
+						candle.price_open  << delimeter <<
+						candle.price_high  << delimeter <<
+						candle.price_low   << delimeter <<
+						candle.price_close << delimeter <<
+						candle.volume;
+
+					return record_t(sout.str().c_str(), m_shared_memory.get_segment_manager());
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			std::size_t Source::lot_size() const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					m_state.get_global("getSecurityInfo");
+
+					m_state.push(m_class_code);
+					m_state.push(m_asset_code);
+
+					m_state.call(2, 1);
+
+					m_state.push(std::string("lot_size"));
+
+					m_state.get_table(-2);
+
+					auto result = m_state.top < std::size_t > ().get();
+
+					m_state.pop(2);
+
+					return result;
 				}
 				catch (const std::exception & exception)
 				{
