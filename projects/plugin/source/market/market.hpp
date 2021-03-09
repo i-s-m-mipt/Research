@@ -15,14 +15,13 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 
 #include "source/source.hpp"
-
-#include "../detail/lua/api.hpp"
 
 #include "../../../shared/source/logger/logger.hpp"
 
@@ -57,6 +56,8 @@ namespace solution
 			using Source = market::Source;
 
 			using sources_container_t = std::vector < std::shared_ptr < Source > > ;
+
+			using transaction_t = std::unordered_map < std::string, std::string > ;
 
 		private:
 
@@ -200,9 +201,11 @@ namespace solution
 
 		public:
 
+			bool is_connected() const;
+
 			void send_message(const std::string & message) const;
 
-			bool is_connected() const;
+			std::string send_transaction(const transaction_t & transaction) const;
 
 		private:
 

@@ -226,7 +226,7 @@ namespace solution
 								":" + source->scale_code() + "source update failed");
 						}
 
-						auto message = source->asset_code() + " : " + std::to_string(source->lot_size());
+						auto message = source->asset_code() + " : " + std::to_string(source->lots_per_transaction());
 
 						send_message(message);
 
@@ -256,13 +256,42 @@ namespace solution
 			}
 		}
 
+		bool Market::is_connected() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_state.get_global("isConnected");
+				m_state.call(0);
+
+				auto result = m_state.to_boolean();
+
+				m_state.pop();
+
+				return result;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::send_message(const std::string & message) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				if (!m_state.call < bool > ("message", message))
+				m_state.get_global("message");
+				m_state.push_string(message);
+				m_state.call(1);
+
+				auto result = m_state.to_boolean();
+
+				m_state.pop();
+
+				if (!result)
 				{
 					throw std::runtime_error("bad message");
 				}
@@ -273,13 +302,31 @@ namespace solution
 			}
 		}
 
-		bool Market::is_connected() const
+		std::string Market::send_transaction(const transaction_t & transaction) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				return (m_state.call < bool > ("isConnected"));
+				m_state.get_global("sendTransaction");
+
+				m_state.new_table();
+
+				for (const auto & [field, value] : transaction)
+				{
+					m_state.push_string(field);
+					m_state.push_string(value);
+
+					m_state.set_table();
+				}
+
+				m_state.call(1);
+
+				auto result = m_state.to_string();
+
+				m_state.pop();
+
+				return result;
 			}
 			catch (const std::exception & exception)
 			{
