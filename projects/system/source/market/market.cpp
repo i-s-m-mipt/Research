@@ -410,6 +410,18 @@ namespace solution
 			}
 		}
 
+		template < typename T >
+		auto min(T lhs, T rhs)
+		{
+			return std::min(lhs, rhs);
+		}
+
+		template < typename T, typename ... Types >
+		auto min(T lhs, Types ... args)
+		{
+			return std::min(lhs, min(args...));
+		}
+
 		double Market::compute_self_similarity(const std::string & asset,
 			const std::string & scale_1, const std::string & scale_2) const
 		{
@@ -417,95 +429,91 @@ namespace solution
 
 			try
 			{
-				auto size_scale_1 = std::size(m_charts.at(asset).at(scale_1));
-				auto size_scale_2 = std::size(m_charts.at(asset).at(scale_2));
+				auto size_1 = std::size(m_charts.at(asset).at(scale_1));
+				auto size_2 = std::size(m_charts.at(asset).at(scale_2));
 				
-				self_similarity_matrix_t dist_matrix(boost::extents[size_scale_1][size_scale_2]);
+				self_similarity_matrix_t distances(boost::extents[size_1][size_2]);
 
-				for (auto i = 0U; i < size_scale_1; ++i)
+				for (auto i = 0U; i < size_1; ++i)
 				{
-					for (auto j = 0U; j < size_scale_2; ++j)
+					for (auto j = 0U; j < size_2; ++j)
 					{
-						dist_matrix[i][j] = std::pow(m_charts.at(asset).at(scale_1)[i].price_close - 
+						distances[i][j] = std::pow(
+							m_charts.at(asset).at(scale_1)[i].price_close - 
 							m_charts.at(asset).at(scale_1)[j].price_close, 2.0);
 					}
 				}
 
-				self_similarity_matrix_t deform_matrix(boost::extents[size_scale_1][size_scale_2]);
+				self_similarity_matrix_t cumulative_distances(boost::extents[size_1][size_2]);
 
-				deform_matrix[0][0] = dist_matrix[0][0];
+				cumulative_distances[0][0] = distances[0][0];
 
-				for (auto i = 1U; i < size_scale_1; ++i)
+				for (auto i = 1U; i < size_1; ++i)
 				{
-					deform_matrix[i][0] = dist_matrix[i][0];
+					cumulative_distances[i][0] = distances[i][0] + cumulative_distances[i - 1][0]; // ?
 				}
 
-				for (auto j = 1U; j < size_scale_2; ++j)
+				for (auto j = 1U; j < size_2; ++j)
 				{
-					deform_matrix[0][j] = dist_matrix[0][j];
+					cumulative_distances[0][j] = distances[0][j] + cumulative_distances[0][j - 1]; // ?
 				}
 
 				const auto delta = 10;
 
-				for (auto i = 1; i < size_scale_1; ++i)
+				for (auto i = 1; i < size_1; ++i)
 				{
-					for (auto j = 1; j < size_scale_2; ++j)
+					for (auto j = 1; j < size_2; ++j)
 					{
 						if (std::abs(i - j) < delta)
 						{
-							deform_matrix[i][j] = dist_matrix[i][j] + std::min(deform_matrix[i - 1][j],
-								std::min(deform_matrix[i - 1][j - 1], deform_matrix[i][j - 1]));
+							cumulative_distances[i][j] += min(cumulative_distances[i - 1][j - 1],
+								cumulative_distances[i - 1][j], cumulative_distances[i][j - 1]);
 						}
 						else
 						{
-							deform_matrix[i][j] = std::numeric_limits < double >::infinity();
+							cumulative_distances[i][j] = std::numeric_limits < double > ::infinity();
 						}
 					}
 				}
 
-				auto i = size_scale_1 - 1;
-				auto j = size_scale_2 - 1;
+				double path = cumulative_distances[size_1 - 1][size_2 - 1];
 
-				double path_deform = deform_matrix[i][j];
-				int K = 0;
+				std::size_t size = 0U;
 
-				while (i + j != 0)
+				for (auto i = size_1 - 1, j = size_2 - 1; i + j != 0ULL; ++size)
 				{
 					if (i == 0)
 					{
-						path_deform += deform_matrix[0][j];
-						--j;
+						path += cumulative_distances[0][j--];
+
+						continue;
 					}
-					else if (j == 0)
+
+					if (j == 0)
 					{
-						path_deform += deform_matrix[i][0];
-						--i;
+						path += cumulative_distances[i--][0];
+
+						continue;
+					}
+
+					if (cumulative_distances[i - 1][j - 1] > std::max(cumulative_distances[i - 1][j], cumulative_distances[i][j - 1]))
+					{
+						path += cumulative_distances[(i--) - 1][(j--) - 1];
 					}
 					else
 					{
-						if (deform_matrix[i - 1][j - 1] > deform_matrix[i - 1][j] and
-							deform_matrix[i - 1][j - 1] > deform_matrix[i - 1][j])
+						if (cumulative_distances[i - 1][j] > cumulative_distances[i][j - 1])
 						{
-							path_deform += deform_matrix[i - 1][j - 1];
-							--i;
-							--j;
-						}
-						else if (deform_matrix[i][j - 1] > deform_matrix[i - 1][j - 1] and
-							deform_matrix[i][j - 1] > deform_matrix[i - 1][j])
-						{
-							path_deform += deform_matrix[i][j - 1];
-							--j;
+							path += cumulative_distances[(i--) - 1][j];
 						}
 						else
 						{
-							path_deform += deform_matrix[i - 1][j];
-							--i;
+							path += cumulative_distances[i][(j--) - 1];
 						}
 					}
-					++K;
 				}
 
-				return path_deform / K;
+				return (path / size);
 			}
 			catch (const std::exception & exception)
 			{
