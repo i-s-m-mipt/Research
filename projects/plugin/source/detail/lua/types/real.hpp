@@ -11,8 +11,9 @@
 #include <stdexcept>
 #include <string>
 
-#include "../declarations.hpp"
+#include "../adapter.hpp"
 #include "../general.hpp"
+#include "../state.hpp"
 
 #include "../../../../../shared/source/logger/logger.hpp"
 

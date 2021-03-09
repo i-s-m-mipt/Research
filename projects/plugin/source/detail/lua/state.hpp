@@ -15,6 +15,7 @@
 
 #include <lua.hpp>
 
+#include "adapter.hpp"
 #include "general.hpp"
 
 #include "../../../../shared/source/logger/logger.hpp"
@@ -44,9 +45,6 @@ namespace solution
 
                 template < typename T >
                 class Entity;
-
-                template < typename T >
-                struct Type_Adapter;
 
                 class State
                 {
