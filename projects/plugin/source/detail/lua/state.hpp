@@ -643,7 +643,7 @@ namespace solution
 
                         try
                         {
-                            return Entity < Type_Adapter < T > > (*this, index);
+                            return Entity < Adapter < T > > (*this, index);
                         }
                         catch (const std::exception & exception)
                         {

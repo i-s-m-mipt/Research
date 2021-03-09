@@ -85,7 +85,7 @@ namespace solution
                 } // namespace types
 
                 template <>
-                struct Type_Adapter < bool > : public types::Boolean
+                struct Adapter < bool > : public types::Boolean
                 {};
 
             } // namespace lua

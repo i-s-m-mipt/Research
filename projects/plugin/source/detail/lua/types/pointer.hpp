@@ -86,11 +86,11 @@ namespace solution
                 } // namespace types
 
                 template <>
-                struct Type_Adapter < void * > : public types::Pointer < void * >
+                struct Adapter < void * > : public types::Pointer < void * >
                 {};
 
                 template <>
-                struct Type_Adapter < const void * > : public types::Pointer < const void * >
+                struct Adapter < const void * > : public types::Pointer < const void * >
                 {};
 
             } // namespace lua

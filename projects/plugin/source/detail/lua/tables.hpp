@@ -74,7 +74,7 @@ private: \
 
 #define LUA_TABLE_TYPE_ADAPTER(TABLE) \
 template <> \
-struct Type_Adapter < TABLE > \
+struct Adapter < TABLE > \
 { \
 public: \
 \

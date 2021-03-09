@@ -88,11 +88,11 @@ namespace solution
                 } // namespace types
 
                 template <>
-                struct Type_Adapter < float > : public types::Real < float >
+                struct Adapter < float > : public types::Real < float >
                 {};
 
                 template <>
-                struct Type_Adapter < double > : public types::Real < double >
+                struct Adapter < double > : public types::Real < double >
                 {};
 
             } // namespace lua

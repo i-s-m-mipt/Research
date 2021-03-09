@@ -16,7 +16,7 @@ namespace solution
             namespace lua
             {
                 template < typename T >
-                struct Type_Adapter;
+                struct Adapter;
 
             } // namespace lua
 

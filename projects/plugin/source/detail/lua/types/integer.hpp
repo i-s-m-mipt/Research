@@ -86,35 +86,35 @@ namespace solution
                 } // namespace types
 
                 template <>
-                struct Type_Adapter < int > : public types::Integer < int >
+                struct Adapter < int > : public types::Integer < int >
                 {};
 
                 template <>
-                struct Type_Adapter < unsigned int > : public types::Integer < unsigned int >
+                struct Adapter < unsigned int > : public types::Integer < unsigned int >
                 {};
 
                 template <>
-                struct Type_Adapter < short > : public types::Integer < short >
+                struct Adapter < short > : public types::Integer < short >
                 {};
 
                 template <>
-                struct Type_Adapter < unsigned short > : public types::Integer < unsigned short >
+                struct Adapter < unsigned short > : public types::Integer < unsigned short >
                 {};
 
                 template <>
-                struct Type_Adapter < long > : public types::Integer < long >
+                struct Adapter < long > : public types::Integer < long >
                 {};
 
                 template <>
-                struct Type_Adapter < unsigned long > : public types::Integer < unsigned long >
+                struct Adapter < unsigned long > : public types::Integer < unsigned long >
                 {};
 
                 template <>
-                struct Type_Adapter < long long > : public types::Integer < long long >
+                struct Adapter < long long > : public types::Integer < long long >
                 {};
 
                 template <>
-                struct Type_Adapter < unsigned long long > : public types::Integer < unsigned long long >
+                struct Adapter < unsigned long long > : public types::Integer < unsigned long long >
                 {};
 
             } // namespace lua

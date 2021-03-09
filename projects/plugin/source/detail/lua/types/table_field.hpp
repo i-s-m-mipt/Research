@@ -71,7 +71,7 @@ namespace solution
                                     state.get_table(index);
                                 }
 
-                                auto result = Entity < Type_Adapter < value_t > > (state, -1).get();
+                                auto result = Entity < Adapter < value_t > > (state, -1).get();
 
                                 state.pop();
 

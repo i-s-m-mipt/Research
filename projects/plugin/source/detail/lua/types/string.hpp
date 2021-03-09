@@ -96,7 +96,7 @@ namespace solution
                 } // namespace types 
 
                 template <>
-                struct Type_Adapter < std::string > : public types::String
+                struct Adapter < std::string > : public types::String
                 {};
 
             } // namespace lua
