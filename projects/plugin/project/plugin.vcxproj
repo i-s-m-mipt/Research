@@ -30,16 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\source\logger\logger.hpp" />
-    <ClInclude Include="..\source\detail\lua\adapter.hpp" />
-    <ClInclude Include="..\source\detail\lua\api.hpp" />
-    <ClInclude Include="..\source\detail\lua\entity.hpp" />
-    <ClInclude Include="..\source\detail\lua\general.hpp" />
     <ClInclude Include="..\source\detail\lua\state.hpp" />
-    <ClInclude Include="..\source\detail\lua\types\boolean.hpp" />
-    <ClInclude Include="..\source\detail\lua\types\integer.hpp" />
-    <ClInclude Include="..\source\detail\lua\types\pointer.hpp" />
-    <ClInclude Include="..\source\detail\lua\types\real.hpp" />
-    <ClInclude Include="..\source\detail\lua\types\string.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />
     <ClInclude Include="..\source\window\window.hpp">

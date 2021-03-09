@@ -22,9 +22,6 @@
     <Filter Include="source\detail\lua">
       <UniqueIdentifier>{29131e66-c16e-4ffb-81bc-014f158ca67a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\detail\lua\types">
-      <UniqueIdentifier>{ee3918f7-6e81-4caf-b0a7-cd3462bdf718}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\market\market.cpp">
@@ -56,34 +53,7 @@
     <ClInclude Include="..\source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\detail\lua\api.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\entity.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\general.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\detail\lua\state.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\types\boolean.hpp">
-      <Filter>source\detail\lua\types</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\types\integer.hpp">
-      <Filter>source\detail\lua\types</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\types\pointer.hpp">
-      <Filter>source\detail\lua\types</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\types\real.hpp">
-      <Filter>source\detail\lua\types</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\types\string.hpp">
-      <Filter>source\detail\lua\types</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\adapter.hpp">
       <Filter>source\detail\lua</Filter>
     </ClInclude>
   </ItemGroup>
