@@ -225,6 +225,12 @@ namespace solution
 							logger.write(Severity::error, source->asset_code() +
 								":" + source->scale_code() + "source update failed");
 						}
+
+						auto message = source->asset_code() + " : " + std::to_string(source->lot_size());
+
+						send_message(message);
+
+						std::this_thread::sleep_for(std::chrono::seconds(1));
 					}
 				}
 			}
@@ -243,6 +249,37 @@ namespace solution
 				m_status.store(Status::stopped);
 
 				std::scoped_lock lock(m_mutex);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::send_message(const std::string & message) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				if (!m_state.call < bool > ("message", message))
+				{
+					throw std::runtime_error("bad message");
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		bool Market::is_connected() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				return (m_state.call < bool > ("isConnected"));
 			}
 			catch (const std::exception & exception)
 			{

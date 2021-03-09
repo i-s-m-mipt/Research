@@ -8,11 +8,13 @@
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <algorithm>
+#include <chrono>
 #include <exception>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -47,14 +49,12 @@ namespace solution
 		{
 		private:
 
-			using Source = market::Source;
-
-		private:
-
 			using scales_container_t = std::vector < std::string > ;
 
 			using assets_container_t = 
 				std::vector < std::pair < std::string, std::string > > ;
+
+			using Source = market::Source;
 
 			using sources_container_t = std::vector < std::shared_ptr < Source > > ;
 
@@ -197,6 +197,12 @@ namespace solution
 			void run();
 
 			void stop();
+
+		public:
+
+			void send_message(const std::string & message) const;
+
+			bool is_connected() const;
 
 		private:
 
