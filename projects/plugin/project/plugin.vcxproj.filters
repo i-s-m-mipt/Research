@@ -13,9 +13,6 @@
     <Filter Include="source\logger">
       <UniqueIdentifier>{f444c8a7-0f39-4333-a2a1-18b773bb9827}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\config">
-      <UniqueIdentifier>{b46cf1f0-bd72-42ec-bc17-a84b1fc37217}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\window">
       <UniqueIdentifier>{cea2ead0-e553-4a1e-8517-547f7ab03b18}</UniqueIdentifier>
     </Filter>
@@ -45,9 +42,6 @@
     <ClCompile Include="..\source\export.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\detail\lua\source.cpp">
-      <Filter>source\detail\lua</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\market\market.hpp">
@@ -59,16 +53,10 @@
     <ClInclude Include="..\..\shared\source\logger\logger.hpp">
       <Filter>source\logger</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\config\config.hpp">
-      <Filter>source\config</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\window\window.hpp">
       <Filter>source\window</Filter>
     </ClInclude>
     <ClInclude Include="..\source\detail\lua\api.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\declarations.hpp">
       <Filter>source\detail\lua</Filter>
     </ClInclude>
     <ClInclude Include="..\source\detail\lua\entity.hpp">
@@ -77,16 +65,10 @@
     <ClInclude Include="..\source\detail\lua\general.hpp">
       <Filter>source\detail\lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\detail\lua\source.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\detail\lua\state.hpp">
       <Filter>source\detail\lua</Filter>
     </ClInclude>
     <ClInclude Include="..\source\detail\lua\tables.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\vector.hpp">
       <Filter>source\detail\lua</Filter>
     </ClInclude>
     <ClInclude Include="..\source\detail\lua\types\boolean.hpp">
@@ -107,8 +89,8 @@
     <ClInclude Include="..\source\detail\lua\types\table_field.hpp">
       <Filter>source\detail\lua\types</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\detail\lua\types\vector.hpp">
-      <Filter>source\detail\lua\types</Filter>
+    <ClInclude Include="..\source\detail\lua\adapter.hpp">
+      <Filter>source\detail\lua</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

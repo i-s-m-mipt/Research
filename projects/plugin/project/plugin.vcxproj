@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\shared\source\logger\logger.cpp" />
-    <ClCompile Include="..\source\detail\lua\source.cpp" />
     <ClCompile Include="..\source\market\market.cpp" />
     <ClCompile Include="..\source\market\source\source.cpp" />
     <ClCompile Include="..\source\export.cpp" />
@@ -31,12 +30,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\source\logger\logger.hpp" />
-    <ClInclude Include="..\source\config\config.hpp" />
+    <ClInclude Include="..\source\detail\lua\adapter.hpp" />
     <ClInclude Include="..\source\detail\lua\api.hpp" />
-    <ClInclude Include="..\source\detail\lua\declarations.hpp" />
     <ClInclude Include="..\source\detail\lua\entity.hpp" />
     <ClInclude Include="..\source\detail\lua\general.hpp" />
-    <ClInclude Include="..\source\detail\lua\source.hpp" />
     <ClInclude Include="..\source\detail\lua\state.hpp" />
     <ClInclude Include="..\source\detail\lua\tables.hpp" />
     <ClInclude Include="..\source\detail\lua\types\boolean.hpp" />
@@ -45,8 +42,6 @@
     <ClInclude Include="..\source\detail\lua\types\real.hpp" />
     <ClInclude Include="..\source\detail\lua\types\string.hpp" />
     <ClInclude Include="..\source\detail\lua\types\table_field.hpp" />
-    <ClInclude Include="..\source\detail\lua\types\vector.hpp" />
-    <ClInclude Include="..\source\detail\lua\vector.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />
     <ClInclude Include="..\source\window\window.hpp">
