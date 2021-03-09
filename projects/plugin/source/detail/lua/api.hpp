@@ -13,7 +13,6 @@
 #include <unordered_map>
 
 #include "state.hpp"
-#include "tables.hpp"
 
 namespace solution
 {
@@ -56,25 +55,10 @@ namespace solution
 
                 public:
 
-                    auto is_connected() const
-                    {
-                        return m_state.call < unsigned int > ("isConnected");
-                    }
-
-                    auto send_message(const std::string & message) const
-                    {
-                        return m_state.call < unsigned int > ("message", message);
-                    }
-
-                    auto get_portfolio(const std::string & client_id, const std::string & client_code) const
-                    {
-                        return m_state.call < tables::Portfolio > ("getPortfolioInfo", client_id, client_code);
-                    }
-
-                    auto get_security_info(const std::string & class_code, const std::string & asset_code) const
-                    {
-                        return m_state.call < tables::Asset > ("getSecurityInfo", class_code, asset_code);
-                    }
+                    //auto get_portfolio(const std::string & client_id, const std::string & client_code) const
+                    //{
+                    //    return m_state.call < tables::Portfolio > ("getPortfolioInfo", client_id, client_code);
+                    //}
 
                     auto send_transaction(const std::unordered_map < std::string, std::string > & transaction) const
                     {

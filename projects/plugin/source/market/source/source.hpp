@@ -23,7 +23,6 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 #include "../../detail/lua/state.hpp"
-#include "../../detail/lua/tables.hpp"
 
 #include "../../../../shared/source/logger/logger.hpp"
 

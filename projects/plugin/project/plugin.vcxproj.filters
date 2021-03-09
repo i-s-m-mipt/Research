@@ -68,9 +68,6 @@
     <ClInclude Include="..\source\detail\lua\state.hpp">
       <Filter>source\detail\lua</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\detail\lua\tables.hpp">
-      <Filter>source\detail\lua</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\detail\lua\types\boolean.hpp">
       <Filter>source\detail\lua\types</Filter>
     </ClInclude>
@@ -84,9 +81,6 @@
       <Filter>source\detail\lua\types</Filter>
     </ClInclude>
     <ClInclude Include="..\source\detail\lua\types\string.hpp">
-      <Filter>source\detail\lua\types</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\detail\lua\types\table_field.hpp">
       <Filter>source\detail\lua\types</Filter>
     </ClInclude>
     <ClInclude Include="..\source\detail\lua\adapter.hpp">
