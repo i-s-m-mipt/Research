@@ -343,5 +343,6 @@ service/
 /__pycache__
 *.csv
 *.exe
-*.exp
+plugin.exp
+plugin.lib
 plugin.dll
