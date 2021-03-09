@@ -30,7 +30,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\source\logger\logger.hpp" />
-    <ClInclude Include="..\source\config\config.hpp" />
+    <ClInclude Include="..\source\detail\lua\adapter.hpp" />
+    <ClInclude Include="..\source\detail\lua\api.hpp" />
+    <ClInclude Include="..\source\detail\lua\entity.hpp" />
+    <ClInclude Include="..\source\detail\lua\general.hpp" />
+    <ClInclude Include="..\source\detail\lua\state.hpp" />
+    <ClInclude Include="..\source\detail\lua\tables.hpp" />
+    <ClInclude Include="..\source\detail\lua\types\boolean.hpp" />
+    <ClInclude Include="..\source\detail\lua\types\integer.hpp" />
+    <ClInclude Include="..\source\detail\lua\types\pointer.hpp" />
+    <ClInclude Include="..\source\detail\lua\types\real.hpp" />
+    <ClInclude Include="..\source\detail\lua\types\string.hpp" />
+    <ClInclude Include="..\source\detail\lua\types\table_field.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />
     <ClInclude Include="..\source\window\window.hpp">
@@ -148,7 +159,7 @@
       <PreprocessorDefinitions>LUA53;HAVE_SNPRINTF;_CRT_SECURE_NO_WARNINGS;LUA_LIB;LUA_BUILD_AS_DLL;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_DEBUG;SHARED_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Libraries\boost;$(SolutionDir)\libraries\lua\include;$(SolutionDir)\libraries\qluacpp\include;$(SolutionDir)\libraries\luacpp\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Libraries\boost;$(SolutionDir)\libraries\lua\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4101;4715;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -193,7 +204,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>LUA53;HAVE_SNPRINTF;_CRT_SECURE_NO_WARNINGS;LUA_LIB;LUA_BUILD_AS_DLL;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE; _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;NDEBUG;SHARED_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Libraries\boost;$(SolutionDir)\libraries\lua\include;$(SolutionDir)\libraries\qluacpp\include;$(SolutionDir)\libraries\luacpp\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Libraries\boost;$(SolutionDir)\libraries\lua\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>4101;4715;4267</DisableSpecificWarnings>
       <PrecompiledHeaderFile />

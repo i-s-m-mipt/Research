@@ -131,13 +131,13 @@ namespace solution
 
 			try
 			{
-				date_time.year   = (date / 100) / 100;
-				date_time.month  = (date / 100) % 100;
-				date_time.day    = (date % 100);
+				date_time.year   = (raw_date / 100U) / 100U;
+				date_time.month  = (raw_date / 100U) % 100U;
+				date_time.day    = (raw_date % 100U);
 
-				date_time.hour   = (time / 100) / 100;
-				date_time.minute = (time / 100) % 100;
-				date_time.second = (time % 100);
+				date_time.hour   = (raw_time / 100U) / 100U;
+				date_time.minute = (raw_time / 100U) % 100U;
+				date_time.second = (raw_time % 100U);
 			}
 			catch (const std::exception & exception)
 			{
@@ -291,7 +291,7 @@ namespace solution
 			}
 		}
 
-		Market::Candle Market::parse(const std::string & s) const
+		Market::Candle Market::parse(const std::string & line) const
 		{
 			RUN_LOGGER(logger);
 
@@ -299,8 +299,8 @@ namespace solution
 			{
 				Candle_Parser < std::string::const_iterator > parser;
 
-				auto first = std::begin(s);
-				auto last  = std::end(s);
+				auto first = std::begin(line);
+				auto last  = std::end(line);
 
 				Candle candle;
 
@@ -315,7 +315,7 @@ namespace solution
 				}
 				else
 				{
-					throw market_exception("cannot parse line " + s);
+					throw market_exception("cannot parse line " + line);
 				}
 			}
 			catch (const std::exception & exception)

@@ -6,31 +6,17 @@ namespace solution
 	{
 		namespace market
 		{
-			void Source::initialize(const api_t & api)
+			using Severity = shared::Logger::Severity;
+
+			void Source::initialize()
 			{
 				RUN_LOGGER(logger);
 
 				try
 				{
-					const auto timeframe = api.constant("INTERVAL_" + m_scale_code);
+					initialize_source();
 
-					m_source = std::make_unique < source_t > (
-						api.create_source(m_class_code, m_asset_code, timeframe));
-
-					const auto shared_memory_name = make_shared_memory_name();
-
-					const auto shared_memory_size = 65536U;
-
-					boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
-
-					m_shared_memory = shared_memory_t(boost::interprocess::create_only, 
-						shared_memory_name.c_str(), shared_memory_size);
-
-					record_allocator_t allocator(m_shared_memory.get_segment_manager());
-
-					m_deque = m_shared_memory.construct < deque_t > (boost::interprocess::unique_instance) (allocator);
-					m_price = m_shared_memory.construct < price_t > (boost::interprocess::unique_instance) ();
-					m_mutex = m_shared_memory.construct < mutex_t > (boost::interprocess::unique_instance) ();
+					initialize_shared_memory();
 				}
 				catch (const std::exception & exception)
 				{
@@ -50,6 +36,84 @@ namespace solution
 					const auto shared_memory_name = make_shared_memory_name();
 
 					boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			void Source::initialize_source()
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					m_state.get_global(references);
+
+					if (m_state.is_nil(-1))
+					{
+						m_state.pop();
+
+						m_state.new_table();
+
+						m_state.set_global(references);
+						m_state.get_global(references);
+					}
+
+					m_state.call < 2 > ("CreateDataSource", m_class_code, m_asset_code, get_scale_constant());
+
+					m_state.push_value(-2);
+
+					m_reference = luaL_ref(m_state.state(), -4); // !
+
+					m_state.pop(2);
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			void Source::initialize_shared_memory()
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					const auto shared_memory_name = make_shared_memory_name();
+
+					const auto shared_memory_size = 65536U;
+
+					boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
+
+					m_shared_memory = shared_memory_t(boost::interprocess::create_only,
+						shared_memory_name.c_str(), shared_memory_size);
+
+					record_allocator_t allocator(m_shared_memory.get_segment_manager());
+
+					m_deque = m_shared_memory.construct < deque_t > (boost::interprocess::unique_instance) (allocator);
+					m_mutex = m_shared_memory.construct < mutex_t > (boost::interprocess::unique_instance) ();
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::scale_constant_t Source::get_scale_constant() const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					m_state.get_global("INTERVAL_" + m_scale_code);
+
+					auto result = m_state.top < scale_constant_t > ().get();
+
+					m_state.pop();
+
+					return result;
 				}
 				catch (const std::exception & exception)
 				{
@@ -77,23 +141,17 @@ namespace solution
 
 				try
 				{
-					const auto size = m_source->size();
-
-					{
-						boost::interprocess::scoped_lock < mutex_t > lock(*m_mutex);
-
-						*m_price = make_bar(size).price_close;
-					}
+					const auto size = max_size();
 
 					if (size >= m_size)
 					{
 						if (m_deque->size() == 0)
 						{
-							boost::interprocess::scoped_lock < mutex_t > lock(*m_mutex);
+							boost::interprocess::scoped_lock lock(*m_mutex);
 
 							for (index_t index = size - m_size + 1; index <= size; ++index)
 							{
-								m_deque->push_back(make_record(make_bar(index)));
+								m_deque->push_back(make_record(make_candle(index)));
 
 								m_last_index = index;
 							}
@@ -103,11 +161,12 @@ namespace solution
 						{
 							auto delta = std::min(size - m_last_index, m_size);
 
-							boost::interprocess::scoped_lock < mutex_t > lock(*m_mutex);
+							boost::interprocess::scoped_lock lock(*m_mutex);
 
-							for (index_t index = std::max(size - m_size + 1, m_last_index + 1); index <= size; ++index)
+							for (index_t index = std::max(static_cast < unsigned int > ( // ?
+								size - m_size + 1U), m_last_index + 1U); index <= size; ++index)
 							{
-								m_deque->push_back(make_record(make_bar(index)));
+								m_deque->push_back(make_record(make_candle(index)));
 
 								m_last_index = index;
 							}
@@ -119,11 +178,11 @@ namespace solution
 						}
 						else
 						{
-							boost::interprocess::scoped_lock < mutex_t > lock(*m_mutex);
+							boost::interprocess::scoped_lock lock(*m_mutex);
 
 							m_deque->pop_back();
 
-							m_deque->push_back(make_record(make_bar(size)));
+							m_deque->push_back(make_record(make_candle(size)));
 						}
 					}
 				}
@@ -133,44 +192,26 @@ namespace solution
 				}
 			}
 
-			Source::Bar Source::make_bar(index_t index) const
+			std::size_t Source::max_size() const
 			{
 				RUN_LOGGER(logger);
 
 				try
 				{
-					Bar bar;
+					m_state.get_global(references);
 
-					bar.index = index;
+					m_state.push_number(m_reference);
+					m_state.raw_get(-2);
+					m_state.push_string("Size");
+					m_state.raw_get(-2);
+					m_state.push_value(-2);
+					m_state.call(1, 1);
 
-					std::stringstream stream;
+					auto result = m_state.top < std::size_t > ().get();
 
-					auto time = m_source->time(index);
+					m_state.pop(3);
 
-					stream <<
-						std::setfill('0') << std::setw(4) << time.year  <<
-						std::setfill('0') << std::setw(2) << time.month <<
-						std::setfill('0') << std::setw(2) << time.day;
-						
-					stream >> bar.date;
-
-					stream.clear();
-
-					stream <<
-						std::setfill('0') << std::setw(2) << time.hour   <<
-						std::setfill('0') << std::setw(2) << time.minute <<
-						std::setfill('0') << std::setw(2) << time.second;
-
-					stream >> bar.time;
-
-					bar.price_open  = m_source->price_open(index);
-					bar.price_high  = m_source->price_high(index);
-					bar.price_low   = m_source->price_low(index);
-					bar.price_close = m_source->price_close(index);
-
-					bar.volume = static_cast < Bar::volume_t > (m_source->volume(index));
-
-					return bar;
+					return result;
 				}
 				catch (const std::exception & exception)
 				{
@@ -178,26 +219,202 @@ namespace solution
 				}
 			}
 
-			Source::record_t Source::make_record(const Bar & bar) const
+			Source::Candle Source::make_candle(index_t index) const
 			{
 				RUN_LOGGER(logger);
 
 				try
 				{
-					static const char delimeter = ',';
+					return Candle {     index, 
+						get_date_time  (index),
+						get_price_open (index),
+						get_price_high (index),
+						get_price_low  (index),
+						get_price_close(index),
+						get_volume     (index) };
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::record_t Source::make_record(const Candle & candle) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					std::stringstream date;
+					
+					date <<
+						std::setfill('0') << std::setw(4) << candle.date_time.year  <<
+						std::setfill('0') << std::setw(2) << candle.date_time.month <<
+						std::setfill('0') << std::setw(2) << candle.date_time.day;
+
+					std::stringstream time;
+
+					time <<
+						std::setfill('0') << std::setw(2) << candle.date_time.hour   <<
+						std::setfill('0') << std::setw(2) << candle.date_time.minute <<
+						std::setfill('0') << std::setw(2) << candle.date_time.second;
 
 					std::stringstream sout;
 
+					static const char delimeter = ',';
+
 					sout << std::setprecision(6) << std::fixed <<
-						bar.date        << delimeter <<
-						bar.time        << delimeter <<
-						bar.price_open  << delimeter <<
-						bar.price_high  << delimeter <<
-						bar.price_low   << delimeter <<
-						bar.price_close << delimeter <<
-						bar.volume;
+						date.str()         << delimeter <<
+						time.str()         << delimeter <<
+						candle.price_open  << delimeter <<
+						candle.price_high  << delimeter <<
+						candle.price_low   << delimeter <<
+						candle.price_close << delimeter <<
+						candle.volume;
 
 					return record_t(sout.str().c_str(), m_shared_memory.get_segment_manager());
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::Candle::Date_Time Source::get_date_time(index_t index) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					return std::get < Candle::Date_Time > (call("T", index));
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::Candle::price_t Source::get_price_open(index_t index) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					return std::get < Candle::price_t > (call("O", index));
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::Candle::price_t Source::get_price_high(index_t index) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					return std::get < Candle::price_t > (call("H", index));
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::Candle::price_t Source::get_price_low(index_t index) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					return std::get < Candle::price_t > (call("L", index));
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::Candle::price_t Source::get_price_close(index_t index) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					return std::get < Candle::price_t > (call("C", index));
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			Source::Candle::volume_t Source::get_volume(index_t index) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					return std::get < Candle::volume_t > (call("V", index));
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < source_exception > (logger, exception);
+				}
+			}
+
+			std::variant < Source::Candle::Date_Time, Source::Candle::price_t, Source::Candle::volume_t >
+				Source::call(const std::string & name, index_t index) const
+			{
+				RUN_LOGGER(logger);
+
+				try
+				{
+					m_state.get_global(references);
+
+					m_state.push_number(m_reference);
+					m_state.raw_get(-2);
+					m_state.push_string(name);
+					m_state.raw_get(-2);
+					m_state.push_value(-2);
+					m_state.push_number(index);
+
+					m_state.call(2, 1);
+
+					if (name == "T")
+					{
+						//auto table = m_state.top < detail::lua::tables::Chart_Time > ().get();
+
+						//Candle::Date_Time result {
+						//	table.year.get(), table.month.get(), table.day.get(),
+						//	table.hour.get(), table.min.get(),   table.sec.get() };
+
+						Candle::Date_Time result { 0, 0, 0, 0, 0, 0 }; // TODO
+
+						m_state.pop(3);
+
+						return result;
+					}
+					else
+					{
+						if (name == "V")
+						{
+							auto result = m_state.top < Candle::volume_t > ().get();
+
+							m_state.pop(3);
+
+							return result;
+						}
+						else
+						{
+							auto result = m_state.top < Candle::price_t > ().get();
+
+							m_state.pop(3);
+
+							return result;
+						}
+					}
 				}
 				catch (const std::exception & exception)
 				{

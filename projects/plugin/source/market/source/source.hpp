@@ -7,29 +7,23 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
-#include <algorithm>
-#include <cstdlib>
 #include <exception>
-#include <fstream>
 #include <iomanip>
-#include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <variant>
 
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/deque.hpp>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
-#include <boost/interprocess/sync/named_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
-#include <boost/interprocess/managed_windows_shared_memory.hpp>
 
-#include <qluacpp/qlua>
-
-#include "../../config/config.hpp"
+#include "../../detail/lua/state.hpp"
+#include "../../detail/lua/tables.hpp"
 
 #include "../../../../shared/source/logger/logger.hpp"
 
@@ -56,13 +50,9 @@ namespace solution
 
 			class Source
 			{
-			public:
-
-				using api_t = Config::api_t;
-
 			private:
 
-				using source_t = lua::Source;
+				using scale_constant_t = unsigned int;
 
 				using shared_memory_t = boost::interprocess::managed_shared_memory;
 
@@ -79,34 +69,50 @@ namespace solution
 
 			private:
 
-				struct Bar
+				struct Candle
 				{
-					using index_t = std::size_t;
+				public:
 
-					using date_t = std::string;
-					using time_t = std::string;
+					using index_t = unsigned int;
+
+				public:
+
+					struct Date_Time
+					{
+						unsigned int year   = 0U;
+						unsigned int month  = 0U;
+						unsigned int day    = 0U;
+
+						unsigned int hour   = 0U;
+						unsigned int minute = 0U;
+						unsigned int second = 0U;
+					};
+
+				public:
+
+					using date_time_t = Date_Time;
 
 					using price_t = double;
 
-					using volume_t = std::uint64_t;
+					using volume_t = unsigned long long;
+
+				public:
 
 					index_t index = 0U;
 
-					date_t date;
-					time_t time;
+					date_time_t date_time;
 
 					price_t price_open  = 0.0;
 					price_t price_high  = 0.0;
 					price_t price_low   = 0.0;
 					price_t price_close = 0.0;
 
-					volume_t volume = 0U;
+					volume_t volume = 0ULL;
 				};
 
 			private:
 
-				using price_t = Bar::price_t;
-				using index_t = Bar::index_t;
+				using index_t = Candle::index_t;
 
 			public:
 
@@ -115,13 +121,13 @@ namespace solution
 						std::is_convertible_v < C, std::string > &&
 						std::is_convertible_v < A, std::string > &&
 						std::is_convertible_v < S, std::string > > >
-				explicit Source(const api_t & api, C && class_code, A && asset_code, S && scale_code, 
-					std::size_t size = default_size) :
+				explicit Source(detail::lua::State state, C && class_code, A && asset_code, S && scale_code, 
+					std::size_t size = default_size) : m_state(state),
 						m_class_code(std::forward < C > (class_code)),
 						m_asset_code(std::forward < A > (asset_code)), 
-						m_scale_code(std::forward < S > (scale_code)), m_size(size)
+						m_scale_code(std::forward < S > (scale_code)), m_size(size), m_reference(LUA_NOREF)
 				{
-					initialize(api);
+					initialize();
 				}
 
 				~Source() noexcept
@@ -138,15 +144,28 @@ namespace solution
 
 			private:
 
-				void initialize(const api_t & api);
+				void initialize();
 
 				void uninitialize();
 
 			private:
 
+				void initialize_source();
+
+				void initialize_shared_memory();
+
+			private:
+
+				scale_constant_t get_scale_constant() const;
+
 				std::string make_shared_memory_name() const;
 
 			public:
+
+				const auto state() const noexcept
+				{
+					return m_state;
+				}
 
 				const auto & class_code() const noexcept
 				{
@@ -163,41 +182,72 @@ namespace solution
 					return m_scale_code;
 				}
 
+				const auto size() const noexcept
+				{
+					return m_size;
+				}
+
 			public:
 
 				void update() const;
 
 			private:
 
-				Bar make_bar(index_t index) const;
-
-				record_t make_record(const Bar & bar) const;
+				std::size_t max_size() const;
 
 			private:
 
-				static inline const std::size_t default_size = 250U;
+				Candle make_candle(index_t index) const;
+
+				record_t make_record(const Candle & candle) const;
 
 			private:
+
+				Candle::Date_Time get_date_time(index_t index) const;
+
+				Candle::price_t get_price_open(index_t index) const;
+
+				Candle::price_t get_price_high(index_t index) const;
+
+				Candle::price_t get_price_low(index_t index) const;
+
+				Candle::price_t get_price_close(index_t index) const;
+
+				Candle::volume_t get_volume(index_t index) const;
+
+			private:
+
+				std::variant < Candle::Date_Time, Candle::price_t, Candle::volume_t >
+					call(const std::string & name, index_t index) const;
+
+			private:
+
+				static inline const std::string references = "references";
+
+				static inline const std::size_t default_size = 100U;
+
+			private:
+
+				const detail::lua::State m_state;
 
 				const std::string m_class_code;
 				const std::string m_asset_code;
 				const std::string m_scale_code;
 
-				const std::size_t m_size = default_size;
+				const std::size_t m_size;
 
 			private:
 
-				std::unique_ptr < source_t > m_source;
+				detail::lua::reference_t m_reference;
 
 				shared_memory_t m_shared_memory;
 
 				deque_t * m_deque;
-				price_t * m_price;
 				mutex_t * m_mutex;
 
 			private:
 
-				mutable index_t m_last_index = 0;
+				mutable index_t m_last_index = 0U;
 			};
 
 		} // namespace market

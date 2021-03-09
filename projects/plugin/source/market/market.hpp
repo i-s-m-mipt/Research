@@ -15,12 +15,12 @@
 #include <string>
 #include <vector>
 
-#include <qluacpp/qlua> // !
-
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 
 #include "source/source.hpp"
+
+#include "../detail/lua/api.hpp"
 
 #include "../../../shared/source/logger/logger.hpp"
 
@@ -48,10 +48,6 @@ namespace solution
 		private:
 
 			using Source = market::Source;
-
-		public:
-
-			using api_t = Source::api_t;
 
 		private:
 
@@ -151,9 +147,9 @@ namespace solution
 
 		public:
 
-			explicit Market(const api_t & api)
+			explicit Market(detail::lua::State state) : m_state(state)
 			{
-				initialize(api);
+				initialize();
 			}
 
 			~Market() noexcept
@@ -170,7 +166,7 @@ namespace solution
 
 		private:
 
-			void initialize(const api_t & api);
+			void initialize();
 
 			void uninitialize();
 
@@ -201,6 +197,10 @@ namespace solution
 			void run();
 
 			void stop();
+
+		private:
+
+			const detail::lua::State m_state;
 
 		private:
 
