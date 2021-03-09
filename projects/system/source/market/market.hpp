@@ -74,6 +74,10 @@ namespace solution
 			{
 				bool required_charts            = false;
 				bool required_self_similarities = false;
+
+				std::string cumulative_distances_asset;
+				std::string cumulative_distances_scale_1;
+				std::string cumulative_distances_scale_2;
 			};
 
 		private:
@@ -81,68 +85,6 @@ namespace solution
 			using assets_container_t = std::vector < std::string > ;
 
 			using scales_container_t = std::vector < std::string > ;
-
-		private:
-
-			struct Extension
-			{
-				using extension_t = std::string;
-
-				static inline const extension_t txt = ".txt";
-				static inline const extension_t csv = ".csv";
-				static inline const extension_t dat = ".dat";
-
-				static inline const extension_t empty = "";
-			};
-
-		private:
-
-			class Data
-			{
-			private:
-
-				using json_t = nlohmann::json;
-
-			private:
-
-				struct File
-				{
-					using path_t = std::filesystem::path;
-
-					static inline const path_t config_json = "market/config.json";
-					static inline const path_t assets_data = "market/assets.data";
-					static inline const path_t scales_data = "market/scales.data";
-				};
-
-			private:
-
-				using path_t = File::path_t;
-
-			private:
-
-				struct Key
-				{
-					struct Config
-					{
-						static inline const std::string required_charts            = "required_charts";
-						static inline const std::string required_self_similarities = "required_self_similarities";
-					};
-				};
-
-			public:
-
-				static void load_config(Config & config);
-
-				static void load_assets(assets_container_t & assets);
-
-				static void load_scales(scales_container_t & scales);
-
-			private:
-
-				static void load(const path_t & path, json_t & object);
-
-				static void save(const path_t & path, const json_t & object);
-			};
 
 		public:
 
@@ -198,13 +140,13 @@ namespace solution
 		private:
 
 			template < typename Iterator >
-			class Candle_Parser : public boost::spirit::qi::grammar < 
+			class Candle_Parser : public boost::spirit::qi::grammar <
 				Iterator, Candle(), boost::spirit::qi::blank_type >
 			{
 			private:
 
-				using rule_t = boost::spirit::qi::rule < 
-					Iterator, Candle(), boost::spirit::qi::blank_type >;
+				using rule_t = boost::spirit::qi::rule <
+					Iterator, Candle(), boost::spirit::qi::blank_type > ;
 
 			public:
 
@@ -240,6 +182,82 @@ namespace solution
 
 			using self_similarities_container_t = std::unordered_map < std::string,
 				self_similarity_matrix_t > ;
+
+			using distances_matrix_t = boost::multi_array < double, 2U > ;
+
+		private:
+
+			struct Extension
+			{
+				using extension_t = std::string;
+
+				static inline const extension_t txt = ".txt";
+				static inline const extension_t csv = ".csv";
+				static inline const extension_t dat = ".dat";
+
+				static inline const extension_t empty = "";
+			};
+
+		private:
+
+			class Data
+			{
+			private:
+
+				using json_t = nlohmann::json;
+
+			private:
+
+				struct File
+				{
+					using path_t = std::filesystem::path;
+
+					static inline const path_t config_json = "market/config.json";
+					static inline const path_t assets_data = "market/assets.data";
+					static inline const path_t scales_data = "market/scales.data";
+
+					static inline const path_t self_similarities_data    = "market/output/self_similarities.data";
+					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
+				};
+
+			private:
+
+				using path_t = File::path_t;
+
+			private:
+
+				struct Key
+				{
+					struct Config
+					{
+						static inline const std::string required_charts              = "required_charts";
+						static inline const std::string required_self_similarities   = "required_self_similarities";
+						static inline const std::string cumulative_distances_asset   = "cumulative_distances_asset";
+						static inline const std::string cumulative_distances_scale_1 = "cumulative_distances_scale_1";
+						static inline const std::string cumulative_distances_scale_2 = "cumulative_distances_scale_2";
+					};
+				};
+
+			public:
+
+				static void load_config(Config & config);
+
+				static void load_assets(assets_container_t & assets);
+
+				static void load_scales(scales_container_t & scales);
+
+			public:
+
+				static void save_self_similarities(const self_similarities_container_t & self_similarities);
+
+				static void save_cumulative_distances(const distances_matrix_t & matrix);
+
+			private:
+
+				static void load(const path_t & path, json_t & object);
+
+				static void save(const path_t & path, const json_t & object);
+			};
 
 		public:
 
@@ -302,6 +320,10 @@ namespace solution
 
 			void compute_self_similarities();
 
+			void save_self_similarities() const;
+
+			void save_cumulative_distances(const distances_matrix_t & matrix) const;
+
 		private:
 
 			double compute_self_similarity(const std::string & asset,
@@ -312,7 +334,8 @@ namespace solution
 			
 		private:
 
-			static inline const path_t directory = "market/charts";
+			static inline const path_t charts_directory = "market/charts";
+			static inline const path_t output_directory = "market/output";
 
 		private:
 

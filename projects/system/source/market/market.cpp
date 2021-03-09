@@ -6,6 +6,26 @@ namespace solution
 	{
 		using Severity = shared::Logger::Severity;
 
+		void Market::Candle::update_date_time() noexcept
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				date_time.year   = (raw_date / 100U) / 100U;
+				date_time.month  = (raw_date / 100U) % 100U;
+				date_time.day    = (raw_date % 100U);
+
+				date_time.hour   = (raw_time / 100U) / 100U;
+				date_time.minute = (raw_time / 100U) % 100U;
+				date_time.second = (raw_time % 100U);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::Data::load_config(Config & config)
 		{
 			RUN_LOGGER(logger);
@@ -20,6 +40,12 @@ namespace solution
 					raw_config[Key::Config::required_charts].get < bool > ();
 				config.required_self_similarities = 
 					raw_config[Key::Config::required_self_similarities].get < bool > ();
+				config.cumulative_distances_asset =
+					raw_config[Key::Config::cumulative_distances_asset].get < std::string > ();
+				config.cumulative_distances_scale_1 =
+					raw_config[Key::Config::cumulative_distances_scale_1].get < std::string > ();
+				config.cumulative_distances_scale_2 =
+					raw_config[Key::Config::cumulative_distances_scale_2].get < std::string > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -83,6 +109,83 @@ namespace solution
 			}
 		}
 
+		void Market::Data::save_self_similarities(const self_similarities_container_t & self_similarities)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = File::self_similarities_data;
+
+				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
+
+				if (!fout)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				for (const auto & [asset, matrix] : self_similarities)
+				{
+					auto size = matrix.size();
+
+					fout << asset << " " << size << std::endl << std::endl;
+
+					for (auto i = 0U; i < size; ++i)
+					{
+						for (auto j = 0U; j < size; ++j)
+						{
+							fout << std::setw(12 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+						}
+
+						fout << std::endl;
+					}
+
+					fout << std::endl;
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::Data::save_cumulative_distances(const distances_matrix_t & matrix)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = File::cumulative_distances_data;
+
+				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
+
+				if (!fout)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				auto size_1 = matrix.size();
+
+				auto size_2 = matrix.begin()->size();
+
+				fout << size_1 << " " << size_2 << std::endl << std::endl;
+
+				for (auto i = 0U; i < size_1; ++i)
+				{
+					for (auto j = 0U; j < size_2; ++j)
+					{
+						fout << std::setw(12 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+					}
+
+					fout << std::endl;
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::Data::load(const path_t & path, json_t & object)
 		{
 			RUN_LOGGER(logger);
@@ -125,39 +228,22 @@ namespace solution
 			}
 		}
 
-		void Market::Candle::update_date_time() noexcept
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				date_time.year   = (raw_date / 100U) / 100U;
-				date_time.month  = (raw_date / 100U) % 100U;
-				date_time.day    = (raw_date % 100U);
-
-				date_time.hour   = (raw_time / 100U) / 100U;
-				date_time.minute = (raw_time / 100U) % 100U;
-				date_time.second = (raw_time % 100U);
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
 		void Market::initialize()
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				std::filesystem::create_directory(directory);
+				std::filesystem::create_directory(charts_directory);
+				std::filesystem::create_directory(output_directory);
 
 				load();
 
 				if (m_config.required_self_similarities)
 				{
 					compute_self_similarities();
+
+					save_self_similarities();
 				}
 			}
 			catch (const std::exception & exception)
@@ -240,7 +326,7 @@ namespace solution
 				{
 					for (const auto & scale : m_scales)
 					{
-						auto path = directory; path /= make_file_name(asset, scale);
+						auto path = charts_directory; path /= make_file_name(asset, scale);
 
 						if (!std::filesystem::exists(path))
 						{
@@ -330,7 +416,7 @@ namespace solution
 
 			try
 			{
-				auto path = directory; path /= make_file_name(asset, scale);
+				auto path = charts_directory; path /= make_file_name(asset, scale);
 
 				shared::Python python;
 
@@ -375,7 +461,7 @@ namespace solution
 					}
 				}
 
-				return std::make_pair(directory, counter);
+				return std::make_pair(charts_directory, counter);
 			}
 			catch (const std::exception & exception)
 			{
@@ -431,20 +517,20 @@ namespace solution
 			{
 				auto size_1 = std::size(m_charts.at(asset).at(scale_1));
 				auto size_2 = std::size(m_charts.at(asset).at(scale_2));
-				
-				self_similarity_matrix_t distances(boost::extents[size_1][size_2]);
+
+				distances_matrix_t distances(boost::extents[size_1][size_2]);
 
 				for (auto i = 0U; i < size_1; ++i)
 				{
 					for (auto j = 0U; j < size_2; ++j)
 					{
 						distances[i][j] = std::pow(
-							m_charts.at(asset).at(scale_1)[i].price_close - 
-							m_charts.at(asset).at(scale_1)[j].price_close, 2.0);
+							m_charts.at(asset).at(scale_1)[i].price_close -
+							m_charts.at(asset).at(scale_2)[j].price_close, 2.0);
 					}
 				}
 
-				self_similarity_matrix_t cumulative_distances(boost::extents[size_1][size_2]);
+				distances_matrix_t cumulative_distances(boost::extents[size_1][size_2]);
 
 				cumulative_distances[0][0] = distances[0][0];
 
@@ -458,7 +544,7 @@ namespace solution
 					cumulative_distances[0][j] = distances[0][j] + cumulative_distances[0][j - 1]; // ?
 				}
 
-				const auto delta = 10;
+				constexpr auto delta = std::numeric_limits < int > ::max(); // ?
 
 				for (auto i = 1; i < size_1; ++i)
 				{
@@ -466,7 +552,7 @@ namespace solution
 					{
 						if (std::abs(i - j) < delta)
 						{
-							cumulative_distances[i][j] += min(cumulative_distances[i - 1][j - 1],
+							cumulative_distances[i][j] = distances[i][j] + min(cumulative_distances[i - 1][j - 1],
 								cumulative_distances[i - 1][j], cumulative_distances[i][j - 1]);
 						}
 						else
@@ -476,44 +562,42 @@ namespace solution
 					}
 				}
 
-				double path = cumulative_distances[size_1 - 1][size_2 - 1];
-
-				std::size_t size = 0U;
-
-				for (auto i = size_1 - 1, j = size_2 - 1; i + j != 0ULL; ++size)
+				if (asset   == m_config.cumulative_distances_asset   &&
+					scale_1 == m_config.cumulative_distances_scale_1 &&
+					scale_2 == m_config.cumulative_distances_scale_2)
 				{
-					if (i == 0)
-					{
-						path += cumulative_distances[0][j--];
-
-						continue;
-					}
-
-					if (j == 0)
-					{
-						path += cumulative_distances[i--][0];
-
-						continue;
-					}
-
-					if (cumulative_distances[i - 1][j - 1] > std::max(cumulative_distances[i - 1][j], cumulative_distances[i][j - 1]))
-					{
-						path += cumulative_distances[(i--) - 1][(j--) - 1];
-					}
-					else
-					{
-						if (cumulative_distances[i - 1][j] > cumulative_distances[i][j - 1])
-						{
-							path += cumulative_distances[(i--) - 1][j];
-						}
-						else
-						{
-							path += cumulative_distances[i][(j--) - 1];
-						}
-					}
+					save_cumulative_distances(cumulative_distances);
 				}
 
-				return (path / size);
+				return cumulative_distances[size_1 - 1][size_2 - 1];
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::save_self_similarities() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::save_self_similarities(m_self_similarities);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::save_cumulative_distances(const distances_matrix_t & matrix) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::save_cumulative_distances(matrix);
 			}
 			catch (const std::exception & exception)
 			{
