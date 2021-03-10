@@ -13,9 +13,6 @@
     <Filter Include="source\logger">
       <UniqueIdentifier>{f444c8a7-0f39-4333-a2a1-18b773bb9827}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\window">
-      <UniqueIdentifier>{cea2ead0-e553-4a1e-8517-547f7ab03b18}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\detail">
       <UniqueIdentifier>{1a03b87f-dd01-41db-a56f-60fe0441871b}</UniqueIdentifier>
     </Filter>
@@ -33,9 +30,6 @@
     <ClCompile Include="..\..\shared\source\logger\logger.cpp">
       <Filter>source\logger</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\window\window.cpp">
-      <Filter>source\window</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\export.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -49,9 +43,6 @@
     </ClInclude>
     <ClInclude Include="..\..\shared\source\logger\logger.hpp">
       <Filter>source\logger</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\window\window.hpp">
-      <Filter>source\window</Filter>
     </ClInclude>
     <ClInclude Include="..\source\detail\lua\state.hpp">
       <Filter>source\detail\lua</Filter>
