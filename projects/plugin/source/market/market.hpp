@@ -48,6 +48,15 @@ namespace solution
 		{
 		private:
 
+			struct Config
+			{
+				std::string id;
+				std::string code;
+				std::string account;
+			};
+
+		private:
+
 			using scales_container_t = std::vector < std::string > ;
 
 			using assets_container_t = 
@@ -69,6 +78,17 @@ namespace solution
 
 			private:
 
+				struct File
+				{
+					using path_t = std::filesystem::path;
+
+					static inline const path_t config_json = "market/config.json";
+					static inline const path_t assets_data = "market/assets.data";
+					static inline const path_t scales_data = "market/scales.data";
+				};
+
+			private:
+
 				struct Key
 				{
 					struct Asset
@@ -76,16 +96,13 @@ namespace solution
 						static inline const std::string class_code = "class_code";
 						static inline const std::string asset_code = "asset_code";
 					};
-				};
 
-			private:
-
-				struct File
-				{
-					using path_t = std::filesystem::path;
-
-					static inline const path_t assets = "market/data/assets.data";
-					static inline const path_t scales = "market/data/scales.data";
+					struct Config
+					{
+						static inline const std::string id      = "id";
+						static inline const std::string code    = "code";
+						static inline const std::string account = "account";
+					};
 				};
 
 			private:
@@ -94,9 +111,11 @@ namespace solution
 
 			public:
 
-				static void load(assets_container_t & assets);
+				static void load_config(Config & config);
 
-				static void load(scales_container_t & scales);
+				static void load_assets(assets_container_t & assets);
+
+				static void load_scales(scales_container_t & scales);
 
 			private:
 
@@ -177,6 +196,8 @@ namespace solution
 
 		private:
 
+			void load_config();
+
 			void load_assets();
 
 			void load_scales();
@@ -205,13 +226,23 @@ namespace solution
 
 			void send_message(const std::string & message) const;
 
+			double get_available_money() const;
+
+			bool can_make_transaction(std::shared_ptr < Source > source) const;
+
 			std::string send_transaction(const transaction_t & transaction) const;
+
+		private:
+
+			static inline const double risk_limit = 10.0;
 
 		private:
 
 			const detail::lua::State m_state;
 
 		private:
+
+			Config m_config;
 
 			assets_container_t m_assets;
 
