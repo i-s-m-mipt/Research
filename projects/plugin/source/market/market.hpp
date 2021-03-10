@@ -18,6 +18,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/containers/map.hpp>
+#include <boost/interprocess/containers/string.hpp>
+#include <boost/interprocess/containers/vector.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/sync/interprocess_condition.hpp>
+#include <boost/interprocess/sync/interprocess_mutex.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
+
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 
@@ -165,6 +174,41 @@ namespace solution
 			};
 			*/
 
+		private:
+
+			using shared_memory_t = boost::interprocess::managed_shared_memory;
+
+			using string_t = boost::interprocess::basic_string < char, std::char_traits < char >,
+				boost::interprocess::allocator < char, shared_memory_t::segment_manager > > ;
+
+			using asset_data_t = std::pair < string_t, std::size_t > ;
+
+			using asset_data_allocator_t =
+				boost::interprocess::allocator < asset_data_t, shared_memory_t::segment_manager > ;
+
+			using assets_data_t = boost::interprocess::map < asset_data_t::first_type, asset_data_t::second_type,
+				std::less < asset_data_t::first_type > , asset_data_allocator_t > ;
+
+			using condition_t = boost::interprocess::interprocess_condition;
+
+			using mutex_t = boost::interprocess::interprocess_mutex;
+
+		private:
+
+			struct Transaction
+			{
+				string_t asset_code; // SBER
+				string_t operation;  // B
+				string_t quantity;   // 100
+			};
+
+		private:
+
+			using transaction_allocator_t =
+				boost::interprocess::allocator < Transaction, shared_memory_t::segment_manager > ;
+
+			using transactions_container_t = boost::interprocess::vector < Transaction, transaction_allocator_t > ;
+
 		public:
 
 			explicit Market(detail::lua::State state) : m_state(state)
@@ -202,6 +246,14 @@ namespace solution
 
 			void load_scales();
 
+		private:
+
+			void initialize_shared_memory();
+
+		private:
+
+			std::string make_shared_memory_name() const;
+
 		public:
 
 			const auto & assets() const noexcept
@@ -220,21 +272,25 @@ namespace solution
 
 			void stop();
 
+		private:
+
+			void update_shared_memory() const;
+
+		private:
+
+			double available_money() const;
+
+			std::size_t lot_size(const std::string & class_code, const std::string & asset_code) const;
+
+			void update_sources() const;
+
 		public:
 
 			bool is_connected() const;
 
 			void send_message(const std::string & message) const;
 
-			double get_available_money() const;
-
-			bool can_make_transaction(std::shared_ptr < Source > source) const;
-
-			std::string send_transaction(const transaction_t & transaction) const;
-
-		private:
-
-			static inline const double risk_limit = 10.0;
+			std::string send_transaction(const transaction_t & transaction) const; // TODO
 
 		private:
 
@@ -252,7 +308,21 @@ namespace solution
 
 		private:
 
-			mutable std::mutex m_mutex;
+			shared_memory_t m_shared_memory;
+
+			double * m_money;
+
+			assets_data_t * m_assets_data;
+
+			transactions_container_t * m_transactions;
+
+			condition_t * m_condition;
+
+			mutex_t * m_mutex;
+
+		private:
+
+			mutable std::mutex m_market_mutex;
 
 			mutable std::atomic < Status > m_status;
 		};

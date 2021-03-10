@@ -158,6 +158,8 @@ namespace solution
 				}
 
 				m_status.store(Status::stopped);
+
+				initialize_shared_memory();
 			}
 			catch (const std::exception & exception)
 			{
@@ -237,6 +239,60 @@ namespace solution
 			}
 		}
 
+		void Market::initialize_shared_memory()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto shared_memory_name = make_shared_memory_name();
+
+				const auto shared_memory_size = 65536U;
+
+				boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
+
+				m_shared_memory = shared_memory_t(boost::interprocess::create_only,
+					shared_memory_name.c_str(), shared_memory_size);
+
+				m_money = m_shared_memory.construct < double > (
+					boost::interprocess::unique_instance) (0.0);
+
+				asset_data_allocator_t asset_data_allocator(m_shared_memory.get_segment_manager());
+
+				m_assets_data = m_shared_memory.construct < assets_data_t > (
+					boost::interprocess::unique_instance) (asset_data_allocator);
+
+				transaction_allocator_t transaction_allocator(m_shared_memory.get_segment_manager());
+
+				m_transactions = m_shared_memory.construct < transactions_container_t > (
+					boost::interprocess::unique_instance) (transaction_allocator);
+
+				m_condition = m_shared_memory.construct < condition_t > (
+					boost::interprocess::unique_instance) ();
+
+				m_mutex = m_shared_memory.construct < mutex_t > (
+					boost::interprocess::unique_instance) ();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		std::string Market::make_shared_memory_name() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				return "QUIK";
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::run()
 		{
 			RUN_LOGGER(logger);
@@ -245,26 +301,21 @@ namespace solution
 			{
 				m_status.store(Status::running);
 
-				std::scoped_lock lock(m_mutex);
+				std::scoped_lock lock(m_market_mutex);
 
 				while (m_status.load() == Status::running)
 				{
-					for (const auto & source : m_sources)
-					{
-						try
-						{
-							source->update();
-						}
-						catch (...)
-						{
-							logger.write(Severity::error, source->asset_code() +
-								":" + source->scale_code() + "source update failed");
-						}
-					}
+					std::unique_lock lock(*m_mutex);
 
-					send_message(std::to_string(get_available_money()));
+					m_condition->wait(lock); // request from server
 
-					std::this_thread::sleep_for(std::chrono::seconds(1));
+					update_shared_memory();
+
+					m_condition->notify_all(); // responce to server
+
+					m_condition->wait(lock); // responce from server
+
+					// TODO
 				}
 			}
 			catch (const std::exception & exception)
@@ -281,7 +332,111 @@ namespace solution
 			{
 				m_status.store(Status::stopped);
 
-				std::scoped_lock lock(m_mutex);
+				std::scoped_lock lock(m_market_mutex);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::update_shared_memory() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				*m_money = available_money();
+
+				for (const auto & [class_code, asset_code] : m_assets)
+				{
+					(*m_assets_data)[string_t(asset_code.c_str())] = lot_size(class_code, asset_code);
+				}
+
+				update_sources();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		double Market::available_money() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_state.get_global("getPortfolioInfo");
+
+				m_state.push_string(m_config.id);
+				m_state.push_string(m_config.code);
+
+				m_state.call(2);
+
+				m_state.push_string("av_lim_all");
+
+				m_state.get_table();
+
+				auto result = std::stod(m_state.to_string());
+
+				m_state.pop(2);
+
+				return result;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		std::size_t Market::lot_size(const std::string & class_code, const std::string & asset_code) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_state.get_global("getSecurityInfo");
+
+				m_state.push_string(class_code);
+				m_state.push_string(asset_code);
+
+				m_state.call(2);
+
+				m_state.push_string("lot_size");
+
+				m_state.get_table();
+
+				auto result = static_cast < std::size_t > (m_state.to_integer());
+
+				m_state.pop(2);
+
+				return result;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::update_sources() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & source : m_sources)
+				{
+					try
+					{
+						source->update();
+					}
+					catch (...)
+					{
+						logger.write(Severity::error, source->asset_code() +
+							":" + source->scale_code() + "source update failed");
+					}
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -328,50 +483,6 @@ namespace solution
 				{
 					throw std::runtime_error("bad message");
 				}
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		double Market::get_available_money() const
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				m_state.get_global("getPortfolioInfo");
-
-				m_state.push_string(m_config.id);
-				m_state.push_string(m_config.code);
-
-				m_state.call(2);
-
-				m_state.push_string("av_lim_all");
-
-				m_state.get_table();
-
-				auto result = std::stod(m_state.to_string());
-
-				m_state.pop(2);
-
-				return result;
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		bool Market::can_make_transaction(std::shared_ptr < Source > source) const
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				return (get_available_money() > risk_limit *
-					source->lots_per_transaction() * source->lot_size() * source->last_price());
 			}
 			catch (const std::exception & exception)
 			{
