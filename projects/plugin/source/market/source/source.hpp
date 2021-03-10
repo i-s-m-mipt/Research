@@ -21,7 +21,6 @@
 #include <boost/interprocess/containers/deque.hpp>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 #include "../../detail/lua/state.hpp"
@@ -65,8 +64,6 @@ namespace solution
 					boost::interprocess::allocator < record_t, shared_memory_t::segment_manager > ;
 
 				using deque_t = boost::interprocess::deque < record_t, record_allocator_t > ;
-
-				using mutex_t = boost::interprocess::interprocess_mutex;
 
 			private:
 
@@ -228,19 +225,13 @@ namespace solution
 
 			public:
 
-				std::size_t lot_size() const;
-
 				Candle::price_t last_price() const;
-
-				std::size_t lots_per_transaction() const;
 
 			private:
 
 				static inline const std::string references = "references";
 
 				static inline const std::size_t default_size = 100U;
-
-				static inline const double money_per_transaction = 50'000.0;
 
 			private:
 
@@ -259,7 +250,6 @@ namespace solution
 				shared_memory_t m_shared_memory;
 
 				deque_t * m_deque;
-				mutex_t * m_mutex;
 
 			private:
 

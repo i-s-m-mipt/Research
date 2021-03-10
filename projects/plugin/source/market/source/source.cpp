@@ -31,7 +31,6 @@ namespace solution
 				try
 				{
 					m_shared_memory.destroy_ptr(m_deque);
-					m_shared_memory.destroy_ptr(m_mutex);
 
 					const auto shared_memory_name = make_shared_memory_name();
 
@@ -99,8 +98,8 @@ namespace solution
 
 					record_allocator_t allocator(m_shared_memory.get_segment_manager());
 
-					m_deque = m_shared_memory.construct < deque_t > (boost::interprocess::unique_instance) (allocator);
-					m_mutex = m_shared_memory.construct < mutex_t > (boost::interprocess::unique_instance) ();
+					m_deque = m_shared_memory.construct < deque_t > (
+						boost::interprocess::unique_instance) (allocator);
 				}
 				catch (const std::exception & exception)
 				{
@@ -134,8 +133,6 @@ namespace solution
 					{
 						if (m_deque->size() == 0)
 						{
-							boost::interprocess::scoped_lock lock(*m_mutex);
-
 							for (index_t index = size - m_size + 1; index <= size; ++index)
 							{
 								m_deque->push_back(make_record(make_candle(index)));
@@ -147,8 +144,6 @@ namespace solution
 						if (m_last_index < size)
 						{
 							auto delta = std::min(size - m_last_index, m_size);
-
-							boost::interprocess::scoped_lock lock(*m_mutex);
 
 							for (index_t index = std::max(static_cast < unsigned int > ( // ?
 								size - m_size + 1U), m_last_index + 1U); index <= size; ++index)
@@ -165,8 +160,6 @@ namespace solution
 						}
 						else
 						{
-							boost::interprocess::scoped_lock lock(*m_mutex);
-
 							m_deque->pop_back();
 
 							m_deque->push_back(make_record(make_candle(size)));
@@ -428,35 +421,6 @@ namespace solution
 				}
 			}
 
-			std::size_t Source::lot_size() const
-			{
-				RUN_LOGGER(logger);
-
-				try
-				{
-					m_state.get_global("getSecurityInfo");
-
-					m_state.push_string(m_class_code);
-					m_state.push_string(m_asset_code);
-
-					m_state.call(2);
-
-					m_state.push_string("lot_size");
-
-					m_state.get_table();
-
-					auto result = static_cast < std::size_t > (m_state.to_integer());
-
-					m_state.pop(2);
-
-					return result;
-				}
-				catch (const std::exception & exception)
-				{
-					shared::catch_handler < source_exception > (logger, exception);
-				}
-			}
-
 			Source::Candle::price_t Source::last_price() const
 			{
 				RUN_LOGGER(logger);
@@ -464,29 +428,6 @@ namespace solution
 				try
 				{
 					return make_candle(max_size()).price_close;
-				}
-				catch (const std::exception & exception)
-				{
-					shared::catch_handler < source_exception > (logger, exception);
-				}
-			}
-
-			std::size_t Source::lots_per_transaction() const
-			{
-				RUN_LOGGER(logger);
-
-				try
-				{
-					auto lot_price = lot_size() * last_price();
-
-					if (lot_price < std::numeric_limits < double > ::epsilon())
-					{
-						return 0U;
-					}
-					else
-					{
-						return (static_cast < std::size_t > (std::ceil(money_per_transaction / lot_price)));
-					}					
 				}
 				catch (const std::exception & exception)
 				{
