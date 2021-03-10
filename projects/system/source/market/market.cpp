@@ -252,6 +252,20 @@ namespace solution
 			}
 		}
 
+		void Market::uninitialize()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_thread_pool.join();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::load()
 		{
 			RUN_LOGGER(logger);
@@ -475,17 +489,44 @@ namespace solution
 
 			try
 			{
+				const auto size = std::size(m_scales);
+
 				for (const auto & asset : m_assets)
 				{
-					m_self_similarities.insert(std::make_pair(asset, self_similarity_matrix_t(
-						boost::extents[std::size(m_scales)][std::size(m_scales)])));
+					std::vector < std::future < double > > futures(size * (size - 1U) / 2U);
 
-					for (auto i = 0U; i < std::size(m_scales); ++i)
+					for (auto i = 0U, index = 0U; i < size; ++i)
 					{
-						for (auto j = 0U; j < std::size(m_scales); ++j)
+						for (auto j = i + 1; j < size; ++j)
 						{
-							m_self_similarities[asset][i][j] = ((i == j) ? 0.0 : // ?
-								compute_self_similarity(asset, m_scales[i], m_scales[j]));
+							std::packaged_task < double() > task([this, asset, i, j]()
+								{ return compute_self_similarity(asset, m_scales[i], m_scales[j]); });
+
+							futures[index++] = boost::asio::post(m_thread_pool, std::move(task));
+						}
+					}
+
+					m_self_similarities.insert(std::make_pair(asset, self_similarity_matrix_t(boost::extents[size][size])));
+
+					for (auto i = 0U, index = 0U; i < size; ++i)
+					{
+						for (auto j = 0U; j < size; ++j)
+						{
+							if (i == j)
+							{
+								m_self_similarities[asset][i][j] = 0.0;
+							}
+							else
+							{
+								if (i > j)
+								{
+									m_self_similarities[asset][i][j] = m_self_similarities[asset][j][i];
+								}
+								else
+								{
+									m_self_similarities[asset][i][j] = futures[index++].get();
+								}
+							}
 						}
 					}
 				}

@@ -15,18 +15,21 @@
 #include <exception>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
 #include <string>
 #include <sstream>
+#include <thread>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
 
 #define BOOST_PYTHON_STATIC_LIB
 
+#include <boost/asio.hpp>
 #include <boost/config/warning_disable.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/include/io.hpp>
@@ -259,18 +262,34 @@ namespace solution
 				static void save(const path_t & path, const json_t & object);
 			};
 
+		private:
+
+			using thread_pool_t = boost::asio::thread_pool;
+
 		public:
 
-			Market()
+			Market() : m_thread_pool(std::thread::hardware_concurrency())
 			{
 				initialize();
 			}
 
-			~Market() noexcept = default;
+			~Market() noexcept
+			{
+				try
+				{
+					uninitialize();
+				}
+				catch (...)
+				{
+					// std::abort();
+				}
+			}
 
 		private:
 
 			void initialize();
+
+			void uninitialize();
 
 		private:
 
@@ -348,6 +367,8 @@ namespace solution
 			charts_container_t m_charts;
 
 			self_similarities_container_t m_self_similarities;
+
+			thread_pool_t m_thread_pool;
 		};
 
 	} // namespace system
