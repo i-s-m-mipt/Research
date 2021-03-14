@@ -1,7 +1,8 @@
 {
     "required_charts": false,
-    "required_self_similarities": true,
-    "cumulative_distances_asset": "GAZP",
+    "required_self_similarities": false,
+    "cumulative_distances_asset": "YNDX",
     "cumulative_distances_scale_1": "W",
-    "cumulative_distances_scale_2": "MN"
+    "cumulative_distances_scale_2": "MN",
+    "required_deviations": true
 }

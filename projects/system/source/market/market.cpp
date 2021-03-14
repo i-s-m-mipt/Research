@@ -46,6 +46,8 @@ namespace solution
 					raw_config[Key::Config::cumulative_distances_scale_1].get < std::string > ();
 				config.cumulative_distances_scale_2 =
 					raw_config[Key::Config::cumulative_distances_scale_2].get < std::string > ();
+				config.required_deviations =
+					raw_config[Key::Config::required_deviations].get < bool > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -134,7 +136,7 @@ namespace solution
 					{
 						for (auto j = 0U; j < size; ++j)
 						{
-							fout << std::setw(12 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+							fout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
 						}
 
 						fout << std::endl;
@@ -174,7 +176,7 @@ namespace solution
 				{
 					for (auto j = 0U; j < size_2; ++j)
 					{
-						fout << std::setw(12 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+						fout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
 					}
 
 					fout << std::endl;
@@ -185,6 +187,42 @@ namespace solution
 				shared::catch_handler < market_exception > (logger, exception);
 			}
 		}
+
+		void Market::Data::save_deviations(const charts_container_t & charts)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = File::deviations_data;
+
+				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
+
+				if (!fout)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				for (const auto & [asset, scales] : charts)
+				{
+					for (const auto & [scale, candles] : scales)
+					{
+						fout << asset << " " << scale << " " << std::size(candles) << std::endl << std::endl;
+
+						std::for_each(std::begin(candles), std::end(candles), [&fout](const auto & candle) 
+							{ fout << candle.deviation << " "; });
+
+						fout << std::endl << std::endl;
+					}
+				}
+
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 
 		void Market::Data::load(const path_t & path, json_t & object)
 		{
@@ -244,6 +282,11 @@ namespace solution
 					compute_self_similarities();
 
 					save_self_similarities();
+				}
+
+				if (m_config.required_deviations)
+				{
+					save_deviations();
 				}
 			}
 			catch (const std::exception & exception)
@@ -448,7 +491,6 @@ namespace solution
 			}
 		}
 
-
 		Market::path_t Market::get_chart(const std::string & asset, const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
@@ -590,9 +632,9 @@ namespace solution
 				{
 					for (auto j = 0U; j < size_2; ++j)
 					{
-						distances[i][j] = std::pow(
-							m_charts.at(asset).at(scale_1)[i].price_close -
-							m_charts.at(asset).at(scale_2)[j].price_close, 2.0);
+						distances[i][j] = std::abs(
+							m_charts.at(asset).at(scale_1)[i].deviation -
+							m_charts.at(asset).at(scale_2)[j].deviation);
 					}
 				}
 
@@ -602,12 +644,12 @@ namespace solution
 
 				for (auto i = 1U; i < size_1; ++i)
 				{
-					cumulative_distances[i][0] = distances[i][0] + cumulative_distances[i - 1][0]; // ?
+					cumulative_distances[i][0] = distances[i][0] + cumulative_distances[i - 1][0];
 				}
 
 				for (auto j = 1U; j < size_2; ++j)
 				{
-					cumulative_distances[0][j] = distances[0][j] + cumulative_distances[0][j - 1]; // ?
+					cumulative_distances[0][j] = distances[0][j] + cumulative_distances[0][j - 1];
 				}
 
 				constexpr auto delta = std::numeric_limits < int > ::max(); // ?
@@ -630,7 +672,7 @@ namespace solution
 
 				if (asset   == m_config.cumulative_distances_asset   &&
 					scale_1 == m_config.cumulative_distances_scale_1 &&
-					scale_2 == m_config.cumulative_distances_scale_2)
+					scale_2 == m_config.cumulative_distances_scale_2) // TODO
 				{
 					save_cumulative_distances(cumulative_distances);
 				}
@@ -664,6 +706,20 @@ namespace solution
 			try
 			{
 				Data::save_cumulative_distances(matrix);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::save_deviations() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::save_deviations(m_charts);
 			}
 			catch (const std::exception & exception)
 			{

@@ -81,6 +81,8 @@ namespace solution
 				std::string cumulative_distances_asset;
 				std::string cumulative_distances_scale_1;
 				std::string cumulative_distances_scale_2;
+
+				bool required_deviations = false;
 			};
 
 		private:
@@ -223,6 +225,7 @@ namespace solution
 
 					static inline const path_t self_similarities_data    = "market/output/self_similarities.data";
 					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
+					static inline const path_t deviations_data           = "market/output/deviations.data";
 				};
 
 			private:
@@ -240,6 +243,7 @@ namespace solution
 						static inline const std::string cumulative_distances_asset   = "cumulative_distances_asset";
 						static inline const std::string cumulative_distances_scale_1 = "cumulative_distances_scale_1";
 						static inline const std::string cumulative_distances_scale_2 = "cumulative_distances_scale_2";
+						static inline const std::string required_deviations          = "required_deviations";
 					};
 				};
 
@@ -256,6 +260,8 @@ namespace solution
 				static void save_self_similarities(const self_similarities_container_t & self_similarities);
 
 				static void save_cumulative_distances(const distances_matrix_t & matrix);
+
+				static void save_deviations(const charts_container_t & charts);
 
 			private:
 
@@ -346,6 +352,8 @@ namespace solution
 			void save_self_similarities() const;
 
 			void save_cumulative_distances(const distances_matrix_t & matrix) const;
+
+			void save_deviations() const;
 
 		private:
 
