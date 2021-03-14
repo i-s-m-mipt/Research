@@ -138,6 +138,8 @@ namespace solution
 				price_t price_close = 0.0;
 
 				volume_t volume = 0ULL;
+
+				double deviation = 0.0;
 			};
 
 		private:
@@ -309,6 +311,8 @@ namespace solution
 
 			Candle parse(const std::string & line) const;
 
+			void update_deviations(candles_container_t & candles) const;
+				
 		public:
 
 			const auto & assets() const noexcept

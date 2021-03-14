@@ -383,6 +383,8 @@ namespace solution
 
 				std::reverse(std::begin(candles), std::end(candles));
 
+				update_deviations(candles);
+
 				return candles;
 			}
 			catch (const std::exception & exception)
@@ -423,6 +425,29 @@ namespace solution
 				shared::catch_handler < market_exception > (logger, exception);
 			}
 		}
+
+		void Market::update_deviations(candles_container_t & candles) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (auto i = 1U; i < std::size(candles); ++i)
+				{
+					if (candles[i - 1].price_close <= std::numeric_limits < double > ::epsilon())
+					{
+						throw std::domain_error("division by zero");
+					}
+
+					candles[i].deviation = (candles[i].price_close - candles[i - 1].price_close) / candles[i - 1].price_close;
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 
 		Market::path_t Market::get_chart(const std::string & asset, const std::string & scale) const
 		{
