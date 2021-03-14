@@ -425,14 +425,14 @@ def get(asset, timeframe, path) :
         batch = 365
 
         first = datetime.now().date() - timedelta(1)
-        last  = first - timedelta(batch)
+        last  = first                 - timedelta(batch)
         
         for i in range(0, total, batch):
             
             get_piece(asset, timeframe, last, first, path)
 
-            first = last - timedelta(1)
-            last = first - timedelta(batch)
+            first = last  - timedelta(1)
+            last  = first - timedelta(batch)
 
             sleep(1)
 
