@@ -311,9 +311,34 @@ assets = {
     "ZILL"   : 81918,
     "ZMZN"   : 556,
     "ZMZNP"  : 603,
-    "ZVEZ"   : 82001
+    "ZVEZ"   : 82001,
+
+    "INX"   : 90,
+    "RTSI"  : 95,
+    "IMOEX" : 13851,
+
+    "BZ" : 19473,
+    "CL" : 18948,
+    "NG" : 18949,
+    "AH" : 18930,
+    "RB" : 18950,
+    "GC" : 18953,
+    "HO" : 18951,
+    "CA" : 18931,
+    "NI" : 18932,
+    "SN" : 18934,
+    "PA" : 18959,
+    "PL" : 18947,
+    "ZW" : 74453,
+    "YO" : 74454,
+    "PB" : 18933,
+    "SI" : 18952,
+    "ZS" : 18935,
+
+    "EURRUB" : 66860,
+    "EURUSD" : 83,
+    "USDRUB" : 901
 }
- 
 
 timeframes = {
     "T"   : 1,
@@ -329,10 +354,9 @@ timeframes = {
 }
 
 
+def get_piece(asset, timeframe, first, last, path) :
 
-def get_piece(asset, timeframe, first, last, file) :
-
-    fout = open(file, "a")
+    fout = open(path, "a")
     
     try :
 
@@ -341,8 +365,8 @@ def get_piece(asset, timeframe, first, last, file) :
         properties = urlencode([
 		    ("market",    0),                       # Тип рынка
 		    ("em",        assets[asset]),           # Код актива
-	        ("code",      asset),                       # Имя актива
-	        ("apply",     0),                           # Избранное
+	            ("code",      asset),                   # Имя актива
+                    ("apply",     0),                       # Избранное
 		    ("df",        first.day),               # Начальная дата, номер дня (1-31)
 		    ("mf",        first.month - 1),         # Начальная дата, номер месяца (0-11)
 		    ("yf",        first.year),              # Начальная дата, год
@@ -393,7 +417,11 @@ def get(asset, timeframe, path) :
 
     try:
         
-        total = 365 * 20
+        fout = open(path, "w")
+        
+        fout.close()
+
+        total = 365 * 25
         batch = 365
 
         first = datetime.now().date() - timedelta(1)
@@ -413,6 +441,5 @@ def get(asset, timeframe, path) :
         print("Exception: ", sys.exc_info()[0])
 
         raise
-
 
 # get("GAZP", "M60")
