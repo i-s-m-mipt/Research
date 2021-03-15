@@ -670,9 +670,9 @@ namespace solution
 					}
 				}
 
-				if (asset   == m_config.cumulative_distances_asset   &&
-					scale_1 == m_config.cumulative_distances_scale_1 &&
-					scale_2 == m_config.cumulative_distances_scale_2) // TODO
+				if ((asset == m_config.cumulative_distances_asset) && (
+					(scale_1 == m_config.cumulative_distances_scale_1 && scale_2 == m_config.cumulative_distances_scale_2) ||
+					(scale_2 == m_config.cumulative_distances_scale_1 && scale_1 == m_config.cumulative_distances_scale_2)))
 				{
 					save_cumulative_distances(cumulative_distances);
 				}

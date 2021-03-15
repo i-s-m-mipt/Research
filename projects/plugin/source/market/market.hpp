@@ -77,7 +77,7 @@ namespace solution
 
 			using holdings_container_t = std::unordered_map < std::string, double > ;
 
-			using transaction_t = std::unordered_map < std::string, std::string > ; // TODO
+			using transaction_t = std::unordered_map < std::string, std::string > ;
 
 		private:
 
