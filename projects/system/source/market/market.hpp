@@ -18,6 +18,7 @@
 #include <future>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <stdexcept>
 #include <string>
@@ -77,6 +78,7 @@ namespace solution
 			{
 				bool required_charts            = false;
 				bool required_self_similarities = false;
+				bool required_pair_similarities = false;
 
 				int self_similarity_DTW_delta;
 
@@ -194,6 +196,11 @@ namespace solution
 
 			using distances_matrix_t = boost::multi_array < double, 2U > ;
 
+			using pair_similarity_matrix_t = boost::multi_array < double, 2U > ;
+
+			using pair_similarities_container_t = std::unordered_map < std::string,
+				pair_similarity_matrix_t > ;
+
 		private:
 
 			struct Extension
@@ -226,6 +233,7 @@ namespace solution
 					static inline const path_t scales_data = "market/scales.data";
 
 					static inline const path_t self_similarities_data    = "market/output/self_similarities.data";
+					static inline const path_t pair_similarities_data    = "market/output/pair_similarities.data";
 					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
 					static inline const path_t deviations_data           = "market/output/deviations.data";
 				};
@@ -242,6 +250,7 @@ namespace solution
 					{
 						static inline const std::string required_charts              = "required_charts";
 						static inline const std::string required_self_similarities   = "required_self_similarities";
+						static inline const std::string required_pair_similarities   = "required_pair_similarities";
 						static inline const std::string self_similarity_DTW_delta    = "self_similarity_DTW_delta";
 						static inline const std::string cumulative_distances_asset   = "cumulative_distances_asset";
 						static inline const std::string cumulative_distances_scale_1 = "cumulative_distances_scale_1";
@@ -261,6 +270,8 @@ namespace solution
 			public:
 
 				static void save_self_similarities(const self_similarities_container_t & self_similarities);
+
+				static void save_pair_similarities(const pair_similarities_container_t & pair_similarities);
 
 				static void save_cumulative_distances(const distances_matrix_t & matrix);
 
@@ -316,12 +327,46 @@ namespace solution
 
 			void load_charts();
 
+		private:
+
+			std::pair < path_t, std::size_t > get_all_charts() const;
+	
+			path_t get_chart(const std::string & asset, const std::string & scale) const;
+
+		private:
+
+			std::string make_file_name(const std::string & asset, const std::string & scale) const;
+
+		private:
+
 			candles_container_t load_candles(const path_t & path) const;
 
 			Candle parse(const std::string & line) const;
 
 			void update_deviations(candles_container_t & candles) const;
-				
+
+		private:
+
+			void compute_self_similarities();
+
+			void save_self_similarities() const;
+
+			void compute_pair_similarities();
+
+			void save_pair_similarities() const;
+
+			void save_cumulative_distances(const distances_matrix_t & matrix) const;
+
+			void save_deviations() const;
+
+		private:
+
+			double compute_self_similarity(const std::string & asset,
+				const std::string & scale_1, const std::string & scale_2) const;
+
+			double compute_pair_similarity(const std::string & scale,
+				const std::string & asset_1, const std::string & asset_2) const;
+
 		public:
 
 			const auto & assets() const noexcept
@@ -343,28 +388,6 @@ namespace solution
 			{
 				return m_self_similarities;
 			}
-
-		public:
-	
-			path_t get_chart(const std::string & asset, const std::string & scale) const;
-
-			std::pair < path_t, std::size_t > get_all_charts() const;
-
-			void compute_self_similarities();
-
-			void save_self_similarities() const;
-
-			void save_cumulative_distances(const distances_matrix_t & matrix) const;
-
-			void save_deviations() const;
-
-		private:
-
-			double compute_self_similarity(const std::string & asset,
-				const std::string & scale_1, const std::string & scale_2) const;
-
-			std::string make_file_name(
-				const std::string & asset, const std::string & scale) const;
 			
 		private:
 
@@ -382,6 +405,8 @@ namespace solution
 			charts_container_t m_charts;
 
 			self_similarities_container_t m_self_similarities;
+
+			pair_similarities_container_t m_pair_similarities;
 
 			thread_pool_t m_thread_pool;
 		};

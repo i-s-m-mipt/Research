@@ -40,6 +40,8 @@ namespace solution
 					raw_config[Key::Config::required_charts].get < bool > ();
 				config.required_self_similarities = 
 					raw_config[Key::Config::required_self_similarities].get < bool > ();
+				config.required_pair_similarities =
+					raw_config[Key::Config::required_pair_similarities].get < bool > ();
 				config.self_similarity_DTW_delta =
 					raw_config[Key::Config::self_similarity_DTW_delta].get < int > ();
 				config.cumulative_distances_asset =
@@ -153,6 +155,46 @@ namespace solution
 			}
 		}
 
+		void Market::Data::save_pair_similarities(const pair_similarities_container_t & pair_similarities)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = File::pair_similarities_data;
+
+				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
+
+				if (!fout)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				for (const auto & [scale, matrix] : pair_similarities)
+				{
+					auto size = matrix.size();
+
+					fout << scale << " " << size << std::endl << std::endl;
+
+					for (auto i = 0U; i < size; ++i)
+					{
+						for (auto j = 0U; j < size; ++j)
+						{
+							fout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+						}
+
+						fout << std::endl;
+					}
+
+					fout << std::endl;
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::Data::save_cumulative_distances(const distances_matrix_t & matrix)
 		{
 			RUN_LOGGER(logger);
@@ -225,7 +267,6 @@ namespace solution
 			}
 		}
 
-
 		void Market::Data::load(const path_t & path, json_t & object)
 		{
 			RUN_LOGGER(logger);
@@ -284,6 +325,13 @@ namespace solution
 					compute_self_similarities();
 
 					save_self_similarities();
+				}
+
+				if (m_config.required_pair_similarities)
+				{
+					compute_pair_similarities();
+
+					save_pair_similarities();
 				}
 
 				if (m_config.required_deviations)
@@ -493,6 +541,32 @@ namespace solution
 			}
 		}
 
+		std::pair < Market::path_t, std::size_t > Market::get_all_charts() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto counter = 0U;
+
+				for (const auto & asset : m_assets)
+				{
+					for (const auto & scale : m_scales)
+					{
+						get_chart(asset, scale);
+
+						++counter;
+					}
+				}
+
+				return std::make_pair(charts_directory, counter);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		Market::path_t Market::get_chart(const std::string & asset, const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
@@ -525,26 +599,14 @@ namespace solution
 				shared::catch_handler < market_exception > (logger, exception);
 			}
 		}
-		
-		std::pair < Market::path_t, std::size_t > Market::get_all_charts() const
+
+		std::string Market::make_file_name(const std::string & asset, const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				auto counter = 0U;
-
-				for (const auto & asset : m_assets)
-				{
-					for (const auto & scale : m_scales)
-					{
-						get_chart(asset, scale);
-
-						++counter;
-					}
-				}
-
-				return std::make_pair(charts_directory, counter);
+				return (asset + "_" + scale + Extension::csv);
 			}
 			catch (const std::exception & exception)
 			{
@@ -594,6 +656,60 @@ namespace solution
 								else
 								{
 									m_self_similarities[asset][i][j] = futures[index++].get();
+								}
+							}
+						}
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::compute_pair_similarities()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto size = std::size(m_assets);
+
+				for (const auto & scale : m_scales)
+				{
+					std::vector < std::future < double > > futures(size * (size - 1U) / 2U);
+
+					for (auto i = 0U, index = 0U; i < size; ++i)
+					{
+						for (auto j = i + 1; j < size; ++j)
+						{
+							std::packaged_task < double() > task([this, scale, i, j]()
+								{ return compute_pair_similarity(scale, m_assets[i], m_assets[j]); });
+
+							futures[index++] = boost::asio::post(m_thread_pool, std::move(task));
+						}
+					}
+
+					m_pair_similarities.insert(std::make_pair(scale, pair_similarity_matrix_t(boost::extents[size][size])));
+
+					for (auto i = 0U, index = 0U; i < size; ++i)
+					{
+						for (auto j = 0U; j < size; ++j)
+						{
+							if (i == j)
+							{
+								m_pair_similarities[scale][i][j] = 0.0;
+							}
+							else
+							{
+								if (i > j)
+								{
+									m_pair_similarities[scale][i][j] = m_pair_similarities[scale][j][i];
+								}
+								else
+								{
+									m_pair_similarities[scale][i][j] = futures[index++].get();
 								}
 							}
 						}
@@ -685,6 +801,39 @@ namespace solution
 			}
 		}
 
+		double Market::compute_pair_similarity(const std::string & scale,
+			const std::string & asset_1, const std::string & asset_2) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto & candles_1 = m_charts.at(asset_1).at(scale);
+				const auto & candles_2 = m_charts.at(asset_2).at(scale);
+
+				auto size = std::min(std::size(candles_1), std::size(candles_2));
+
+				std::vector < double > deviations_1(size, 0.0);
+				std::vector < double > deviations_2(size, 0.0);
+
+				std::transform(std::crbegin(candles_1), std::next(std::crbegin(candles_1), size),
+					std::begin(deviations_1), [](const auto & candle) { return candle.deviation; });
+
+				std::transform(std::crbegin(candles_2), std::next(std::crbegin(candles_2), size),
+					std::begin(deviations_2), [](const auto & candle) { return candle.deviation; });
+
+				std::sort(std::begin(deviations_1), std::end(deviations_1));
+				std::sort(std::begin(deviations_2), std::end(deviations_2));
+
+				return (std::transform_reduce(std::begin(deviations_1), std::end(deviations_1), std::begin(deviations_2),
+					0.0, std::plus(), [](const auto lhs, const auto rhs) { return std::abs(lhs - rhs); }) / size);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::save_self_similarities() const
 		{
 			RUN_LOGGER(logger);
@@ -692,6 +841,20 @@ namespace solution
 			try
 			{
 				Data::save_self_similarities(m_self_similarities);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::save_pair_similarities() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::save_pair_similarities(m_pair_similarities);
 			}
 			catch (const std::exception & exception)
 			{
@@ -720,21 +883,6 @@ namespace solution
 			try
 			{
 				Data::save_deviations(m_charts);
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		std::string Market::make_file_name(
-			const std::string & asset, const std::string & scale) const
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				return (asset + "_" + scale + Extension::csv);
 			}
 			catch (const std::exception & exception)
 			{
