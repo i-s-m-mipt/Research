@@ -254,18 +254,10 @@ namespace solution
 				m_shared_memory = shared_memory_t(boost::interprocess::create_only,
 					shared_memory_name.c_str(), shared_memory_size);
 
-				m_money = m_shared_memory.construct < double > (
-					boost::interprocess::unique_instance) (0.0);
+				Plugin_Data::holding_allocator_t holding_allocator(m_shared_memory.get_segment_manager());
 
-				asset_data_allocator_t asset_data_allocator(m_shared_memory.get_segment_manager());
-
-				m_assets_data = m_shared_memory.construct < assets_data_t > (
-					boost::interprocess::unique_instance) (asset_data_allocator);
-
-				transaction_allocator_t transaction_allocator(m_shared_memory.get_segment_manager());
-
-				m_transactions = m_shared_memory.construct < transactions_container_t > (
-					boost::interprocess::unique_instance) (transaction_allocator);
+				m_plugin_data = m_shared_memory.construct < Plugin_Data > (
+					boost::interprocess::unique_instance) (holding_allocator);
 
 				m_condition = m_shared_memory.construct < condition_t > (
 					boost::interprocess::unique_instance) ();
@@ -346,12 +338,16 @@ namespace solution
 
 			try
 			{
-				*m_money = available_money();
+				m_plugin_data->available_money = get_available_money();
 
-				for (const auto & [class_code, asset_code] : m_assets)
+				auto holdings = get_holdings();
+
+				for (const auto & [asset_code, position] : holdings)
 				{
-					(*m_assets_data)[string_t(asset_code.c_str())] = lot_size(class_code, asset_code);
+					m_plugin_data->holdings[Plugin_Data::string_t(asset_code.c_str())] = position;
 				}
+
+				m_plugin_data->is_updated = true;
 
 				update_sources();
 			}
@@ -361,7 +357,7 @@ namespace solution
 			}
 		}
 
-		double Market::available_money() const
+		double Market::get_available_money() const
 		{
 			RUN_LOGGER(logger);
 
@@ -390,28 +386,60 @@ namespace solution
 			}
 		}
 
-		std::size_t Market::lot_size(const std::string & class_code, const std::string & asset_code) const
+		Market::holdings_container_t Market::get_holdings() const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				m_state.get_global("getSecurityInfo");
+				holdings_container_t holdings;
 
-				m_state.push_string(class_code);
-				m_state.push_string(asset_code);
+				m_state.get_global("getNumberOf");
 
-				m_state.call(2);
+				m_state.push_string("firm_holding");
 
-				m_state.push_string("lot_size");
+				m_state.call(1);
 
-				m_state.get_table();
+				auto size = static_cast < std::size_t > (m_state.to_integer());
 
-				auto result = static_cast < std::size_t > (m_state.to_integer());
+				for (auto i = 0U; i < size; ++i)
+				{
+					m_state.get_global("getItem");
 
-				m_state.pop(2);
+					m_state.push_string("firm_holding");
+					m_state.push_number(i);
 
-				return result;
+					m_state.call(2);
+
+					m_state.push_string("sec_code");
+
+					m_state.get_table();
+
+					auto asset = static_cast < std::string > (m_state.to_string());
+
+					m_state.pop(2);
+
+					m_state.get_global("getItem");
+
+					m_state.push_string("firm_holding");
+					m_state.push_number(i);
+
+					m_state.call(2);
+
+					m_state.push_string("currentpos");
+
+					m_state.get_table();
+
+					auto position = static_cast < double > (m_state.to_number());
+
+					m_state.pop(2);
+
+					holdings[asset] = position;
+				}
+
+				m_state.pop();
+
+				return holdings;
 			}
 			catch (const std::exception & exception)
 			{
@@ -437,6 +465,35 @@ namespace solution
 							":" + source->scale_code() + "source update failed");
 					}
 				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		std::size_t Market::get_lot_size(const std::string & class_code, const std::string & asset_code) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_state.get_global("getSecurityInfo");
+
+				m_state.push_string(class_code);
+				m_state.push_string(asset_code);
+
+				m_state.call(2);
+
+				m_state.push_string("lot_size");
+
+				m_state.get_table();
+
+				auto result = static_cast <std::size_t> (m_state.to_integer());
+
+				m_state.pop(2);
+
+				return result;
 			}
 			catch (const std::exception & exception)
 			{
