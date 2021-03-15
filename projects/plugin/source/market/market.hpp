@@ -178,7 +178,9 @@ namespace solution
 
 		private:
 
-			using shared_memory_t = boost::interprocess::managed_shared_memory;			
+			using shared_memory_t = boost::interprocess::managed_shared_memory;		
+
+			using segment_manager_t = shared_memory_t::segment_manager;
 
 		private:
 
@@ -186,20 +188,19 @@ namespace solution
 			{
 			public:
 
-				using char_allocator_t = boost::interprocess::allocator < char, shared_memory_t::segment_manager > ;
+				using char_allocator_t = boost::interprocess::allocator < char, segment_manager_t >;
 
 				using string_t = boost::interprocess::basic_string < char, std::char_traits < char > , char_allocator_t > ;
 
 				using holding_t = std::pair < string_t, double > ;
 
-				using holding_allocator_t = boost::interprocess::allocator < holding_t, shared_memory_t::segment_manager > ;
+				using holding_allocator_t = boost::interprocess::allocator < holding_t, segment_manager_t > ;
 
-				using holdings_container_t = boost::unordered_map < string_t, double,
-					boost::hash < string_t > , std::equal_to < string_t > , holding_allocator_t > ;
+				using holdings_container_t = boost::interprocess::vector < holding_t, holding_allocator_t > ;
 
 			public:
 
-				explicit Plugin_Data(const holding_allocator_t & allocator) : 
+				explicit Plugin_Data(const holding_allocator_t & allocator) :
 					available_money(0.0), holdings(allocator), is_updated(false)
 				{}
 

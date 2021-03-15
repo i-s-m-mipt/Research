@@ -342,14 +342,19 @@ namespace solution
 
 				auto holdings = get_holdings();
 
+				m_plugin_data->holdings.clear();
+
+				m_plugin_data->holdings.reserve(std::size(holdings));
+
 				for (const auto & [asset_code, position] : holdings)
 				{
-					m_plugin_data->holdings[Plugin_Data::string_t(asset_code.c_str())] = position;
+					m_plugin_data->holdings.emplace_back(Plugin_Data::string_t(
+						asset_code.c_str(), m_shared_memory.get_segment_manager()), position);
 				}
 
-				m_plugin_data->is_updated = true;
-
 				update_sources();
+
+				m_plugin_data->is_updated = true;
 			}
 			catch (const std::exception & exception)
 			{
