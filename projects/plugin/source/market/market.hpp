@@ -73,7 +73,7 @@ namespace solution
 
 			using Source = market::Source;
 
-			using sources_container_t = std::vector < std::shared_ptr < Source > > ;
+			using sources_container_t = std::unordered_multimap < std::string, std::shared_ptr < Source > > ;
 
 			using holdings_container_t = std::unordered_map < std::string, double > ;
 
@@ -188,7 +188,7 @@ namespace solution
 			{
 			public:
 
-				using char_allocator_t = boost::interprocess::allocator < char, segment_manager_t >;
+				using char_allocator_t = boost::interprocess::allocator < char, segment_manager_t > ;
 
 				using string_t = boost::interprocess::basic_string < char, std::char_traits < char > , char_allocator_t > ;
 
@@ -201,7 +201,7 @@ namespace solution
 			public:
 
 				explicit Plugin_Data(const holding_allocator_t & allocator) :
-					available_money(0.0), holdings(allocator), is_updated(false)
+					is_updated(false), available_money(0.0), holdings(allocator)
 				{}
 
 				~Plugin_Data() noexcept = default;
@@ -217,25 +217,49 @@ namespace solution
 
 		private:
 
+			struct Server_Data
+			{
+			public:
+
+				using char_allocator_t = boost::interprocess::allocator < char, segment_manager_t > ;
+
+				using string_t = boost::interprocess::basic_string < char, std::char_traits < char >, char_allocator_t > ;
+
+			public:
+
+				struct Transaction
+				{
+					string_t asset_code;
+					string_t operation;
+					string_t position;
+				};
+
+			public:
+
+				using transaction_allocator_t = boost::interprocess::allocator < Transaction, segment_manager_t > ;
+
+				using transactions_container_t = boost::interprocess::vector < Transaction, transaction_allocator_t > ;
+
+			public:
+
+				explicit Server_Data(const transaction_allocator_t & allocator) :
+					is_updated(false), transactions(allocator)
+				{}
+
+				~Server_Data() noexcept = default;
+
+			public:
+
+				bool is_updated;
+
+				transactions_container_t transactions;
+			};
+
+		private:
+
 			using condition_t = boost::interprocess::interprocess_condition;
 
 			using mutex_t = boost::interprocess::interprocess_mutex;
-
-		//private: // TODO
-
-		//	struct Transaction
-		//	{
-		//		string_t asset_code; // SBER
-		//		string_t operation;  // B
-		//		string_t quantity;   // 100
-		//	};
-
-		//private: // TODO
-
-		//	using transaction_allocator_t =
-		//		boost::interprocess::allocator < Transaction, shared_memory_t::segment_manager > ;
-
-		//	using transactions_container_t = boost::interprocess::vector < Transaction, transaction_allocator_t > ;
 
 		public:
 
@@ -302,7 +326,9 @@ namespace solution
 
 		private:
 
-			void update_shared_memory() const;
+			void set_plugin_data() const;
+
+			void get_server_data() const;
 
 		private:
 
@@ -314,6 +340,8 @@ namespace solution
 
 		private:
 
+			std::size_t compute_lot_quantity(const std::string & asset_code, double position) const;
+
 			std::size_t get_lot_size(const std::string & class_code, const std::string & asset_code) const;
 
 		public:
@@ -322,7 +350,7 @@ namespace solution
 
 			void send_message(const std::string & message) const;
 
-			std::string send_transaction(const transaction_t & transaction) const; // TODO
+			std::string send_transaction(const transaction_t & transaction) const;
 
 		private:
 
@@ -342,11 +370,13 @@ namespace solution
 
 			shared_memory_t m_shared_memory;
 
+			Plugin_Data * m_plugin_data;
+
+			Server_Data * m_server_data;
+
 			condition_t * m_condition;
 
 			mutex_t * m_mutex;
-
-			Plugin_Data * m_plugin_data;
 
 		private:
 

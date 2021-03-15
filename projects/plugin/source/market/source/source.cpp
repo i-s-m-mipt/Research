@@ -413,7 +413,7 @@ namespace solution
 						candle.price_close << delimeter <<
 						candle.volume;
 
-					return record_t(sout.str().c_str(), m_shared_memory.get_segment_manager());
+					return record_t(sout.str().c_str(), char_allocator_t(m_shared_memory.get_segment_manager()));
 				}
 				catch (const std::exception & exception)
 				{

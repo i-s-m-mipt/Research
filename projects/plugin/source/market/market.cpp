@@ -148,12 +148,12 @@ namespace solution
 			{
 				load();
 
-				for (const auto & asset : m_assets)
+				for (const auto & [class_code, asset_code] : m_assets)
 				{
 					for (const auto & scale : m_scales)
 					{
-						m_sources.push_back(std::make_shared < Source > (
-							m_state, asset.first, asset.second, scale));
+						m_sources.insert(std::make_pair(asset_code, std::make_shared < Source > (
+							m_state, class_code, asset_code, scale)));
 					}
 				}
 
@@ -254,16 +254,15 @@ namespace solution
 				m_shared_memory = shared_memory_t(boost::interprocess::create_only,
 					shared_memory_name.c_str(), shared_memory_size);
 
-				Plugin_Data::holding_allocator_t holding_allocator(m_shared_memory.get_segment_manager());
+				m_plugin_data = m_shared_memory.construct < Plugin_Data > (boost::interprocess::unique_instance) 
+					(Plugin_Data::holding_allocator_t(m_shared_memory.get_segment_manager()));
 
-				m_plugin_data = m_shared_memory.construct < Plugin_Data > (
-					boost::interprocess::unique_instance) (holding_allocator);
+				m_server_data = m_shared_memory.construct < Server_Data > (boost::interprocess::unique_instance)
+					(Server_Data::transaction_allocator_t(m_shared_memory.get_segment_manager()));
 
-				m_condition = m_shared_memory.construct < condition_t > (
-					boost::interprocess::unique_instance) ();
+				m_condition = m_shared_memory.construct < condition_t > (boost::interprocess::unique_instance) ();
 
-				m_mutex = m_shared_memory.construct < mutex_t > (
-					boost::interprocess::unique_instance) ();
+				m_mutex = m_shared_memory.construct < mutex_t > (boost::interprocess::unique_instance) ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -301,13 +300,13 @@ namespace solution
 
 					m_condition->wait(lock); // request from server
 
-					update_shared_memory();
+					set_plugin_data();
 
-					m_condition->notify_all(); // responce to server
+					m_condition->notify_one(); // responce to server
 
-					m_condition->wait(lock); // responce from server
+					m_condition->wait(lock, [this]() { return m_server_data->is_updated; }); // responce from server
 
-					// TODO
+					get_server_data();
 				}
 			}
 			catch (const std::exception & exception)
@@ -332,7 +331,7 @@ namespace solution
 			}
 		}
 
-		void Market::update_shared_memory() const
+		void Market::set_plugin_data() const
 		{
 			RUN_LOGGER(logger);
 
@@ -348,13 +347,52 @@ namespace solution
 
 				for (const auto & [asset_code, position] : holdings)
 				{
-					m_plugin_data->holdings.emplace_back(Plugin_Data::string_t(
-						asset_code.c_str(), m_shared_memory.get_segment_manager()), position);
+					m_plugin_data->holdings.emplace_back(Plugin_Data::string_t(asset_code.c_str(), 
+						Plugin_Data::char_allocator_t(m_shared_memory.get_segment_manager())), position);
 				}
 
 				update_sources();
 
 				m_plugin_data->is_updated = true;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::get_server_data() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & raw_transaction : m_server_data->transactions)
+				{
+					transaction_t transaction;
+
+					auto class_code = "TQBR";
+
+					auto asset_code = raw_transaction.asset_code.c_str();
+					auto operation  = raw_transaction.operation.c_str();
+
+					auto position   = std::stod(raw_transaction.position.c_str());
+
+					transaction["FIRM_ID"    ] = m_config.id;
+					transaction["CLIENT_CODE"] = m_config.code;
+					transaction["ACCOUNT"    ] = m_config.account;
+					transaction["ACTION"     ] = "NEW_ORDER";
+					transaction["TYPE"       ] = "M";
+					transaction["PRICE"      ] = "0";
+					transaction["CLASSCODE"  ] = class_code;
+					transaction["SECCODE"    ] = asset_code;
+					transaction["OPERATION"  ] = operation;
+					transaction["QUANTITY"   ] = compute_lot_quantity(asset_code, position);
+
+					send_transaction(transaction);
+				}
+
+				m_server_data->is_updated = false;
 			}
 			catch (const std::exception & exception)
 			{
@@ -458,7 +496,7 @@ namespace solution
 
 			try
 			{
-				for (const auto & source : m_sources)
+				for (const auto & [asset_code, source] : m_sources)
 				{
 					try
 					{
@@ -469,6 +507,32 @@ namespace solution
 						logger.write(Severity::error, source->asset_code() +
 							":" + source->scale_code() + "source update failed");
 					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		std::size_t Market::compute_lot_quantity(const std::string & asset_code, double position) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto iterator = m_sources.find(asset_code);
+
+				if (iterator != std::end(m_sources))
+				{
+					auto source = iterator->second;
+
+					return (static_cast < std::size_t > (std::ceil(position / (source->last_price() *
+						get_lot_size(source->class_code(), source->asset_code())))));
+				}
+				else
+				{
+					throw std::runtime_error("unknown asset code: " + asset_code);
 				}
 			}
 			catch (const std::exception & exception)
