@@ -56,12 +56,13 @@ namespace solution
 
 				using shared_memory_t = boost::interprocess::managed_shared_memory;
 
-				using record_t = 
-				    boost::interprocess::basic_string < char, std::char_traits < char > ,
-					    boost::interprocess::allocator < char, shared_memory_t::segment_manager > > ;
+				using segment_manager_t = shared_memory_t::segment_manager;
 
-				using record_allocator_t = 
-					boost::interprocess::allocator < record_t, shared_memory_t::segment_manager > ;
+				using char_allocator_t = boost::interprocess::allocator < char, segment_manager_t > ;
+
+				using record_t = boost::interprocess::basic_string < char, std::char_traits < char >, char_allocator_t > ;
+
+				using record_allocator_t = boost::interprocess::allocator < record_t, segment_manager_t > ;
 
 				using deque_t = boost::interprocess::deque < record_t, record_allocator_t > ;
 
