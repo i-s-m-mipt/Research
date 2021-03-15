@@ -78,6 +78,8 @@ namespace solution
 				bool required_charts            = false;
 				bool required_self_similarities = false;
 
+				int self_similarity_DTW_delta;
+
 				std::string cumulative_distances_asset;
 				std::string cumulative_distances_scale_1;
 				std::string cumulative_distances_scale_2;
@@ -240,6 +242,7 @@ namespace solution
 					{
 						static inline const std::string required_charts              = "required_charts";
 						static inline const std::string required_self_similarities   = "required_self_similarities";
+						static inline const std::string self_similarity_DTW_delta    = "self_similarity_DTW_delta";
 						static inline const std::string cumulative_distances_asset   = "cumulative_distances_asset";
 						static inline const std::string cumulative_distances_scale_1 = "cumulative_distances_scale_1";
 						static inline const std::string cumulative_distances_scale_2 = "cumulative_distances_scale_2";

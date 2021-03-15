@@ -1,6 +1,7 @@
 {
     "required_charts": false,
     "required_self_similarities": false,
+    "self_similarity_DTW_delta": 100000,
     "cumulative_distances_asset": "YNDX",
     "cumulative_distances_scale_1": "W",
     "cumulative_distances_scale_2": "MN",

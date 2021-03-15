@@ -40,6 +40,8 @@ namespace solution
 					raw_config[Key::Config::required_charts].get < bool > ();
 				config.required_self_similarities = 
 					raw_config[Key::Config::required_self_similarities].get < bool > ();
+				config.self_similarity_DTW_delta =
+					raw_config[Key::Config::self_similarity_DTW_delta].get < int > ();
 				config.cumulative_distances_asset =
 					raw_config[Key::Config::cumulative_distances_asset].get < std::string > ();
 				config.cumulative_distances_scale_1 =
@@ -652,13 +654,11 @@ namespace solution
 					cumulative_distances[0][j] = distances[0][j] + cumulative_distances[0][j - 1];
 				}
 
-				constexpr auto delta = std::numeric_limits < int > ::max(); // ?
-
 				for (auto i = 1; i < size_1; ++i)
 				{
 					for (auto j = 1; j < size_2; ++j)
 					{
-						if (std::abs(i - j) < delta)
+						if (std::abs(i - j) < m_config.self_similarity_DTW_delta)
 						{
 							cumulative_distances[i][j] = distances[i][j] + min(cumulative_distances[i - 1][j - 1],
 								cumulative_distances[i - 1][j], cumulative_distances[i][j - 1]);
