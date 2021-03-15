@@ -180,7 +180,7 @@ namespace solution
 					{
 						for (auto j = 0U; j < size; ++j)
 						{
-							fout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+							fout << std::setw(1 + 1 + 6) << std::right << std::setprecision(6) << std::fixed << matrix[i][j] << " ";
 						}
 
 						fout << std::endl;
@@ -254,7 +254,7 @@ namespace solution
 						fout << asset << " " << scale << " " << std::size(candles) << std::endl << std::endl;
 
 						std::for_each(std::begin(candles), std::end(candles), [&fout](const auto & candle) 
-							{ fout << std::setprecision(3) << std::fixed << candle.deviation << " "; });
+							{ fout << std::setprecision(6) << std::fixed << candle.deviation << " "; });
 
 						fout << std::endl << std::endl;
 					}
@@ -741,18 +741,23 @@ namespace solution
 
 			try
 			{
-				auto size_1 = std::size(m_charts.at(asset).at(scale_1));
-				auto size_2 = std::size(m_charts.at(asset).at(scale_2));
+				const auto & candles_1 = m_charts.at(asset).at(scale_1);
+				const auto & candles_2 = m_charts.at(asset).at(scale_2);
+
+				auto size_1 = std::size(candles_1);
+				auto size_2 = std::size(candles_2);
 
 				distances_matrix_t distances(boost::extents[size_1][size_2]);
+
+				const auto multiplier_1 = get_deviation_multiplier(scale_1);
+				const auto multiplier_2 = get_deviation_multiplier(scale_2);
 
 				for (auto i = 0U; i < size_1; ++i)
 				{
 					for (auto j = 0U; j < size_2; ++j)
 					{
 						distances[i][j] = std::abs(
-							m_charts.at(asset).at(scale_1)[i].deviation -
-							m_charts.at(asset).at(scale_2)[j].deviation);
+							candles_1[i].deviation * multiplier_1 - candles_2[j].deviation * multiplier_2);
 					}
 				}
 
@@ -827,6 +832,20 @@ namespace solution
 
 				return (std::transform_reduce(std::begin(deviations_1), std::end(deviations_1), std::begin(deviations_2),
 					0.0, std::plus(), [](const auto lhs, const auto rhs) { return std::abs(lhs - rhs); }) / size);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		double Market::get_deviation_multiplier(const std::string & scale) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				return 1.0;
 			}
 			catch (const std::exception & exception)
 			{

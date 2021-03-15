@@ -1,8 +1,8 @@
 {
-    "required_charts": true,
+    "required_charts": false,
     "required_self_similarities": true,
     "required_pair_similarities": true,
-    "self_similarity_DTW_delta": 100000,
+    "self_similarity_DTW_delta": 1000000,
     "cumulative_distances_asset": "SBER",
     "cumulative_distances_scale_1": "W",
     "cumulative_distances_scale_2": "MN",

@@ -349,15 +349,7 @@ namespace solution
 
 			void compute_self_similarities();
 
-			void save_self_similarities() const;
-
 			void compute_pair_similarities();
-
-			void save_pair_similarities() const;
-
-			void save_cumulative_distances(const distances_matrix_t & matrix) const;
-
-			void save_deviations() const;
 
 		private:
 
@@ -366,6 +358,20 @@ namespace solution
 
 			double compute_pair_similarity(const std::string & scale,
 				const std::string & asset_1, const std::string & asset_2) const;
+
+		private:
+
+			double get_deviation_multiplier(const std::string & scale) const;
+
+		private:
+
+			void save_self_similarities() const;
+
+			void save_pair_similarities() const;
+
+			void save_cumulative_distances(const distances_matrix_t & matrix) const;
+
+			void save_deviations() const;
 
 		public:
 
