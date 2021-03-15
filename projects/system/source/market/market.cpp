@@ -210,7 +210,7 @@ namespace solution
 						fout << asset << " " << scale << " " << std::size(candles) << std::endl << std::endl;
 
 						std::for_each(std::begin(candles), std::end(candles), [&fout](const auto & candle) 
-							{ fout << candle.deviation << " "; });
+							{ fout << std::setprecision(3) << std::fixed << candle.deviation << " "; });
 
 						fout << std::endl << std::endl;
 					}
