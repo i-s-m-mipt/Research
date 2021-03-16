@@ -152,8 +152,8 @@ namespace solution
 				{
 					for (const auto & scale : m_scales)
 					{
-						m_sources.insert(std::make_pair(asset_code, std::make_shared < Source > (
-							m_state, class_code, asset_code, scale)));
+						m_sources[asset_code][scale] = std::make_shared < Source > (
+							m_state, class_code, asset_code, scale);
 					}
 				}
 
@@ -496,16 +496,19 @@ namespace solution
 
 			try
 			{
-				for (const auto & [asset_code, source] : m_sources)
+				for (const auto & [asset_code, scales] : m_sources)
 				{
-					try
+					for (const auto & [scale, source] : scales)
 					{
-						source->update();
-					}
-					catch (...)
-					{
-						logger.write(Severity::error, source->asset_code() +
-							":" + source->scale_code() + "source update failed");
+						try
+						{
+							source->update();
+						}
+						catch (...)
+						{
+							logger.write(Severity::error, source->asset_code() +
+								":" + source->scale_code() + "source update failed");
+						}
 					}
 				}
 			}
@@ -521,19 +524,10 @@ namespace solution
 
 			try
 			{
-				auto iterator = m_sources.find(asset_code);
+				auto source = std::begin(m_sources.at(asset_code))->second;
 
-				if (iterator != std::end(m_sources))
-				{
-					auto source = iterator->second;
-
-					return (static_cast < std::size_t > (std::ceil(position / (source->last_price() *
-						get_lot_size(source->class_code(), source->asset_code())))));
-				}
-				else
-				{
-					throw std::runtime_error("unknown asset code: " + asset_code);
-				}
+				return (static_cast < std::size_t > (std::ceil(position / (source->last_price() *
+					get_lot_size(source->class_code(), source->asset_code())))));
 			}
 			catch (const std::exception & exception)
 			{

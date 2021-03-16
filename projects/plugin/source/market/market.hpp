@@ -73,7 +73,8 @@ namespace solution
 
 			using Source = market::Source;
 
-			using sources_container_t = std::unordered_multimap < std::string, std::shared_ptr < Source > > ;
+			using sources_container_t = std::unordered_map < std::string, 
+				std::unordered_map < std::string, std::shared_ptr < Source > > > ;
 
 			using holdings_container_t = std::unordered_map < std::string, double > ;
 
