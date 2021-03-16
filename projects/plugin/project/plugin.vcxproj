@@ -140,13 +140,13 @@
       <PreprocessorDefinitions>LUA53;HAVE_SNPRINTF;_CRT_SECURE_NO_WARNINGS;LUA_LIB;LUA_BUILD_AS_DLL;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_DEBUG;SHARED_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Libraries\boost;$(SolutionDir)\libraries\lua\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\lua\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4101;4715;4267</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Libraries\boost\stage\lib;$(SolutionDir)\libraries\lua\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Libraries\boost\stage\lib;C:\Libraries\lua\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua53.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -185,7 +185,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>LUA53;HAVE_SNPRINTF;_CRT_SECURE_NO_WARNINGS;LUA_LIB;LUA_BUILD_AS_DLL;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE; _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;NDEBUG;SHARED_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Libraries\boost;$(SolutionDir)\libraries\lua\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\lua\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>4101;4715;4267</DisableSpecificWarnings>
       <PrecompiledHeaderFile />
@@ -195,7 +195,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Libraries\boost\stage\lib;$(SolutionDir)\libraries\lua\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Libraries\boost\stage\lib;C:\Libraries\lua\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /NODEFAULTLIB:msvcrtd.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
