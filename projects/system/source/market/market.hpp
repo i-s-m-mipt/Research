@@ -42,7 +42,6 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 
 #include <nlohmann/json.hpp>
-#include <nlohmann/json_fwd.hpp>
 
 #include "../../../shared/source/logger/logger.hpp"
 #include "../../../shared/source/python/python.hpp"

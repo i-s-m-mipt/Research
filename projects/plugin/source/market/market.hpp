@@ -28,7 +28,6 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 #include <nlohmann/json.hpp>
-#include <nlohmann/json_fwd.hpp>
 
 #include "source/source.hpp"
 
