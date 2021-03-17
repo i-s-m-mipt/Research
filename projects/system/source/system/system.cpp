@@ -133,7 +133,28 @@ namespace solution
 
 			try
 			{
-				// ...
+				std::cout << "Running julia test ... \n" << std::endl;
+
+				jl_init();
+
+				auto result = jl_eval_string("sqrt(2.0)");
+
+				if (jl_typeis(result, jl_float64_type))
+				{
+					std::cout << std::setprecision(6) << std::fixed << jl_unbox_float64(result) << std::endl;
+				}
+				else 
+				{
+					throw std::runtime_error("unexpected return type from sqrt(::Float64)");
+				}
+
+				auto a = jl_box_float64(3.0);
+				auto b = jl_box_float32(3.0f);
+				auto c = jl_box_int32(3);
+
+				jl_atexit_hook(0);
+
+				std::cout << std::endl << "julia test passed\n" << std::endl;
 			}
 			catch (const std::exception & exception)
 			{
