@@ -16,6 +16,15 @@
     <Filter Include="source\market">
       <UniqueIdentifier>{e638e700-770b-4daf-a005-71eb3c19510e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\detail">
+      <UniqueIdentifier>{cafae10b-7b23-4aa4-aa40-ec9a3795a401}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\detail\julia">
+      <UniqueIdentifier>{26fcbaf6-bbff-4745-b221-8145986c8278}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\config">
+      <UniqueIdentifier>{341d0309-fd24-4834-a08f-3b274654360d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -46,6 +55,12 @@
     </ClInclude>
     <ClInclude Include="..\source\market\market.hpp">
       <Filter>source\market</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\detail\julia\state.hpp">
+      <Filter>source\detail\julia</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\config\config.hpp">
+      <Filter>source\config</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -126,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>BOOST_BIND_GLOBAL_PLACEHOLDERS;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;SFML_STATIC;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE; _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS; WIN32; _DEBUG; _CONSOLE; _MBCS; %(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\python\include;C:\Libraries\sfml\include;C:\Libraries\json\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\python\include;C:\Libraries\sfml\include;C:\Libraries\json\include;C:\Libraries\julia\include\julia</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
       <DisableSpecificWarnings>4715</DisableSpecificWarnings>
@@ -134,7 +134,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Libraries\boost\stage\lib;C:\Libraries\python\libs;C:\Libraries\sfml\lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Libraries\boost\stage\lib;C:\Libraries\python\libs;C:\Libraries\sfml\lib;C:\Libraries\julia\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libjulia.dll.a;libopenlibm.dll.a;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -145,7 +146,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>BOOST_BIND_GLOBAL_PLACEHOLDERS;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;SFML_STATIC;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE; _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS; WIN32; NDEBUG; _CONSOLE; _MBCS; %(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\python\include;C:\Libraries\sfml\include;C:\Libraries\json\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\python\include;C:\Libraries\sfml\include;C:\Libraries\json\include;C:\Libraries\julia\include\julia</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
       <DisableSpecificWarnings>4715</DisableSpecificWarnings>
@@ -155,7 +156,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Libraries\boost\stage\lib;C:\Libraries\python\libs;C:\Libraries\sfml\lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Libraries\boost\stage\lib;C:\Libraries\python\libs;C:\Libraries\sfml\lib;C:\Libraries\julia\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libjulia.dll.a;libopenlibm.dll.a;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -168,6 +170,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\shared\source\logger\logger.hpp" />
     <ClInclude Include="..\..\shared\source\python\python.hpp" />
+    <ClInclude Include="..\source\config\config.hpp" />
+    <ClInclude Include="..\source\detail\julia\state.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
     <ClInclude Include="..\source\system\system.hpp" />
   </ItemGroup>
