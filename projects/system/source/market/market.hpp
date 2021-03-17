@@ -18,8 +18,10 @@
 #include <future>
 #include <iomanip>
 #include <iostream>
+#include <istream>
 #include <iterator>
 #include <limits>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <sstream>
@@ -86,6 +88,11 @@ namespace solution
 				std::string cumulative_distances_scale_2;
 
 				bool required_deviations = false;
+
+				bool required_tagged_charts = false;
+
+				double min_price_change   = 0.020;
+				double max_price_rollback = 0.333;
 			};
 
 		private:
@@ -145,6 +152,8 @@ namespace solution
 				volume_t volume = 0ULL;
 
 				double deviation = 0.0;
+
+				std::string tag;
 			};
 
 		private:
@@ -235,6 +244,7 @@ namespace solution
 					static inline const path_t pair_similarities_data    = "market/output/pair_similarities.data";
 					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
 					static inline const path_t deviations_data           = "market/output/deviations.data";
+					static inline const path_t tagged_charts_data        = "market/output/tagged_charts.data";
 				};
 
 			private:
@@ -255,6 +265,9 @@ namespace solution
 						static inline const std::string cumulative_distances_scale_1 = "cumulative_distances_scale_1";
 						static inline const std::string cumulative_distances_scale_2 = "cumulative_distances_scale_2";
 						static inline const std::string required_deviations          = "required_deviations";
+						static inline const std::string required_tagged_charts       = "required_tagged_charts";
+						static inline const std::string min_price_change             = "min_price_change";
+						static inline const std::string max_price_rollback           = "max_price_rollback";
 					};
 				};
 
@@ -275,6 +288,8 @@ namespace solution
 				static void save_cumulative_distances(const distances_matrix_t & matrix);
 
 				static void save_deviations(const charts_container_t & charts);
+
+				static void save_tagged_charts(const charts_container_t & charts);
 
 			private:
 
@@ -346,6 +361,16 @@ namespace solution
 
 		private:
 
+			void handle_self_similarities();
+
+			void handle_pair_similarities();
+
+			void handle_deviations();
+
+			void handle_tagged_charts();
+
+		private:
+
 			void compute_self_similarities();
 
 			void compute_pair_similarities();
@@ -371,6 +396,18 @@ namespace solution
 			void save_cumulative_distances(const distances_matrix_t & matrix) const;
 
 			void save_deviations() const;
+
+		private:
+
+			void make_tagged_charts();
+
+		private:
+
+			void update_tags(candles_container_t & candles);
+
+		private:
+
+			void save_tagged_charts() const;
 
 		public:
 

@@ -52,6 +52,12 @@ namespace solution
 					raw_config[Key::Config::cumulative_distances_scale_2].get < std::string > ();
 				config.required_deviations =
 					raw_config[Key::Config::required_deviations].get < bool > ();
+				config.required_tagged_charts =
+					raw_config[Key::Config::required_tagged_charts].get < bool > ();
+				config.min_price_change =
+					raw_config[Key::Config::min_price_change].get < double > ();
+				config.max_price_rollback =
+					raw_config[Key::Config::max_price_rollback].get < double > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -259,7 +265,53 @@ namespace solution
 						fout << std::endl << std::endl;
 					}
 				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
 
+		void Market::Data::save_tagged_charts(const charts_container_t & charts)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = File::tagged_charts_data;
+
+				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
+
+				if (!fout)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				for (const auto & [asset, scales] : charts)
+				{
+					for (const auto & [scale, candles] : scales)
+					{
+						fout << asset << " " << scale << " " << std::size(candles) << std::endl << std::endl;
+
+						std::for_each(std::begin(candles), std::end(candles), [&fout](const auto & candle)
+							{ 
+								static const char delimeter = ',';
+
+								fout <<
+									candle.date_time.year   << delimeter << std::setfill('0') << std::setw(2) <<
+									candle.date_time.month  << delimeter << std::setfill('0') << std::setw(2) <<
+									candle.date_time.day    << delimeter << std::setfill('0') << std::setw(2) <<
+									candle.date_time.hour   << delimeter << std::setfill('0') << std::setw(2) <<
+									candle.date_time.minute << delimeter << std::setfill('0') << std::setw(2) <<
+									candle.date_time.second << delimeter; 
+								
+								fout << std::setprecision(6) << std::fixed << std::showpos <<
+									candle.deviation << delimeter << candle.tag << std::endl;
+							});
+
+						fout << std::endl;
+					}
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -322,21 +374,22 @@ namespace solution
 
 				if (m_config.required_self_similarities)
 				{
-					compute_self_similarities();
-
-					save_self_similarities();
+					handle_self_similarities();
 				}
 
 				if (m_config.required_pair_similarities)
 				{
-					compute_pair_similarities();
-
-					save_pair_similarities();
+					handle_pair_similarities();
 				}
 
 				if (m_config.required_deviations)
 				{
-					save_deviations();
+					handle_deviations();
+				}
+
+				if (m_config.required_tagged_charts)
+				{
+					handle_tagged_charts();
 				}
 			}
 			catch (const std::exception & exception)
@@ -452,6 +505,79 @@ namespace solution
 			}
 		}
 
+		std::pair < Market::path_t, std::size_t > Market::get_all_charts() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto counter = 0U;
+
+				for (const auto & asset : m_assets)
+				{
+					for (const auto & scale : m_scales)
+					{
+						get_chart(asset, scale);
+
+						++counter;
+					}
+				}
+
+				return std::make_pair(charts_directory, counter);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		Market::path_t Market::get_chart(const std::string & asset, const std::string & scale) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = charts_directory; path /= make_file_name(asset, scale);
+
+				shared::Python python;
+
+				try
+				{
+					boost::python::exec("from market import get", python.global(), python.global());
+
+					python.global()["get"](asset.c_str(), scale.c_str(), path.string().c_str());
+				}
+				catch (const boost::python::error_already_set &)
+				{
+					logger.write(Severity::error, shared::Python::exception());
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < market_exception > (logger, exception);
+				}
+
+				return path;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		std::string Market::make_file_name(const std::string & asset, const std::string & scale) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				return (asset + "_" + scale + Extension::csv);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		Market::candles_container_t Market::load_candles(const path_t & path) const
 		{
 			RUN_LOGGER(logger);
@@ -541,25 +667,15 @@ namespace solution
 			}
 		}
 
-		std::pair < Market::path_t, std::size_t > Market::get_all_charts() const
+		void Market::handle_self_similarities()
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				auto counter = 0U;
+				compute_self_similarities();
 
-				for (const auto & asset : m_assets)
-				{
-					for (const auto & scale : m_scales)
-					{
-						get_chart(asset, scale);
-
-						++counter;
-					}
-				}
-
-				return std::make_pair(charts_directory, counter);
+				save_self_similarities();
 			}
 			catch (const std::exception & exception)
 			{
@@ -567,32 +683,15 @@ namespace solution
 			}
 		}
 
-		Market::path_t Market::get_chart(const std::string & asset, const std::string & scale) const
+		void Market::handle_pair_similarities()
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				auto path = charts_directory; path /= make_file_name(asset, scale);
+				compute_pair_similarities();
 
-				shared::Python python;
-
-				try
-				{
-					boost::python::exec("from market import get", python.global(), python.global());
-
-					python.global()["get"](asset.c_str(), scale.c_str(), path.string().c_str());
-				}
-				catch (const boost::python::error_already_set &)
-				{
-					logger.write(Severity::error, shared::Python::exception());
-				}
-				catch (const std::exception & exception)
-				{
-					shared::catch_handler < market_exception > (logger, exception);
-				}
-
-				return path;
+				save_pair_similarities();
 			}
 			catch (const std::exception & exception)
 			{
@@ -600,13 +699,29 @@ namespace solution
 			}
 		}
 
-		std::string Market::make_file_name(const std::string & asset, const std::string & scale) const
+		void Market::handle_deviations()
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				return (asset + "_" + scale + Extension::csv);
+				save_deviations();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::handle_tagged_charts()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				make_tagged_charts();
+
+				save_tagged_charts();
 			}
 			catch (const std::exception & exception)
 			{
@@ -902,6 +1017,122 @@ namespace solution
 			try
 			{
 				Data::save_deviations(m_charts);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::make_tagged_charts()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (auto & [asset, scales] : m_charts)
+				{
+					for (auto & [scale, candles] : scales)
+					{
+						update_tags(candles);
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::update_tags(candles_container_t & candles)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto min_price_change   = m_config.min_price_change;
+				const auto max_price_rollback = m_config.max_price_rollback;
+
+				for (auto first = std::begin(candles); first != std::end(candles);)
+				{
+					auto flag = false;
+
+					for (auto last = std::next(first); last != std::end(candles); ++last)
+					{
+						auto result = std::minmax_element(first, std::next(last), [](const auto & lhs, const auto & rhs)
+							{
+								return lhs.price_close < rhs.price_close;
+							});
+
+						auto min_price = result.first ->price_close;
+						auto max_price = result.second->price_close;
+
+						auto first_extremum = result.first;
+						auto last_extremum  = result.second;
+
+						if (std::distance(first, result.first) > std::distance(first, result.second))
+						{
+							first_extremum = result.second;
+							last_extremum  = result.first;
+						}
+
+						if ((((max_price - min_price) / min_price < min_price_change) ||
+							(result.first  == last) || 
+							(result.second == last) || ((last_extremum != last) &&
+								((max_price - min_price) / min_price > min_price_change) &&
+								(std::abs(last_extremum->price_close - last->price_close) < max_price_rollback *
+									std::abs(first_extremum->price_close - last_extremum->price_close)))) &&
+							(std::abs(last_extremum->price_close - last->price_close) /
+								std::min(last_extremum->price_close, last->price_close) < min_price_change))
+						{
+							continue;
+						}
+
+						if (first_extremum->price_close < last_extremum->price_close)
+						{
+							first_extremum->tag += "OL";
+							last_extremum ->tag += "CL";
+						}
+						else
+						{
+							first_extremum->tag += "OS";
+							last_extremum ->tag += "CS";
+						}
+
+						first = last_extremum;
+
+						flag = true;
+
+						break;
+					}
+
+					if (!flag)
+					{
+						break;
+					}
+				}
+
+				for (auto & candle : candles)
+				{
+					if (candle.tag.empty())
+					{
+						candle.tag += "WW";
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::save_tagged_charts() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::save_tagged_charts(m_charts);
 			}
 			catch (const std::exception & exception)
 			{
