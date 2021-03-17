@@ -442,10 +442,7 @@ namespace solution
 							continue;
 						}
 
-						std::packaged_task < void() > task([this, asset, scale, path]()
-							{ m_charts[asset][scale] = load_candles(path); });
-
-						boost::asio::post(m_thread_pool, std::move(task));
+						m_charts[asset][scale] = load_candles(path);
 					}
 				}
 			}
