@@ -303,10 +303,18 @@ namespace solution
 									candle.date_time.day    << delimeter << std::setfill('0') << std::setw(2) <<
 									candle.date_time.hour   << delimeter << std::setfill('0') << std::setw(2) <<
 									candle.date_time.minute << delimeter << std::setfill('0') << std::setw(2) <<
-									candle.date_time.second << delimeter; 
+									candle.date_time.second << delimeter;
 								
 								fout << std::setprecision(6) << std::fixed << std::showpos <<
-									candle.deviation << delimeter << candle.tag << std::endl;
+									candle.deviation << delimeter;
+
+								for (auto regression_tag : candle.regression_tags)
+								{
+									fout << std::setprecision(6) << std::fixed << std::showpos <<
+										regression_tag << delimeter;
+								}
+								
+								fout << candle.classification_tag << std::endl;
 							});
 
 						fout << std::endl;
@@ -1034,7 +1042,9 @@ namespace solution
 				{
 					for (auto & [scale, candles] : scales)
 					{
-						update_tags(candles);
+						update_regression_tags(candles);
+
+						update_classification_tags(candles);
 					}
 				}
 			}
@@ -1044,7 +1054,40 @@ namespace solution
 			}
 		}
 
-		void Market::update_tags(candles_container_t & candles)
+		void Market::update_regression_tags(candles_container_t & candles)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (auto i = 0U; i < std::size(candles); ++i)
+				{
+					for (auto j = 0U; j < Candle::prediction_range; ++j)
+					{
+						if (i + j + 1 < std::size(candles))
+						{
+							if (candles[i].price_close <= std::numeric_limits < double > ::epsilon())
+							{
+								throw std::domain_error("division by zero");
+							}
+
+							candles[i].regression_tags[j] = (candles[i + j + 1].price_close -
+								candles[i].price_close) / candles[i].price_close;
+						}
+						else
+						{
+							candles[i].regression_tags[j] = 0.0;
+						}
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::update_classification_tags(candles_container_t & candles)
 		{
 			RUN_LOGGER(logger);
 
@@ -1090,13 +1133,13 @@ namespace solution
 
 						if (first_extremum->price_close < last_extremum->price_close)
 						{
-							first_extremum->tag += "OL";
-							last_extremum ->tag += "CL";
+							first_extremum->classification_tag += "OL";
+							last_extremum ->classification_tag += "CL";
 						}
 						else
 						{
-							first_extremum->tag += "OS";
-							last_extremum ->tag += "CS";
+							first_extremum->classification_tag += "OS";
+							last_extremum ->classification_tag += "CS";
 						}
 
 						first = last_extremum;
@@ -1114,9 +1157,9 @@ namespace solution
 
 				for (auto & candle : candles)
 				{
-					if (candle.tag.empty())
+					if (candle.classification_tag.empty())
 					{
-						candle.tag += "WW";
+						candle.classification_tag += "WW";
 					}
 				}
 			}

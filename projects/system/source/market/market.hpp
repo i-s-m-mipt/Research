@@ -8,6 +8,7 @@
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
@@ -137,6 +138,10 @@ namespace solution
 
 			public:
 
+				static inline const std::size_t prediction_range = 5U;
+
+			public:
+
 				raw_date_t raw_date = 0U;
 				raw_time_t raw_time = 0U;
 
@@ -153,7 +158,9 @@ namespace solution
 
 				double deviation = 0.0;
 
-				std::string tag;
+				std::array < double, prediction_range > regression_tags;
+
+				std::string classification_tag;
 			};
 
 		private:
@@ -403,7 +410,9 @@ namespace solution
 
 		private:
 
-			void update_tags(candles_container_t & candles);
+			void update_regression_tags(candles_container_t & candles);
+
+			void update_classification_tags(candles_container_t & candles);
 
 		private:
 
