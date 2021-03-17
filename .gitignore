@@ -343,7 +343,6 @@ service/
 /__pycache__
 *.exe
 *.dll
-!python39.dll
 *.exp
 *.lib
 *.csv
