@@ -104,25 +104,25 @@ namespace solution
 
 		public:
 
+			struct Date_Time
+			{
+				unsigned int year   = 0U;
+				unsigned int month  = 0U;
+				unsigned int day    = 0U;
+
+				unsigned int hour   = 0U;
+				unsigned int minute = 0U;
+				unsigned int second = 0U;
+			};
+
+		public:
+
 			struct Candle
 			{
 			public:
 
 				using raw_date_t = unsigned int;
 				using raw_time_t = unsigned int;
-
-			public:
-
-				struct Date_Time
-				{
-					unsigned int year   = 0U;
-					unsigned int month  = 0U;
-					unsigned int day    = 0U;
-
-					unsigned int hour   = 0U;
-					unsigned int minute = 0U;
-					unsigned int second = 0U;
-				};
 
 			public:
 
@@ -308,6 +308,28 @@ namespace solution
 		private:
 
 			using thread_pool_t = boost::asio::thread_pool;
+
+		private:
+
+			struct Level
+			{
+			public:
+
+				using date_time_t = Date_Time;
+
+			public:
+
+				date_time_t begin;
+				date_time_t end;
+
+				double price = 0.0;
+
+				std::size_t strength = 0U;
+			};
+
+		private:
+
+			using levels_container_t = std::unordered_map < std::string, std::vector < Level > > ;
 
 		public:
 
