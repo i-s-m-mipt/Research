@@ -490,6 +490,12 @@ namespace solution
 					get_all_charts();
 				}
 
+				std::vector < std::future < void > > futures;
+
+				futures.reserve(std::size(m_assets) * std::size(m_scales));
+
+				std::mutex mutex;
+
 				for (const auto & asset : m_assets)
 				{
 					for (const auto & scale : m_scales)
@@ -502,10 +508,21 @@ namespace solution
 
 							continue;
 						}
+						
+						std::packaged_task < void() > task([this, path, &mutex, asset, scale]()
+							{
+								auto candles = load_candles(path);
 
-						m_charts[asset][scale] = load_candles(path);
+								std::scoped_lock lock(mutex);
+
+								m_charts[asset][scale] = std::move(candles);
+							});
+
+						futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
 					}
 				}
+
+				std::for_each(std::begin(futures), std::end(futures), [](auto & future) { future.wait(); });
 			}
 			catch (const std::exception & exception)
 			{
@@ -1038,15 +1055,28 @@ namespace solution
 
 			try
 			{
+				std::vector < std::future < void > > futures;
+
+				futures.reserve(std::size(m_assets) * std::size(m_scales));
+
 				for (auto & [asset, scales] : m_charts)
 				{
 					for (auto & [scale, candles] : scales)
 					{
-						update_regression_tags(candles);
+						auto pointer = &candles;
 
-						update_classification_tags(candles);
+						std::packaged_task < void() > task([this, pointer]()
+							{
+								update_regression_tags(*pointer);
+
+								update_classification_tags(*pointer);
+							});
+
+						futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
 					}
 				}
+
+				std::for_each(std::begin(futures), std::end(futures), [](auto & future) { future.wait(); });
 			}
 			catch (const std::exception & exception)
 			{

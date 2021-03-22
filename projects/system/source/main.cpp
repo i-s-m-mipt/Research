@@ -16,9 +16,13 @@ int main(int argc, char** argv)
 
 	try
 	{
-		System system;
+		{
+			System system;
 
-		system.run();
+			system.run();
+		}
+		
+		system("pause");
 
 		return EXIT_SUCCESS;
 	}

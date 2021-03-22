@@ -22,6 +22,7 @@
 #include <istream>
 #include <iterator>
 #include <limits>
+#include <mutex>
 #include <ostream>
 #include <stdexcept>
 #include <string>
