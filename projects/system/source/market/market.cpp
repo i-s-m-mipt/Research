@@ -1212,7 +1212,7 @@ namespace solution
 					if ((extremum.second == first && first != std::begin(candles) &&
 						std::prev(first)->price_close < extremum.second->price_close) ||
 						(extremum.second == std::prev(last) && last != std::end(candles) &&
-							last->price_close > extremum.second->price_close) ||
+							last->price_close < extremum.second->price_close) ||
 						(extremum.second != first && extremum.second != std::prev(last)))
 					{
 						levels.push_back(Level{ extremum.second->date_time, end, extremum.second->price_close, 0U });
