@@ -676,14 +676,26 @@ namespace solution
 
 			try
 			{
-				for (auto i = 1U; i < std::size(candles); ++i)
+				for (auto i = 0U; i < std::size(candles); ++i)
 				{
-					if (candles[i - 1].price_close <= std::numeric_limits < double > ::epsilon())
+					if (i == 0U)
 					{
-						throw std::domain_error("division by zero");
-					}
+						if (candles[i].price_open <= std::numeric_limits < double > ::epsilon())
+						{
+							throw std::domain_error("division by zero for the first candle");
+						}
 
-					candles[i].deviation = (candles[i].price_close - candles[i - 1].price_close) / candles[i - 1].price_close;
+						candles[i].deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
+					}
+					else
+					{
+						if (candles[i - 1].price_close <= std::numeric_limits < double > ::epsilon())
+						{
+							throw std::domain_error("division by zero");
+						}
+
+						candles[i].deviation = (candles[i].price_close - candles[i - 1].price_close) / candles[i - 1].price_close;
+					}
 				}
 			}
 			catch (const std::exception & exception)
