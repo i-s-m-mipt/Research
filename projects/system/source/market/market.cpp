@@ -155,24 +155,28 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
+				std::ostringstream sout;
+
 				for (const auto & [asset, matrix] : self_similarities)
 				{
 					auto size = matrix.size();
 
-					fout << asset << " " << size << std::endl << std::endl;
+					sout << asset << " " << size << "\n\n";
 
 					for (auto i = 0U; i < size; ++i)
 					{
 						for (auto j = 0U; j < size; ++j)
 						{
-							fout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+							sout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
 						}
 
-						fout << std::endl;
+						sout << "\n";
 					}
 
-					fout << std::endl;
+					sout << "\n";
 				}
+
+				fout << sout.str();
 			}
 			catch (const std::exception & exception)
 			{
@@ -195,24 +199,28 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
+				std::ostringstream sout;
+
 				for (const auto & [scale, matrix] : pair_similarities)
 				{
 					auto size = matrix.size();
 
-					fout << scale << " " << size << std::endl << std::endl;
+					sout << scale << " " << size << "\n\n";
 
 					for (auto i = 0U; i < size; ++i)
 					{
 						for (auto j = 0U; j < size; ++j)
 						{
-							fout << std::setw(1 + 1 + 6) << std::right << std::setprecision(6) << std::fixed << matrix[i][j] << " ";
+							sout << std::setw(1 + 1 + 6) << std::right << std::setprecision(6) << std::fixed << matrix[i][j] << " ";
 						}
 
-						fout << std::endl;
+						sout << "\n";
 					}
 
-					fout << std::endl;
+					sout << "\n";
 				}
+
+				fout << sout.str();
 			}
 			catch (const std::exception & exception)
 			{
@@ -235,21 +243,25 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
+				std::ostringstream sout;
+
 				auto size_1 = matrix.size();
 
 				auto size_2 = matrix.begin()->size();
 
-				fout << size_1 << " " << size_2 << std::endl << std::endl;
+				sout << size_1 << " " << size_2 << "\n\n";
 
 				for (auto i = 0U; i < size_1; ++i)
 				{
 					for (auto j = 0U; j < size_2; ++j)
 					{
-						fout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+						sout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
 					}
 
-					fout << std::endl;
+					sout << "\n";
 				}
+
+				fout << sout.str();
 			}
 			catch (const std::exception & exception)
 			{
@@ -272,18 +284,22 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
+				std::ostringstream sout;
+
 				for (const auto & [asset, scales] : charts)
 				{
 					for (const auto & [scale, candles] : scales)
 					{
-						fout << asset << " " << scale << " " << std::size(candles) << std::endl << std::endl;
+						sout << asset << " " << scale << " " << std::size(candles) << "\n\n";
 
-						std::for_each(std::begin(candles), std::end(candles), [&fout](const auto & candle) 
-							{ fout << std::setprecision(6) << std::fixed << candle.deviation << " "; });
+						std::for_each(std::begin(candles), std::end(candles), [&sout](const auto & candle)
+							{ sout << std::setprecision(6) << std::fixed << candle.deviation << " "; });
 
-						fout << std::endl << std::endl;
+						sout << "\n\n";
 					}
 				}
+
+				fout << sout.str();
 			}
 			catch (const std::exception & exception)
 			{
@@ -306,17 +322,19 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
+				std::ostringstream sout;
+
 				for (const auto & [asset, scales] : charts)
 				{
 					for (const auto & [scale, candles] : scales)
 					{
-						fout << asset << " " << scale << " " << std::size(candles) << std::endl << std::endl;
+						sout << asset << " " << scale << " " << std::size(candles) << "\n\n";
 
-						std::for_each(std::begin(candles), std::end(candles), [&fout](const auto & candle)
+						std::for_each(std::begin(candles), std::end(candles), [&sout](const auto & candle)
 							{ 
 								static const char delimeter = ',';
 
-								fout <<
+								sout <<
 									candle.date_time.year   << delimeter << std::setfill('0') << std::setw(2) <<
 									candle.date_time.month  << delimeter << std::setfill('0') << std::setw(2) <<
 									candle.date_time.day    << delimeter << std::setfill('0') << std::setw(2) <<
@@ -324,21 +342,23 @@ namespace solution
 									candle.date_time.minute << delimeter << std::setfill('0') << std::setw(2) <<
 									candle.date_time.second << delimeter;
 								
-								fout << std::setprecision(6) << std::fixed << std::showpos <<
+								sout << std::setprecision(6) << std::fixed << std::showpos <<
 									candle.deviation << delimeter;
 
 								for (auto regression_tag : candle.regression_tags)
 								{
-									fout << std::setprecision(6) << std::fixed << std::showpos <<
+									sout << std::setprecision(6) << std::fixed << std::showpos <<
 										regression_tag << delimeter;
 								}
 								
-								fout << candle.classification_tag << std::endl;
+								sout << candle.classification_tag << "\n";
 							});
 
-						fout << std::endl;
+						sout << "\n";
 					}
 				}
+
+				fout << sout.str();
 			}
 			catch (const std::exception & exception)
 			{
@@ -361,17 +381,21 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
+				std::ostringstream sout;
+
 				for (const auto & [asset, levels_v] : levels)
 				{
-					fout << asset << " " << std::size(levels_v) << std::endl << std::endl;
+					sout << asset << " " << std::size(levels_v) << "\n\n";
 
 					for (const auto & level : levels_v)
 					{
-						fout << level << std::endl;
+						sout << level << "\n";
 					}
 
-					fout << std::endl;
+					sout << "\n";
 				}
+
+				fout << sout.str();
 			}
 			catch (const std::exception & exception)
 			{
