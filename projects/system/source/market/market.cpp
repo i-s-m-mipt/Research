@@ -6,6 +6,78 @@ namespace solution
 	{
 		using Severity = shared::Logger::Severity;
 
+		std::time_t Market::Date_Time::to_time_t() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::tm time = { 
+					static_cast < int > (second), 
+					static_cast < int > (minute), 
+					static_cast < int > (hour), 
+					static_cast < int > (day), 
+					static_cast < int > (month) - 1, 
+					static_cast < int > (year) - 1900 };
+
+				return std::mktime(&time);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		bool operator== (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
+		{
+			return (
+				(lhs.year   == rhs.year  ) &&
+				(lhs.month  == rhs.month ) &&
+				(lhs.day    == rhs.day   ) &&
+				(lhs.hour   == rhs.hour  ) &&
+				(lhs.minute == rhs.minute) &&
+				(lhs.second == rhs.second));
+		}
+
+		bool operator!= (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+		bool operator< (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
+		{
+			return (lhs.to_time_t() < rhs.to_time_t());
+		}
+
+		bool operator<= (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
+		{
+			return !(lhs > rhs);
+		}
+
+		bool operator> (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
+		{
+			return (lhs.to_time_t() > rhs.to_time_t());
+		}
+
+		bool operator>= (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
+		{
+			return !(lhs < rhs);
+		}
+
+		std::ostream & operator<< (std::ostream & stream, const Market::Level & level)
+		{
+			static const char delimeter = ',';
+
+			stream <<
+				level.begin.year  << delimeter << std::setfill('0') << std::setw(2) <<
+				level.begin.month << delimeter << std::setfill('0') << std::setw(2) <<
+				level.begin.day   << delimeter;
+
+			stream << std::setprecision(6) << std::fixed << level.price << delimeter << level.strength;
+
+			return stream;
+		}
+
 		void Market::Candle::update_date_time() noexcept
 		{
 			RUN_LOGGER(logger);
@@ -26,32 +98,6 @@ namespace solution
 			}
 		}
 
-		std::ostream & operator<<(std::ostream & stream, const Market::Level & level)
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				static const char delimeter = ',';
-
-				stream <<
-					level.begin.year  << delimeter << std::setfill('0') << std::setw(2) <<
-					level.begin.month << delimeter << std::setfill('0') << std::setw(2) <<
-					level.begin.day   << delimeter <<
-					level.end.year    << delimeter << std::setfill('0') << std::setw(2) <<
-					level.end.month   << delimeter << std::setfill('0') << std::setw(2) <<
-					level.end.day     << delimeter;
-
-				stream << std::setprecision(6) << std::fixed << level.price << delimeter << level.strength;
-
-				return stream;
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
 		void Market::Data::load_config(Config & config)
 		{
 			RUN_LOGGER(logger);
@@ -62,21 +108,21 @@ namespace solution
 
 				load(File::config_json, raw_config);
 
-				config.required_charts              = raw_config[Key::Config::required_charts             ].get < bool > ();
-				config.required_self_similarities   = raw_config[Key::Config::required_self_similarities  ].get < bool > ();
-				config.required_pair_similarities   = raw_config[Key::Config::required_pair_similarities  ].get < bool > ();
-				config.self_similarity_DTW_delta    = raw_config[Key::Config::self_similarity_DTW_delta   ].get < int > ();
-				config.cumulative_distances_asset   = raw_config[Key::Config::cumulative_distances_asset  ].get < std::string > ();
-				config.cumulative_distances_scale_1 = raw_config[Key::Config::cumulative_distances_scale_1].get < std::string > ();
-				config.cumulative_distances_scale_2 = raw_config[Key::Config::cumulative_distances_scale_2].get < std::string > ();
-				config.required_deviations          = raw_config[Key::Config::required_deviations         ].get < bool > ();
-				config.required_tagged_charts       = raw_config[Key::Config::required_tagged_charts      ].get < bool > ();
-				config.min_price_change             = raw_config[Key::Config::min_price_change            ].get < double > ();
-				config.max_price_rollback           = raw_config[Key::Config::max_price_rollback          ].get < double > ();
-				config.level_price_max_deviation    = raw_config[Key::Config::level_price_max_deviation   ].get < double > ();
-				config.level_resolution             = raw_config[Key::Config::level_resolution            ].get < std::string > ();
-				config.level_frame                  = raw_config[Key::Config::level_frame                 ].get < std::size_t > ();
-				config.required_saved_levels        = raw_config[Key::Config::required_saved_levels       ].get < bool > ();
+				config.required_charts               = raw_config[Key::Config::required_charts              ].get < bool > ();
+				config.required_self_similarities    = raw_config[Key::Config::required_self_similarities   ].get < bool > ();
+				config.required_pair_similarities    = raw_config[Key::Config::required_pair_similarities   ].get < bool > ();
+				config.self_similarity_DTW_delta     = raw_config[Key::Config::self_similarity_DTW_delta    ].get < int > ();
+				config.cumulative_distances_asset    = raw_config[Key::Config::cumulative_distances_asset   ].get < std::string > ();
+				config.cumulative_distances_scale_1  = raw_config[Key::Config::cumulative_distances_scale_1 ].get < std::string > ();
+				config.cumulative_distances_scale_2  = raw_config[Key::Config::cumulative_distances_scale_2 ].get < std::string > ();
+				config.required_deviations           = raw_config[Key::Config::required_deviations          ].get < bool > ();
+				config.required_tagged_charts        = raw_config[Key::Config::required_tagged_charts       ].get < bool > ();
+				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();
+				config.max_price_rollback            = raw_config[Key::Config::max_price_rollback           ].get < double > ();
+				config.level_price_max_deviation     = raw_config[Key::Config::level_price_max_deviation    ].get < double > ();
+				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
+				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
+				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -345,6 +391,51 @@ namespace solution
 								sout << std::setprecision(6) << std::fixed << std::showpos <<
 									candle.deviation << delimeter;
 
+								if (std::abs(candle.price_close) <= std::numeric_limits < double > ::epsilon())
+								{
+									throw std::domain_error("division by zero");
+								}
+
+								if (candle.support.strength == 0U)
+								{
+									sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
+
+									sout << "0000" << delimeter << "00" << delimeter;
+								}
+								else
+								{
+									auto support_deviation = (candle.support.price - candle.price_close) / candle.price_close;
+
+									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+										std::abs(support_deviation) << delimeter;
+
+									auto support_alive = (candle.date_time.to_time_t() - candle.support.begin.to_time_t()) / 86400U;
+
+									sout << std::setfill('0') << std::setw(4) << std::noshowpos << support_alive << delimeter;
+
+									sout << std::setfill('0') << std::setw(2) << candle.support.strength << delimeter;
+								}
+
+								if (candle.resistance.strength == 0U)
+								{
+									sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
+
+									sout << "0000" << delimeter << "00" << delimeter;
+								}
+								else
+								{
+									auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
+
+									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+										std::abs(resistance_deviation) << delimeter;
+
+									auto resistance_alive = (candle.date_time.to_time_t() - candle.resistance.begin.to_time_t()) / 86400U;
+
+									sout << std::setfill('0') << std::setw(4) << std::noshowpos << resistance_alive << delimeter;
+
+									sout << std::setfill('0') << std::setw(2) << candle.resistance.strength << delimeter;
+								}
+
 								for (auto regression_tag : candle.regression_tags)
 								{
 									sout << std::setprecision(6) << std::fixed << std::showpos <<
@@ -366,13 +457,13 @@ namespace solution
 			}
 		}
 
-		void Market::Data::save_levels(const levels_container_t & levels)
+		void Market::Data::save_supports_resistances(const supports_resistances_container_t & supports_resistances)
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				auto path = File::levels_data;
+				auto path = File::supports_resistances_data;
 
 				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
 
@@ -383,11 +474,11 @@ namespace solution
 
 				std::ostringstream sout;
 
-				for (const auto & [asset, levels_v] : levels)
+				for (const auto & [asset, levels] : supports_resistances)
 				{
-					sout << asset << " " << std::size(levels_v) << "\n\n";
+					sout << asset << " " << std::size(levels) << "\n\n";
 
-					for (const auto & level : levels_v)
+					for (const auto & level : levels)
 					{
 						sout << level << "\n";
 					}
@@ -580,9 +671,7 @@ namespace solution
 
 						if (!std::filesystem::exists(path))
 						{
-							logger.write(Severity::error, "file " + path.string() + " doesn't exist");
-
-							continue;
+							throw std::runtime_error("file " + path.string() + " doesn't exist");
 						}
 						
 						std::packaged_task < void() > task([this, path, &mutex, asset, scale]()
@@ -756,16 +845,16 @@ namespace solution
 				{
 					if (i == 0U)
 					{
-						if (candles[i].price_open <= std::numeric_limits < double > ::epsilon())
+						if (std::abs(candles[i].price_open) <= std::numeric_limits < double > ::epsilon())
 						{
-							throw std::domain_error("division by zero for the first candle");
+							throw std::domain_error("division by zero");
 						}
 
 						candles[i].deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
 					}
 					else
 					{
-						if (candles[i - 1].price_close <= std::numeric_limits < double > ::epsilon())
+						if (std::abs(candles[i - 1].price_close) <= std::numeric_limits < double > ::epsilon())
 						{
 							throw std::domain_error("division by zero");
 						}
@@ -832,11 +921,11 @@ namespace solution
 
 			try
 			{
-				make_all_levels();
+				make_supports_resistances();
 
-				if (m_config.required_saved_levels)
+				if (m_config.required_supports_resistances)
 				{
-					save_levels();
+					save_supports_resistances();
 				}
 
 				make_tagged_charts();
@@ -1144,7 +1233,7 @@ namespace solution
 			}
 		}
 
-		void Market::make_all_levels()
+		void Market::make_supports_resistances()
 		{
 			RUN_LOGGER(logger);
 
@@ -1161,10 +1250,13 @@ namespace solution
 					std::packaged_task < void() > task([this, asset, &mutex]()
 						{
 							auto levels = make_levels(m_charts.at(asset).at(m_config.level_resolution));
+
+							std::sort(std::begin(levels), std::end(levels), [](const auto & lhs, const auto & rhs)
+								{ return (lhs.begin < rhs.begin); });
 							
 							std::scoped_lock lock(mutex);
 
-							m_levels[asset] = std::move(levels);
+							m_supports_resistances[asset] = std::move(levels);
 						});
 
 					futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
@@ -1178,7 +1270,7 @@ namespace solution
 			}
 		}
 
-		std::vector < Market::Level > Market::make_levels(const candles_container_t & candles) const
+		Market::levels_container_t Market::make_levels(const candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);
 
@@ -1186,9 +1278,7 @@ namespace solution
 			{
 				const auto frame = m_config.level_frame;
 
-				std::vector < Level > levels;
-
-				Date_Time end = { 9999, 0, 0, 0, 0, 0 }; 
+				levels_container_t levels;
 
 				for (auto first = std::begin(candles); first != std::end(candles); )
 				{
@@ -1206,7 +1296,7 @@ namespace solution
 							last->price_close > extremum.first->price_close) ||
 						(extremum.first != first && extremum.first != std::prev(last)))
 					{
-						levels.push_back(Level{ extremum.first->date_time, end, extremum.first->price_close, 0U });
+						levels.push_back(Level{ extremum.first->date_time, extremum.first->price_close, 1U });
 					}
 
 					if ((extremum.second == first && first != std::begin(candles) &&
@@ -1215,7 +1305,7 @@ namespace solution
 							last->price_close < extremum.second->price_close) ||
 						(extremum.second != first && extremum.second != std::prev(last)))
 					{
-						levels.push_back(Level{ extremum.second->date_time, end, extremum.second->price_close, 0U });
+						levels.push_back(Level{ extremum.second->date_time, extremum.second->price_close, 1U });
 					}
 
 					first = last;
@@ -1229,7 +1319,7 @@ namespace solution
 			}
 		}
 
-		std::vector < Market::Level > Market::reduce_levels(std::vector < Level > && levels) const
+		Market::levels_container_t Market::reduce_levels(levels_container_t && levels) const
 		{
 			RUN_LOGGER(logger);
 
@@ -1264,13 +1354,13 @@ namespace solution
 			}
 		}
 
-		void Market::save_levels() const
+		void Market::save_supports_resistances() const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				Data::save_levels(m_levels);
+				Data::save_supports_resistances(m_supports_resistances);
 			}
 			catch (const std::exception & exception)
 			{
@@ -1288,17 +1378,21 @@ namespace solution
 
 				futures.reserve(std::size(m_assets) * std::size(m_scales));
 
-				for (auto & [asset, scales] : m_charts)
+				for (const auto & asset : m_assets)
 				{
-					for (auto & [scale, candles] : scales)
+					for (const auto & scale : m_scales)
 					{
-						auto pointer = &candles;
-
-						std::packaged_task < void() > task([this, pointer]()
+						std::packaged_task < void() > task([this, asset, scale]()
 							{
-								update_regression_tags(*pointer);
+								auto & candles = m_charts.at(asset).at(scale);
 
-								update_classification_tags(*pointer);
+								update_regression_tags(candles);
+
+								update_classification_tags(candles);
+
+								auto & levels = m_supports_resistances.at(asset);
+
+								update_supports_resistances(candles, levels);
 							});
 
 						futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
@@ -1325,7 +1419,7 @@ namespace solution
 					{
 						if (i + j + 1 < std::size(candles))
 						{
-							if (candles[i].price_close <= std::numeric_limits < double > ::epsilon())
+							if (std::abs(candles[i].price_close) <= std::numeric_limits < double > ::epsilon())
 							{
 								throw std::domain_error("division by zero");
 							}
@@ -1419,6 +1513,43 @@ namespace solution
 					if (candle.classification_tag.empty())
 					{
 						candle.classification_tag += "WW";
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::update_supports_resistances(candles_container_t & candles, const levels_container_t & levels)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (auto & candle : candles)
+				{
+					for (const auto & level : levels)
+					{
+						if (level.begin >= candle.date_time)
+						{
+							break;
+						}
+						else
+						{
+							if ((level.price < candle.price_close) &&
+								(candle.support.strength == 0U || candle.support.price < level.price))
+							{
+								candle.support = level;
+							}
+
+							if ((level.price > candle.price_close) &&
+								(candle.resistance.strength == 0U || candle.resistance.price > level.price))
+							{
+								candle.resistance = level;
+							}
+						}
 					}
 				}
 			}

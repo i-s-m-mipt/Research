@@ -102,7 +102,7 @@ namespace solution
 
 				std::size_t level_frame = 5U;
 
-				bool required_saved_levels = false;
+				bool required_supports_resistances = false;
 			};
 
 		private:
@@ -115,6 +115,12 @@ namespace solution
 
 			struct Date_Time
 			{
+			public:
+
+				std::time_t to_time_t() const;
+
+			public:
+
 				unsigned int year   = 0U;
 				unsigned int month  = 0U;
 				unsigned int day    = 0U;
@@ -123,6 +129,43 @@ namespace solution
 				unsigned int minute = 0U;
 				unsigned int second = 0U;
 			};
+
+		public:
+
+			friend bool operator== (const Date_Time & lhs, const Date_Time & rhs);
+			friend bool operator!= (const Date_Time & lhs, const Date_Time & rhs);
+			friend bool operator<  (const Date_Time & lhs, const Date_Time & rhs);
+			friend bool operator<= (const Date_Time & lhs, const Date_Time & rhs);
+			friend bool operator>  (const Date_Time & lhs, const Date_Time & rhs);
+			friend bool operator>= (const Date_Time & lhs, const Date_Time & rhs);
+
+		private:
+
+			struct Level
+			{
+			public:
+
+				using date_time_t = Date_Time;
+
+			public:
+
+				date_time_t begin;
+
+				double price = 0.0;
+
+				std::size_t strength = 0U;
+			};
+
+		private:
+
+			friend std::ostream & operator<< (std::ostream & stream, const Level & level);
+
+		private:
+
+			using levels_container_t = std::vector < Level > ;
+
+			using supports_resistances_container_t = 
+				std::unordered_map < std::string, levels_container_t > ;
 
 		public:
 
@@ -170,6 +213,9 @@ namespace solution
 				std::array < double, prediction_range > regression_tags;
 
 				std::string classification_tag;
+
+				Level support;
+				Level resistance;
 			};
 
 		private:
@@ -240,32 +286,6 @@ namespace solution
 
 		private:
 
-			struct Level
-			{
-			public:
-
-				using date_time_t = Date_Time;
-
-			public:
-
-				date_time_t begin;
-				date_time_t end;
-
-				double price = 0.0;
-
-				std::size_t strength = 0U;
-			};
-
-		private:
-
-			friend std::ostream & operator<<(std::ostream & stream, const Level & level);
-
-		private:
-
-			using levels_container_t = std::unordered_map < std::string, std::vector < Level > > ;
-
-		private:
-
 			class Data
 			{
 			private:
@@ -287,7 +307,7 @@ namespace solution
 					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
 					static inline const path_t deviations_data           = "market/output/deviations.data";
 					static inline const path_t tagged_charts_data        = "market/output/tagged_charts.data";
-					static inline const path_t levels_data               = "market/output/levels.data";
+					static inline const path_t supports_resistances_data = "market/output/supports_resistances.data";
 				};
 
 			private:
@@ -300,21 +320,21 @@ namespace solution
 				{
 					struct Config
 					{
-						static inline const std::string required_charts              = "required_charts";
-						static inline const std::string required_self_similarities   = "required_self_similarities";
-						static inline const std::string required_pair_similarities   = "required_pair_similarities";
-						static inline const std::string self_similarity_DTW_delta    = "self_similarity_DTW_delta";
-						static inline const std::string cumulative_distances_asset   = "cumulative_distances_asset";
-						static inline const std::string cumulative_distances_scale_1 = "cumulative_distances_scale_1";
-						static inline const std::string cumulative_distances_scale_2 = "cumulative_distances_scale_2";
-						static inline const std::string required_deviations          = "required_deviations";
-						static inline const std::string required_tagged_charts       = "required_tagged_charts";
-						static inline const std::string min_price_change             = "min_price_change";
-						static inline const std::string max_price_rollback           = "max_price_rollback";
-						static inline const std::string level_price_max_deviation    = "level_price_max_deviation";
-						static inline const std::string level_resolution             = "level_resolution";
-						static inline const std::string level_frame                  = "level_frame";
-						static inline const std::string required_saved_levels        = "required_saved_levels";
+						static inline const std::string required_charts               = "required_charts";
+						static inline const std::string required_self_similarities    = "required_self_similarities";
+						static inline const std::string required_pair_similarities    = "required_pair_similarities";
+						static inline const std::string self_similarity_DTW_delta     = "self_similarity_DTW_delta";
+						static inline const std::string cumulative_distances_asset    = "cumulative_distances_asset";
+						static inline const std::string cumulative_distances_scale_1  = "cumulative_distances_scale_1";
+						static inline const std::string cumulative_distances_scale_2  = "cumulative_distances_scale_2";
+						static inline const std::string required_deviations           = "required_deviations";
+						static inline const std::string required_tagged_charts        = "required_tagged_charts";
+						static inline const std::string min_price_change              = "min_price_change";
+						static inline const std::string max_price_rollback            = "max_price_rollback";
+						static inline const std::string level_price_max_deviation     = "level_price_max_deviation";
+						static inline const std::string level_resolution              = "level_resolution";
+						static inline const std::string level_frame                   = "level_frame";
+						static inline const std::string required_supports_resistances = "required_supports_resistances";
 					};
 				};
 
@@ -338,7 +358,7 @@ namespace solution
 
 				static void save_tagged_charts(const charts_container_t & charts);
 
-				static void save_levels(const levels_container_t & levels);
+				static void save_supports_resistances(const supports_resistances_container_t & supports_resistances);
 
 			private:
 
@@ -448,17 +468,17 @@ namespace solution
 
 		private:
 
-			void make_all_levels();
+			void make_supports_resistances();
 
 		private:
 
-			std::vector < Level > make_levels(const candles_container_t & candles) const;
+			levels_container_t make_levels(const candles_container_t & candles) const;
 
-			std::vector < Level > reduce_levels(std::vector < Level > && levels) const;
+			levels_container_t reduce_levels(levels_container_t && levels) const;
 
 		private:
 
-			void save_levels() const;
+			void save_supports_resistances() const;
 
 		private:
 
@@ -469,6 +489,8 @@ namespace solution
 			void update_regression_tags(candles_container_t & candles);
 
 			void update_classification_tags(candles_container_t & candles);
+
+			void update_supports_resistances(candles_container_t & candles, const levels_container_t & levels);
 
 		private:
 
@@ -515,7 +537,7 @@ namespace solution
 
 			pair_similarities_container_t m_pair_similarities;
 
-			levels_container_t m_levels;
+			supports_resistances_container_t m_supports_resistances;
 
 			thread_pool_t m_thread_pool;
 		};

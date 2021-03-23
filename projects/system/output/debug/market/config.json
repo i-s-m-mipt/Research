@@ -13,5 +13,5 @@
     "level_price_max_deviation": 0.005,
     "level_resolution": "D",
     "level_frame": 5,
-    "required_saved_levels": true
+    "required_supports_resistances": true
 }
