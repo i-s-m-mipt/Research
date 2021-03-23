@@ -7,7 +7,11 @@
     "cumulative_distances_scale_1": "W",
     "cumulative_distances_scale_2": "MN",
     "required_deviations": false,
-    "required_tagged_charts": false,
+    "required_tagged_charts": true,
     "min_price_change": 0.020,
-    "max_price_rollback": 0.333
+    "max_price_rollback": 0.333,
+    "level_price_max_deviation": 0.0025,
+    "level_resolution": "D",
+    "level_frame": 5,
+    "required_saved_levels": true
 }

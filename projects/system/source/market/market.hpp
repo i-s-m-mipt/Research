@@ -95,6 +95,14 @@ namespace solution
 
 				double min_price_change   = 0.020;
 				double max_price_rollback = 0.333;
+
+				double level_price_max_deviation = 0.0025;
+
+				std::string level_resolution = "D";
+
+				std::size_t level_frame = 5U;
+
+				bool required_saved_levels = false;
 			};
 
 		private:
@@ -232,6 +240,32 @@ namespace solution
 
 		private:
 
+			struct Level
+			{
+			public:
+
+				using date_time_t = Date_Time;
+
+			public:
+
+				date_time_t begin;
+				date_time_t end;
+
+				double price = 0.0;
+
+				std::size_t strength = 0U;
+			};
+
+		private:
+
+			friend std::ostream & operator<<(std::ostream & stream, const Level & level);
+
+		private:
+
+			using levels_container_t = std::unordered_map < std::string, std::vector < Level > > ;
+
+		private:
+
 			class Data
 			{
 			private:
@@ -253,6 +287,7 @@ namespace solution
 					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
 					static inline const path_t deviations_data           = "market/output/deviations.data";
 					static inline const path_t tagged_charts_data        = "market/output/tagged_charts.data";
+					static inline const path_t levels_data               = "market/output/levels.data";
 				};
 
 			private:
@@ -276,6 +311,10 @@ namespace solution
 						static inline const std::string required_tagged_charts       = "required_tagged_charts";
 						static inline const std::string min_price_change             = "min_price_change";
 						static inline const std::string max_price_rollback           = "max_price_rollback";
+						static inline const std::string level_price_max_deviation    = "level_price_max_deviation";
+						static inline const std::string level_resolution             = "level_resolution";
+						static inline const std::string level_frame                  = "level_frame";
+						static inline const std::string required_saved_levels        = "required_saved_levels";
 					};
 				};
 
@@ -299,6 +338,8 @@ namespace solution
 
 				static void save_tagged_charts(const charts_container_t & charts);
 
+				static void save_levels(const levels_container_t & levels);
+
 			private:
 
 				static void load(const path_t & path, json_t & object);
@@ -309,28 +350,6 @@ namespace solution
 		private:
 
 			using thread_pool_t = boost::asio::thread_pool;
-
-		private:
-
-			struct Level
-			{
-			public:
-
-				using date_time_t = Date_Time;
-
-			public:
-
-				date_time_t begin;
-				date_time_t end;
-
-				double price = 0.0;
-
-				std::size_t strength = 0U;
-			};
-
-		private:
-
-			using levels_container_t = std::unordered_map < std::string, std::vector < Level > > ;
 
 		public:
 
@@ -429,6 +448,20 @@ namespace solution
 
 		private:
 
+			void make_all_levels();
+
+		private:
+
+			std::vector < Level > make_levels(const candles_container_t & candles) const;
+
+			std::vector < Level > reduce_levels(std::vector < Level > && levels) const;
+
+		private:
+
+			void save_levels() const;
+
+		private:
+
 			void make_tagged_charts();
 
 		private:
@@ -481,6 +514,8 @@ namespace solution
 			self_similarities_container_t m_self_similarities;
 
 			pair_similarities_container_t m_pair_similarities;
+
+			levels_container_t m_levels;
 
 			thread_pool_t m_thread_pool;
 		};
