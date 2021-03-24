@@ -137,7 +137,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>LUA53;HAVE_SNPRINTF;_CRT_SECURE_NO_WARNINGS;LUA_LIB;LUA_BUILD_AS_DLL;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_DEBUG;SHARED_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LUA53;HAVE_SNPRINTF;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;LUA_LIB;LUA_BUILD_AS_DLL;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_DEBUG;SHARED_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\lua\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
@@ -183,7 +183,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>LUA53;HAVE_SNPRINTF;_CRT_SECURE_NO_WARNINGS;LUA_LIB;LUA_BUILD_AS_DLL;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE; _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;NDEBUG;SHARED_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LUA53;HAVE_SNPRINTF;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;LUA_LIB;LUA_BUILD_AS_DLL;BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;;NDEBUG;SHARED_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Libraries\boost;C:\Libraries\lua\include;C:\Libraries\json\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>

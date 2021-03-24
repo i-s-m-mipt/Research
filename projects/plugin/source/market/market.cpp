@@ -99,47 +99,6 @@ namespace solution
 			}
 		}
 
-		/*
-		void Market::Task::operator()() const
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				while (m_status.load() == Status::running)
-				{
-					try
-					{
-						m_source->update();
-					}
-					catch (...)
-					{
-						++m_error_counter;
-
-						std::this_thread::sleep_for(std::chrono::seconds(1));
-
-						if (m_error_counter > critical_error_quantity)
-						{
-							throw market_exception("critical error quantity");
-						}
-						else
-						{
-							continue;
-						}
-					}
-
-					m_error_counter = 0;
-
-					std::this_thread::sleep_for(std::chrono::seconds(1));
-				}
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler(logger, exception);
-			}
-		}
-		*/
-
 		void Market::initialize()
 		{
 			RUN_LOGGER(logger);
@@ -187,6 +146,8 @@ namespace solution
 				const auto shared_memory_name = make_shared_memory_name();
 
 				boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
+
+				m_thread_pool.join();
 			}
 			catch (const std::exception & exception)
 			{
@@ -360,7 +321,7 @@ namespace solution
 			}
 		}
 
-		void Market::set_plugin_data() const
+		void Market::set_plugin_data()
 		{
 			RUN_LOGGER(logger);
 
@@ -528,7 +489,7 @@ namespace solution
 			}
 		}
 
-		void Market::update_sources() const
+		void Market::update_sources()
 		{
 			RUN_LOGGER(logger);
 

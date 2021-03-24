@@ -11,6 +11,7 @@
 #include <chrono>
 #include <exception>
 #include <filesystem>
+#include <future>
 #include <memory>
 #include <random>
 #include <stdexcept>
@@ -19,6 +20,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/asio.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/map.hpp>
 #include <boost/interprocess/containers/string.hpp>
@@ -144,41 +146,6 @@ namespace solution
 
 		private:
 
-			/*
-			class Task
-			{
-			public:
-
-				Task(std::shared_ptr < Source > source, std::atomic < Status > & status) :
-					m_source(source), m_status(status)
-				{}
-
-				~Task() noexcept = default;
-
-			public:
-
-				void operator()() const;
-
-			private:
-
-				static const inline std::size_t critical_error_quantity = 60;
-
-			private:
-
-				std::shared_ptr < Source > m_source;
-
-			private:
-
-				std::atomic < Status > & m_status;
-
-			private:
-
-				mutable std::size_t m_error_counter = 0;
-			};
-			*/
-
-		private:
-
 			using shared_memory_t = boost::interprocess::managed_shared_memory;		
 
 			using segment_manager_t = shared_memory_t::segment_manager;
@@ -262,10 +229,14 @@ namespace solution
 
 			using mutex_t = boost::interprocess::interprocess_mutex;
 
+			using thread_pool_t = boost::asio::thread_pool;
+
 		public:
 
-			explicit Market(detail::lua::State state) : m_state(state),
-				m_engine(static_cast < unsigned int > (std::chrono::system_clock::now().time_since_epoch().count()))
+			explicit Market(detail::lua::State state) : 
+				m_state(state), m_engine(static_cast < unsigned int > (
+					std::chrono::system_clock::now().time_since_epoch().count())),
+				m_thread_pool(std::thread::hardware_concurrency())
 			{
 				initialize();
 			}
@@ -328,7 +299,7 @@ namespace solution
 
 		private:
 
-			void set_plugin_data() const;
+			void set_plugin_data();
 
 			void get_server_data() const;
 
@@ -338,7 +309,7 @@ namespace solution
 
 			holdings_container_t get_holdings() const;
 
-			void update_sources() const;
+			void update_sources();
 
 		private:
 
@@ -382,6 +353,8 @@ namespace solution
 
 			condition_t * m_plugin_condition;
 			condition_t * m_server_condition;
+
+			thread_pool_t m_thread_pool;
 
 		private:
 
