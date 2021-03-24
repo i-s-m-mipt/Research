@@ -12,6 +12,7 @@
 #include <exception>
 #include <filesystem>
 #include <memory>
+#include <random>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -263,7 +264,8 @@ namespace solution
 
 		public:
 
-			explicit Market(detail::lua::State state) : m_state(state)
+			explicit Market(detail::lua::State state) : m_state(state),
+				m_engine(static_cast < unsigned int > (std::chrono::system_clock::now().time_since_epoch().count()))
 			{
 				initialize();
 			}
@@ -340,6 +342,8 @@ namespace solution
 
 		private:
 
+			unsigned long generate_transaction_id() const;
+
 			std::size_t compute_lot_quantity(const std::string & asset_code, double position) const;
 
 			std::size_t get_lot_size(const std::string & class_code, const std::string & asset_code) const;
@@ -371,14 +375,17 @@ namespace solution
 			shared_memory_t m_shared_memory;
 
 			Plugin_Data * m_plugin_data;
-
 			Server_Data * m_server_data;
 
-			condition_t * m_condition;
+			mutex_t * m_plugin_mutex;
+			mutex_t * m_server_mutex;
 
-			mutex_t * m_mutex;
+			condition_t * m_plugin_condition;
+			condition_t * m_server_condition;
 
 		private:
+
+			mutable std::default_random_engine m_engine;
 
 			mutable std::mutex m_market_mutex;
 

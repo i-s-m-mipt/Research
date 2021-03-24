@@ -174,6 +174,19 @@ namespace solution
 			try
 			{
 				stop();
+
+				m_shared_memory.destroy_ptr(m_plugin_data);
+				m_shared_memory.destroy_ptr(m_server_data);
+
+				m_shared_memory.destroy_ptr(m_plugin_mutex);
+				m_shared_memory.destroy_ptr(m_server_mutex);
+
+				m_shared_memory.destroy_ptr(m_plugin_condition);
+				m_shared_memory.destroy_ptr(m_server_condition);
+
+				const auto shared_memory_name = make_shared_memory_name();
+
+				boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
 			}
 			catch (const std::exception & exception)
 			{
@@ -254,15 +267,17 @@ namespace solution
 				m_shared_memory = shared_memory_t(boost::interprocess::create_only,
 					shared_memory_name.c_str(), shared_memory_size);
 
-				m_plugin_data = m_shared_memory.construct < Plugin_Data > (boost::interprocess::unique_instance) 
+				m_plugin_data = m_shared_memory.construct < Plugin_Data > ("plugin_data") 
 					(Plugin_Data::holding_allocator_t(m_shared_memory.get_segment_manager()));
 
-				m_server_data = m_shared_memory.construct < Server_Data > (boost::interprocess::unique_instance)
+				m_server_data = m_shared_memory.construct < Server_Data > ("server_data")
 					(Server_Data::transaction_allocator_t(m_shared_memory.get_segment_manager()));
 
-				m_condition = m_shared_memory.construct < condition_t > (boost::interprocess::unique_instance) ();
+				m_plugin_mutex = m_shared_memory.construct < mutex_t > ("plugin_mutex") ();
+				m_server_mutex = m_shared_memory.construct < mutex_t > ("server_mutex") ();
 
-				m_mutex = m_shared_memory.construct < mutex_t > (boost::interprocess::unique_instance) ();
+				m_plugin_condition = m_shared_memory.construct < condition_t > ("plugin_condition") ();
+				m_server_condition = m_shared_memory.construct < condition_t > ("server_condition") ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -292,21 +307,32 @@ namespace solution
 			{
 				m_status.store(Status::running);
 
-				std::scoped_lock lock(m_market_mutex);
+				std::scoped_lock market_lock(m_market_mutex);
 
 				while (m_status.load() == Status::running)
 				{
-					std::unique_lock lock(*m_mutex);
+					{
+						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
 
-					m_condition->wait(lock); // request from server
+						set_plugin_data();
 
-					set_plugin_data();
+						m_plugin_condition->notify_one(); // responce to server
+					}
 
-					m_condition->notify_one(); // responce to server
+					{
+						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
-					m_condition->wait(lock, [this]() { return m_server_data->is_updated; }); // responce from server
+						m_server_condition->wait(server_lock,
+							[this]() { return ((m_status.load() != Status::running) ||
+								m_server_data->is_updated); }); // responce from server
 
-					get_server_data();
+						if (m_status.load() != Status::running)
+						{
+							break;
+						}
+
+						get_server_data();
+					}
 				}
 			}
 			catch (const std::exception & exception)
@@ -323,7 +349,10 @@ namespace solution
 			{
 				m_status.store(Status::stopped);
 
-				std::scoped_lock lock(m_market_mutex);
+				m_plugin_condition->notify_all();
+				m_server_condition->notify_all();
+
+				std::scoped_lock market_lock(m_market_mutex);
 			}
 			catch (const std::exception & exception)
 			{
@@ -369,27 +398,36 @@ namespace solution
 			{
 				for (const auto & raw_transaction : m_server_data->transactions)
 				{
-					transaction_t transaction;
+					try
+					{
+						transaction_t transaction;
 
-					auto class_code = "TQBR";
+						auto class_code = "TQBR";
 
-					auto asset_code = raw_transaction.asset_code.c_str();
-					auto operation  = raw_transaction.operation.c_str();
+						auto asset_code = raw_transaction.asset_code.c_str();
+						auto operation  = raw_transaction.operation.c_str();
 
-					auto position   = std::stod(raw_transaction.position.c_str());
+						auto position   = std::stod(raw_transaction.position.c_str());
 
-					transaction["FIRM_ID"    ] = m_config.id;
-					transaction["CLIENT_CODE"] = m_config.code;
-					transaction["ACCOUNT"    ] = m_config.account;
-					transaction["ACTION"     ] = "NEW_ORDER";
-					transaction["TYPE"       ] = "M";
-					transaction["PRICE"      ] = "0";
-					transaction["CLASSCODE"  ] = class_code;
-					transaction["SECCODE"    ] = asset_code;
-					transaction["OPERATION"  ] = operation;
-					transaction["QUANTITY"   ] = compute_lot_quantity(asset_code, position);
+						// transaction["FIRM_ID"    ] = m_config.id;
 
-					send_transaction(transaction);
+						transaction["CLIENT_CODE"] = (m_config.code + '/'); // !
+						transaction["ACCOUNT"    ] = m_config.account;
+						transaction["TRANS_ID"   ] = std::to_string(generate_transaction_id());
+						transaction["ACTION"     ] = "NEW_ORDER";
+						transaction["TYPE"       ] = "M";
+						transaction["PRICE"      ] = "0";
+						transaction["CLASSCODE"  ] = class_code;
+						transaction["SECCODE"    ] = asset_code;
+						transaction["OPERATION"  ] = operation;
+						transaction["QUANTITY"   ] = std::to_string(compute_lot_quantity(asset_code, position));
+
+						send_message(send_transaction(transaction));
+					}
+					catch (const std::exception & exception)
+					{
+						logger.write(Severity::error, exception.what());
+					}
 				}
 
 				m_server_data->is_updated = false;
@@ -413,7 +451,7 @@ namespace solution
 
 				m_state.call(2);
 
-				m_state.push_string("av_lim_all");
+				m_state.push_string("assets");
 
 				m_state.get_table();
 
@@ -511,6 +549,22 @@ namespace solution
 						}
 					}
 				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		unsigned long Market::generate_transaction_id() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::uniform_int_distribution < unsigned long > distribution;
+
+				return distribution(m_engine);
 			}
 			catch (const std::exception & exception)
 			{
