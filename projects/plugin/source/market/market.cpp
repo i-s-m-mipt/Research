@@ -277,15 +277,14 @@ namespace solution
 
 						set_plugin_data();
 
-						m_plugin_condition->notify_one(); // responce to server
+						m_plugin_condition->notify_one();
 					}
 
 					{
 						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
-						m_server_condition->wait(server_lock,
-							[this]() { return ((m_status.load() != Status::running) ||
-								m_server_data->is_updated); }); // responce from server
+						m_server_condition->wait(server_lock, [this]() 
+							{ return ((m_status.load() != Status::running) || m_server_data->is_updated); });
 
 						if (m_status.load() != Status::running)
 						{
@@ -321,7 +320,7 @@ namespace solution
 			}
 		}
 
-		void Market::set_plugin_data()
+		void Market::set_plugin_data() const
 		{
 			RUN_LOGGER(logger);
 
@@ -372,7 +371,7 @@ namespace solution
 
 						// transaction["FIRM_ID"    ] = m_config.id;
 
-						transaction["CLIENT_CODE"] = (m_config.code + '/'); // !
+						transaction["CLIENT_CODE"] = m_config.code + '/'; // !
 						transaction["ACCOUNT"    ] = m_config.account;
 						transaction["TRANS_ID"   ] = std::to_string(generate_transaction_id());
 						transaction["ACTION"     ] = "NEW_ORDER";
@@ -489,7 +488,7 @@ namespace solution
 			}
 		}
 
-		void Market::update_sources()
+		void Market::update_sources() const
 		{
 			RUN_LOGGER(logger);
 

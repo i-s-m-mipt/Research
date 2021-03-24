@@ -299,7 +299,7 @@ namespace solution
 
 		private:
 
-			void set_plugin_data();
+			void set_plugin_data() const;
 
 			void get_server_data() const;
 
@@ -309,7 +309,7 @@ namespace solution
 
 			holdings_container_t get_holdings() const;
 
-			void update_sources();
+			void update_sources() const;
 
 		private:
 
