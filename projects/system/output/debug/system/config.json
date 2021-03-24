@@ -1,3 +1,3 @@
 {
-    "run_julia_test": true
+    "run_julia_test": false
 }
