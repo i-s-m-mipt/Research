@@ -247,8 +247,7 @@ namespace solution
 					{
 						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
 
-						m_plugin_condition->wait(plugin_lock, 
-							[this]() { return m_plugin_data->is_updated; }); // response from plugin
+						m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
 
 						get_plugin_data();
 					}
@@ -258,7 +257,7 @@ namespace solution
 
 						set_server_data();
 
-						m_server_condition->notify_one(); // responce to plugin
+						m_server_condition->notify_one();
 					}
 				}
 			}
@@ -268,13 +267,20 @@ namespace solution
 			}
 		}
 
-		void System::get_plugin_data() const
+		void System::get_plugin_data()
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				// TODO
+				m_available_money = m_plugin_data->available_money;
+
+				m_holdings.clear();
+
+				for (const auto & [asset, position] : m_plugin_data->holdings)
+				{
+					m_holdings.emplace(asset.c_str(), position);
+				}
 
 				m_plugin_data->is_updated = false;
 			}
@@ -290,7 +296,7 @@ namespace solution
 
 			try
 			{
-				m_server_data->transactions.clear();
+				m_server_data->transactions.clear(); // TODO
 
 				std::string asset_code;
 				std::string operation;

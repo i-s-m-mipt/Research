@@ -12,6 +12,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 
 #include "../config/config.hpp" // !
 
@@ -199,6 +200,8 @@ namespace solution
 
 			using mutex_t = boost::interprocess::interprocess_mutex;
 
+			using holdings_container_t = std::unordered_map < std::string, double > ;
+
 		public:
 
 			System()
@@ -250,7 +253,7 @@ namespace solution
 
 		private:
 
-			void get_plugin_data() const;
+			void get_plugin_data();
 
 			void set_server_data() const;
 
@@ -259,6 +262,10 @@ namespace solution
 			Config m_config;
 
 			Market m_market;
+
+			double m_available_money = 0.0;
+
+			holdings_container_t m_holdings;
 
 		private:
 
