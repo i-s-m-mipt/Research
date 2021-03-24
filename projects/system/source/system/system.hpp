@@ -29,6 +29,15 @@
 #  undef strtoll
 #endif // #if defined(strtoll)
 
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/interprocess/containers/map.hpp>
+#include <boost/interprocess/containers/string.hpp>
+#include <boost/interprocess/containers/vector.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/sync/interprocess_condition.hpp>
+#include <boost/interprocess/sync/interprocess_mutex.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
+
 #include <nlohmann/json.hpp>
 
 #include "../market/market.hpp"
@@ -105,6 +114,91 @@ namespace solution
 				static void save(const path_t & path, const json_t & object);
 			};
 
+		private:
+
+			using shared_memory_t = boost::interprocess::managed_shared_memory;
+
+			using segment_manager_t = shared_memory_t::segment_manager;
+
+		private:
+
+			struct Plugin_Data
+			{
+			public:
+
+				using char_allocator_t = boost::interprocess::allocator < char, segment_manager_t > ;
+
+				using string_t = boost::interprocess::basic_string < char, std::char_traits < char >, char_allocator_t > ;
+
+				using holding_t = std::pair < string_t, double > ;
+
+				using holding_allocator_t = boost::interprocess::allocator < holding_t, segment_manager_t > ;
+
+				using holdings_container_t = boost::interprocess::vector < holding_t, holding_allocator_t > ;
+
+			public:
+
+				explicit Plugin_Data(const holding_allocator_t & allocator) :
+					is_updated(false), available_money(0.0), holdings(allocator)
+				{}
+
+				~Plugin_Data() noexcept = default;
+
+			public:
+
+				bool is_updated;
+
+				double available_money;
+
+				holdings_container_t holdings;
+			};
+
+		private:
+
+			struct Server_Data
+			{
+			public:
+
+				using char_allocator_t = boost::interprocess::allocator < char, segment_manager_t > ;
+
+				using string_t = boost::interprocess::basic_string < char, std::char_traits < char >, char_allocator_t > ;
+
+			public:
+
+				struct Transaction
+				{
+					string_t asset_code;
+					string_t operation;
+					string_t position;
+				};
+
+			public:
+
+				using transaction_allocator_t = boost::interprocess::allocator < Transaction, segment_manager_t > ;
+
+				using transactions_container_t = boost::interprocess::vector < Transaction, transaction_allocator_t > ;
+
+			public:
+
+				explicit Server_Data(const transaction_allocator_t & allocator) :
+					is_updated(false), transactions(allocator)
+				{}
+
+				~Server_Data() noexcept = default;
+
+			public:
+
+				bool is_updated;
+
+				transactions_container_t transactions;
+			};
+
+		private:
+
+			using condition_t = boost::interprocess::interprocess_condition;
+
+			using mutex_t = boost::interprocess::interprocess_mutex;
+
 		public:
 
 			System()
@@ -140,6 +234,14 @@ namespace solution
 
 		private:
 
+			void initialize_shared_memory();
+
+		private:
+
+			std::string make_shared_memory_name() const;
+
+		private:
+
 			void run_julia_test() const;
 
 		public:
@@ -148,9 +250,28 @@ namespace solution
 
 		private:
 
+			void get_plugin_data() const;
+
+			void set_server_data() const;
+
+		private:
+
 			Config m_config;
 
 			Market m_market;
+
+		private:
+
+			shared_memory_t m_shared_memory;
+
+			Plugin_Data * m_plugin_data;
+			Server_Data * m_server_data;
+
+			mutex_t * m_plugin_mutex;
+			mutex_t * m_server_mutex;
+
+			condition_t * m_plugin_condition;
+			condition_t * m_server_condition;
 		};
 
 	} // namespace system

@@ -10,7 +10,7 @@
 using Logger = solution::shared::Logger;
 using System = solution::system::System;
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
 	RUN_LOGGER(logger);
 

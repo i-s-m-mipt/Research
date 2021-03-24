@@ -74,6 +74,8 @@ namespace solution
 			{
 				load();
 
+				initialize_shared_memory();
+
 				if (m_config.run_julia_test)
 				{
 					run_julia_test();
@@ -106,6 +108,45 @@ namespace solution
 			try
 			{
 				load_config();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::initialize_shared_memory()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto shared_memory_name = make_shared_memory_name();
+
+				m_shared_memory = shared_memory_t(boost::interprocess::open_only, shared_memory_name.c_str());
+
+				m_plugin_data = m_shared_memory.find < Plugin_Data > ("plugin_data").first;
+				m_server_data = m_shared_memory.find < Server_Data > ("server_data").first;
+
+				m_plugin_mutex = m_shared_memory.find < mutex_t > ("plugin_mutex").first;
+				m_server_mutex = m_shared_memory.find < mutex_t > ("server_mutex").first;
+
+				m_plugin_condition = m_shared_memory.find < condition_t > ("plugin_condition").first;
+				m_server_condition = m_shared_memory.find < condition_t > ("server_condition").first;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		std::string System::make_shared_memory_name() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				return "QUIK";
 			}
 			catch (const std::exception & exception)
 			{
@@ -201,7 +242,71 @@ namespace solution
 
 			try
 			{
-				// ...
+				while (true)
+				{
+					{
+						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
+
+						m_plugin_condition->wait(plugin_lock, 
+							[this]() { return m_plugin_data->is_updated; }); // response from plugin
+
+						get_plugin_data();
+					}
+
+					{
+						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
+
+						set_server_data();
+
+						m_server_condition->notify_one(); // responce to plugin
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::get_plugin_data() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				// TODO
+
+				m_plugin_data->is_updated = false;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::set_server_data() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_server_data->transactions.clear();
+
+				std::string asset_code;
+				std::string operation;
+				std::string position;
+
+				std::cin >> asset_code >> operation >> position;
+
+				m_server_data->transactions.push_back({
+					Server_Data::string_t(asset_code.c_str(),
+						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+					Server_Data::string_t(operation.c_str(),
+						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+					Server_Data::string_t(position.c_str(),
+						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
+
+				m_server_data->is_updated = true;
 			}
 			catch (const std::exception & exception)
 			{
