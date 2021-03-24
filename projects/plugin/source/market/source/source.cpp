@@ -89,7 +89,7 @@ namespace solution
 				{
 					const auto shared_memory_name = make_shared_memory_name();
 
-					const auto shared_memory_size = 65536U;
+					const auto shared_memory_size = 1024U * 1024U;
 
 					boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
 
