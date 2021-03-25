@@ -531,6 +531,8 @@ namespace solution
 
 		public:
 
+			void update_supports_resistances();
+
 			std::string get_current_chart(const std::string & asset, const std::string & scale, std::size_t size) const;
 			
 		private:

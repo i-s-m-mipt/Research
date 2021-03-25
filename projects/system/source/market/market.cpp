@@ -568,6 +568,11 @@ namespace solution
 				{
 					handle_tagged_charts();
 				}
+
+				if (m_config.required_supports_resistances)
+				{
+					update_supports_resistances();
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -673,7 +678,9 @@ namespace solution
 
 						if (!std::filesystem::exists(path))
 						{
-							throw std::runtime_error("file " + path.string() + " doesn't exist");
+							logger.write(Severity::error, "file " + path.string() + " doesn't exist");
+
+							continue;
 						}
 						
 						std::packaged_task < void() > task([this, path, &mutex, asset, scale]()
@@ -1588,6 +1595,56 @@ namespace solution
 			try
 			{
 				Data::save_tagged_charts(m_charts);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::update_supports_resistances()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto scale = m_config.level_resolution;
+
+				for (const auto & asset : m_assets)
+				{
+					get_chart(asset, scale);
+				}
+
+				std::vector < std::future < void > > futures;
+
+				futures.reserve(std::size(m_assets));
+
+				std::mutex mutex;
+
+				for (const auto & asset : m_assets)
+				{
+					auto path = charts_directory; path /= make_file_name(asset, scale);
+
+					if (!std::filesystem::exists(path))
+					{
+						throw std::runtime_error("file " + path.string() + " doesn't exist");
+					}
+
+					std::packaged_task < void() > task([this, path, &mutex, asset, scale]()
+						{
+							auto candles = load_candles(path);
+
+							std::scoped_lock lock(mutex);
+
+							m_charts[asset][scale] = std::move(candles);
+						});
+
+					futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
+				}
+
+				std::for_each(std::begin(futures), std::end(futures), [](auto & future) { future.wait(); });
+
+				make_supports_resistances();
 			}
 			catch (const std::exception & exception)
 			{
