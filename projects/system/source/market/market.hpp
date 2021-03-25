@@ -567,6 +567,7 @@ namespace solution
 		private:
 
 			static inline const path_t charts_directory = "market/charts";
+			static inline const path_t levels_directory = "market/levels";
 			static inline const path_t output_directory = "market/output";
 
 		private:

@@ -589,6 +589,7 @@ namespace solution
 			try
 			{
 				std::filesystem::create_directory(charts_directory);
+				std::filesystem::create_directory(levels_directory);
 				std::filesystem::create_directory(output_directory);
 
 				load();
@@ -1787,7 +1788,7 @@ namespace solution
 
 				for (const auto & asset : m_assets)
 				{
-					auto path = charts_directory; path /= make_file_name(asset, scale);
+					auto path = levels_directory; path /= make_file_name(asset, scale);
 
 					if (!std::filesystem::exists(path))
 					{
@@ -1822,7 +1823,7 @@ namespace solution
 
 			try
 			{
-				auto path = charts_directory; path /= make_file_name(asset, scale);
+				auto path = levels_directory; path /= make_file_name(asset, scale);
 
 				shared::Python python;
 
