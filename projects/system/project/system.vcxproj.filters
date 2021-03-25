@@ -25,6 +25,9 @@
     <Filter Include="source\config">
       <UniqueIdentifier>{341d0309-fd24-4834-a08f-3b274654360d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\source">
+      <UniqueIdentifier>{0f0e1f29-0775-4c13-948a-775898390580}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -41,6 +44,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\market.cpp">
       <Filter>source\market</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\source\source.cpp">
+      <Filter>source\market\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +67,9 @@
     </ClInclude>
     <ClInclude Include="..\source\config\config.hpp">
       <Filter>source\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\source\source.hpp">
+      <Filter>source\market\source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

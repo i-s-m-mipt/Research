@@ -165,6 +165,7 @@
     <ClCompile Include="..\..\shared\source\python\python.cpp" />
     <ClCompile Include="..\source\main.cpp" />
     <ClCompile Include="..\source\market\market.cpp" />
+    <ClCompile Include="..\source\market\source\source.cpp" />
     <ClCompile Include="..\source\system\system.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +174,7 @@
     <ClInclude Include="..\source\config\config.hpp" />
     <ClInclude Include="..\source\detail\julia\state.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
+    <ClInclude Include="..\source\market\source\source.hpp" />
     <ClInclude Include="..\source\system\system.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
