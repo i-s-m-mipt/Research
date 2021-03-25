@@ -1612,7 +1612,7 @@ namespace solution
 
 				for (const auto & asset : m_assets)
 				{
-					get_chart(asset, scale);
+					get_chart_for_levels(asset, scale);
 				}
 
 				std::vector < std::future < void > > futures;
@@ -1645,6 +1645,39 @@ namespace solution
 				std::for_each(std::begin(futures), std::end(futures), [](auto & future) { future.wait(); });
 
 				make_supports_resistances();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		Market::path_t Market::get_chart_for_levels(const std::string & asset, const std::string & scale) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = charts_directory; path /= make_file_name(asset, scale);
+
+				shared::Python python;
+
+				try
+				{
+					boost::python::exec("from market import get_for_levels", python.global(), python.global());
+
+					python.global()["get_for_levels"](asset.c_str(), scale.c_str(), path.string().c_str());
+				}
+				catch (const boost::python::error_already_set &)
+				{
+					logger.write(Severity::error, shared::Python::exception());
+				}
+				catch (const std::exception & exception)
+				{
+					shared::catch_handler < market_exception > (logger, exception);
+				}
+
+				return path;
 			}
 			catch (const std::exception & exception)
 			{

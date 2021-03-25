@@ -361,7 +361,6 @@ timeframes = {
     "MN"  : 10
 }
 
-
 def get_piece(asset, timeframe, first, last, path) :
 
     fout = open(path, "a")
@@ -418,8 +417,6 @@ def get_piece(asset, timeframe, first, last, path) :
     finally:
 
         fout.close()
-        
-
 
 def get(asset, timeframe, path) :
 
@@ -449,5 +446,26 @@ def get(asset, timeframe, path) :
         print("Exception: ", sys.exc_info()[0])
 
         raise
+    
+def get_for_levels(asset, timeframe, path) :
 
-# get("GAZP", "M60")
+    try:
+        
+        fout = open(path, "w")
+        
+        fout.close()
+
+        total = 365 * 10
+
+        first = datetime.now().date() - timedelta(1)
+        last  = first                 - timedelta(total)
+            
+        get_piece(asset, timeframe, last, first, path)
+
+        sleep(1)
+
+    except:
+
+        print("Exception: ", sys.exc_info()[0])
+
+        raise

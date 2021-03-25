@@ -533,6 +533,12 @@ namespace solution
 
 			void update_supports_resistances();
 
+		private:
+
+			path_t get_chart_for_levels(const std::string & asset, const std::string & scale) const;
+
+		public:
+
 			std::string get_current_chart(const std::string & asset, const std::string & scale, std::size_t size) const;
 			
 		private:
