@@ -2,6 +2,7 @@
     "required_charts": false,
     "required_self_similarities": false,
     "required_pair_similarities": false,
+    "required_pair_correlations": false,
     "self_similarity_DTW_delta": 1000000,
     "cumulative_distances_asset": "SBER",
     "cumulative_distances_scale_1": "W",

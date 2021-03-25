@@ -84,6 +84,7 @@ namespace solution
 				bool required_charts            = false;
 				bool required_self_similarities = false;
 				bool required_pair_similarities = false;
+				bool required_pair_correlations = false;
 
 				int self_similarity_DTW_delta;
 
@@ -280,6 +281,11 @@ namespace solution
 			using pair_similarities_container_t = std::unordered_map < std::string,
 				pair_similarity_matrix_t > ;
 
+			using pair_correlation_matrix_t = boost::multi_array < double, 2U > ;
+
+			using pair_correlations_container_t = std::unordered_map < std::string,
+				pair_correlation_matrix_t > ;
+
 		private:
 
 			struct Extension
@@ -313,6 +319,7 @@ namespace solution
 
 					static inline const path_t self_similarities_data    = "market/output/self_similarities.data";
 					static inline const path_t pair_similarities_data    = "market/output/pair_similarities.data";
+					static inline const path_t pair_correlations_data    = "market/output/pair_correlations.data";
 					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
 					static inline const path_t deviations_data           = "market/output/deviations.data";
 					static inline const path_t tagged_charts_data        = "market/output/tagged_charts.data";
@@ -332,6 +339,7 @@ namespace solution
 						static inline const std::string required_charts               = "required_charts";
 						static inline const std::string required_self_similarities    = "required_self_similarities";
 						static inline const std::string required_pair_similarities    = "required_pair_similarities";
+						static inline const std::string required_pair_correlations    = "required_pair_correlations";
 						static inline const std::string self_similarity_DTW_delta     = "self_similarity_DTW_delta";
 						static inline const std::string cumulative_distances_asset    = "cumulative_distances_asset";
 						static inline const std::string cumulative_distances_scale_1  = "cumulative_distances_scale_1";
@@ -361,6 +369,8 @@ namespace solution
 				static void save_self_similarities(const self_similarities_container_t & self_similarities);
 
 				static void save_pair_similarities(const pair_similarities_container_t & pair_similarities);
+
+				static void save_pair_correlations(const pair_correlations_container_t & pair_correlations);
 
 				static void save_cumulative_distances(const distances_matrix_t & matrix);
 
@@ -448,6 +458,8 @@ namespace solution
 
 			void handle_pair_similarities();
 
+			void handle_pair_correlations();
+
 			void handle_deviations();
 
 			void handle_tagged_charts();
@@ -460,12 +472,17 @@ namespace solution
 
 			void compute_pair_similarities();
 
+			void compute_pair_correlations();
+
 		private:
 
 			double compute_self_similarity(const std::string & asset,
 				const std::string & scale_1, const std::string & scale_2) const;
 
 			double compute_pair_similarity(const std::string & scale,
+				const std::string & asset_1, const std::string & asset_2) const;
+
+			double compute_pair_correlation(const std::string & scale,
 				const std::string & asset_1, const std::string & asset_2) const;
 
 		private:
@@ -477,6 +494,8 @@ namespace solution
 			void save_self_similarities() const;
 
 			void save_pair_similarities() const;
+
+			void save_pair_correlations() const;
 
 			void save_cumulative_distances(const distances_matrix_t & matrix) const;
 
@@ -565,6 +584,8 @@ namespace solution
 			self_similarities_container_t m_self_similarities;
 
 			pair_similarities_container_t m_pair_similarities;
+
+			pair_correlations_container_t m_pair_correlations;
 
 			supports_resistances_container_t m_supports_resistances;
 

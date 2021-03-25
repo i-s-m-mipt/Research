@@ -111,6 +111,7 @@ namespace solution
 				config.required_charts               = raw_config[Key::Config::required_charts              ].get < bool > ();
 				config.required_self_similarities    = raw_config[Key::Config::required_self_similarities   ].get < bool > ();
 				config.required_pair_similarities    = raw_config[Key::Config::required_pair_similarities   ].get < bool > ();
+				config.required_pair_correlations    = raw_config[Key::Config::required_pair_correlations   ].get < bool > ();
 				config.self_similarity_DTW_delta     = raw_config[Key::Config::self_similarity_DTW_delta    ].get < int > ();
 				config.cumulative_distances_asset    = raw_config[Key::Config::cumulative_distances_asset   ].get < std::string > ();
 				config.cumulative_distances_scale_1  = raw_config[Key::Config::cumulative_distances_scale_1 ].get < std::string > ();
@@ -249,6 +250,50 @@ namespace solution
 				std::ostringstream sout;
 
 				for (const auto & [scale, matrix] : pair_similarities)
+				{
+					auto size = matrix.size();
+
+					sout << scale << " " << size << "\n\n";
+
+					for (auto i = 0U; i < size; ++i)
+					{
+						for (auto j = 0U; j < size; ++j)
+						{
+							sout << std::setw(1 + 1 + 6) << std::right << std::setprecision(6) << std::fixed << matrix[i][j] << " ";
+						}
+
+						sout << "\n";
+					}
+
+					sout << "\n";
+				}
+
+				fout << sout.str();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::Data::save_pair_correlations(const pair_correlations_container_t & pair_correlations)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = File::pair_correlations_data;
+
+				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
+
+				if (!fout)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				std::ostringstream sout;
+
+				for (const auto & [scale, matrix] : pair_correlations)
 				{
 					auto size = matrix.size();
 
@@ -556,6 +601,11 @@ namespace solution
 				if (m_config.required_pair_similarities)
 				{
 					handle_pair_similarities();
+				}
+
+				if (m_config.required_pair_correlations)
+				{
+					handle_pair_correlations();
 				}
 
 				if (m_config.required_deviations)
@@ -929,6 +979,22 @@ namespace solution
 			}
 		}
 
+		void Market::handle_pair_correlations()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				compute_pair_correlations();
+
+				save_pair_correlations();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::handle_deviations()
 		{
 			RUN_LOGGER(logger);
@@ -1087,6 +1153,60 @@ namespace solution
 			}
 		}
 
+		void Market::compute_pair_correlations()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto size = std::size(m_assets);
+
+				for (const auto & scale : m_scales)
+				{
+					std::vector < std::future < double > > futures(size * (size - 1U) / 2U);
+
+					for (auto i = 0U, index = 0U; i < size; ++i)
+					{
+						for (auto j = i + 1; j < size; ++j)
+						{
+							std::packaged_task < double() > task([this, scale, i, j]()
+								{ return compute_pair_correlation(scale, m_assets[i], m_assets[j]); });
+
+							futures[index++] = boost::asio::post(m_thread_pool, std::move(task));
+						}
+					}
+
+					m_pair_correlations.insert(std::make_pair(scale, pair_correlation_matrix_t(boost::extents[size][size])));
+
+					for (auto i = 0U, index = 0U; i < size; ++i)
+					{
+						for (auto j = 0U; j < size; ++j)
+						{
+							if (i == j)
+							{
+								m_pair_correlations[scale][i][j] = 1.0;
+							}
+							else
+							{
+								if (i > j)
+								{
+									m_pair_correlations[scale][i][j] = m_pair_correlations[scale][j][i];
+								}
+								else
+								{
+									m_pair_correlations[scale][i][j] = futures[index++].get();
+								}
+							}
+						}
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		template < typename T >
 		auto min(T lhs, T rhs)
 		{
@@ -1204,6 +1324,21 @@ namespace solution
 			}
 		}
 
+		double Market::compute_pair_correlation(const std::string & scale,
+			const std::string & asset_1, const std::string & asset_2) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				return 0.0; // TODO
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		double Market::get_deviation_multiplier(const std::string & scale) const
 		{
 			RUN_LOGGER(logger);
@@ -1239,6 +1374,20 @@ namespace solution
 			try
 			{
 				Data::save_pair_similarities(m_pair_similarities);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::save_pair_correlations() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::save_pair_correlations(m_pair_correlations);
 			}
 			catch (const std::exception & exception)
 			{
