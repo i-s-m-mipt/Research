@@ -105,6 +105,8 @@ namespace solution
 				std::size_t level_frame = 5U;
 
 				bool required_supports_resistances = false;
+
+				bool required_quik = false;
 			};
 
 		private:
@@ -342,6 +344,7 @@ namespace solution
 						static inline const std::string level_resolution              = "level_resolution";
 						static inline const std::string level_frame                   = "level_frame";
 						static inline const std::string required_supports_resistances = "required_supports_resistances";
+						static inline const std::string required_quik                 = "required_quik";
 					};
 				};
 
@@ -448,6 +451,8 @@ namespace solution
 			void handle_deviations();
 
 			void handle_tagged_charts();
+
+			void handle_quik_initialization();
 
 		private:
 

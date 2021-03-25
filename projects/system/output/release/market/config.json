@@ -12,6 +12,7 @@
     "max_price_rollback": 0.333,
     "level_price_max_deviation": 0.005,
     "level_resolution": "D",
-    "level_frame": 5,
-    "required_supports_resistances": true
+    "level_frame": 10,
+    "required_supports_resistances": false,
+    "required_quik": false
 }

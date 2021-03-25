@@ -123,6 +123,7 @@ namespace solution
 				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
 				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
 				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();
+				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -547,8 +548,6 @@ namespace solution
 
 				load();
 
-				initialize_sources();
-
 				if (m_config.required_self_similarities)
 				{
 					handle_self_similarities();
@@ -569,7 +568,10 @@ namespace solution
 					handle_tagged_charts();
 				}
 
-				update_supports_resistances();
+				if (m_config.required_quik)
+				{
+					handle_quik_initialization();
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -954,6 +956,22 @@ namespace solution
 				make_tagged_charts();
 
 				save_tagged_charts();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::handle_quik_initialization()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				initialize_sources();
+
+				update_supports_resistances();
 			}
 			catch (const std::exception & exception)
 			{

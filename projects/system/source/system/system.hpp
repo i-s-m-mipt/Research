@@ -71,6 +71,8 @@ namespace solution
 			struct Config
 			{
 				bool run_julia_test = false;
+
+				bool required_quik = false;
 			};
 
 		private:
@@ -101,6 +103,7 @@ namespace solution
 					struct Config
 					{
 						static inline const std::string run_julia_test = "run_julia_test";
+						static inline const std::string required_quik  = "required_quik";
 					};
 				};
 

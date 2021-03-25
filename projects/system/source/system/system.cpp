@@ -17,6 +17,7 @@ namespace solution
 				load(File::config_json, raw_config);
 
 				config.run_julia_test = raw_config[Key::Config::run_julia_test].get < bool > ();
+				config.required_quik  = raw_config[Key::Config::required_quik ].get < bool > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -74,7 +75,10 @@ namespace solution
 			{
 				load();
 
-				initialize_shared_memory();
+				if (m_config.required_quik)
+				{
+					initialize_shared_memory();
+				}
 
 				if (m_config.run_julia_test)
 				{
@@ -242,22 +246,25 @@ namespace solution
 
 			try
 			{
-				while (true)
+				if (m_config.required_quik)
 				{
+					while (true)
 					{
-						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
+						{
+							boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
 
-						m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
+							m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
 
-						get_plugin_data();
-					}
+							get_plugin_data();
+						}
 
-					{
-						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
+						{
+							boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
-						set_server_data();
+							set_server_data();
 
-						m_server_condition->notify_one();
+							m_server_condition->notify_one();
+						}
 					}
 				}
 			}

@@ -1,3 +1,4 @@
 {
-    "run_julia_test": false
+    "run_julia_test": false,
+    "required_quik": false
 }
