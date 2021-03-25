@@ -547,6 +547,8 @@ namespace solution
 
 				load();
 
+				initialize_sources();
+
 				if (m_config.required_self_similarities)
 				{
 					handle_self_similarities();
@@ -860,6 +862,26 @@ namespace solution
 						}
 
 						candles[i].deviation = (candles[i].price_close - candles[i - 1].price_close) / candles[i - 1].price_close;
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::initialize_sources()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & asset : m_assets)
+				{
+					for (const auto & scale : m_scales)
+					{
+						m_sources[asset][scale] = std::make_shared < Source > (asset, scale);
 					}
 				}
 			}

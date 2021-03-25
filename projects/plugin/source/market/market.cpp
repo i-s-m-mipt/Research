@@ -107,16 +107,9 @@ namespace solution
 			{
 				load();
 
-				for (const auto & [class_code, asset_code] : m_assets)
-				{
-					for (const auto & scale : m_scales)
-					{
-						m_sources[asset_code][scale] = std::make_shared < Source > (
-							m_state, class_code, asset_code, scale);
-					}
-				}
-
 				m_status.store(Status::stopped);
+
+				initialize_sources();
 
 				initialize_shared_memory();
 			}
@@ -206,6 +199,27 @@ namespace solution
 			try
 			{
 				Data::load_scales(m_scales);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::initialize_sources()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & [class_code, asset_code] : m_assets)
+				{
+					for (const auto & scale : m_scales)
+					{
+						m_sources[asset_code][scale] = std::make_shared < Source > (
+							m_state, class_code, asset_code, scale);
+					}
+				}
 			}
 			catch (const std::exception & exception)
 			{

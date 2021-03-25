@@ -273,6 +273,8 @@ namespace solution
 
 		private:
 
+			void initialize_sources();
+
 			void initialize_shared_memory();
 
 		private:

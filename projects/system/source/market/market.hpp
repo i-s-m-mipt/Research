@@ -47,6 +47,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "source/source.hpp"
+
 #include "../../../shared/source/logger/logger.hpp"
 #include "../../../shared/source/python/python.hpp"
 
@@ -110,6 +112,11 @@ namespace solution
 			using assets_container_t = std::vector < std::string > ;
 
 			using scales_container_t = std::vector < std::string > ;
+
+			using Source = market::Source;
+
+			using sources_container_t = std::unordered_map < std::string,
+				std::unordered_map < std::string, std::shared_ptr < Source > > > ;
 
 		public:
 
@@ -430,6 +437,10 @@ namespace solution
 
 		private:
 
+			void initialize_sources();
+
+		private:
+
 			void handle_self_similarities();
 
 			void handle_pair_similarities();
@@ -530,6 +541,8 @@ namespace solution
 			assets_container_t m_assets;
 
 			scales_container_t m_scales;
+
+			sources_container_t m_sources;
 
 			charts_container_t m_charts;
 
