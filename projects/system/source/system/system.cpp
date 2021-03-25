@@ -303,7 +303,16 @@ namespace solution
 
 			try
 			{
-				m_server_data->transactions.clear(); // TODO
+				std::string asset;
+				std::string scale;
+
+				std::size_t size;
+
+				std::cin >> asset >> scale >> size;
+
+				std::cout << m_market.get_current_chart(asset, scale, size);
+
+				m_server_data->transactions.clear();
 
 				std::string asset_code;
 				std::string operation;
@@ -312,21 +321,11 @@ namespace solution
 				std::cin >> asset_code >> operation >> position;
 
 				m_server_data->transactions.push_back({
-					Server_Data::string_t(asset_code.c_str(),
-						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-					Server_Data::string_t(operation.c_str(),
-						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-					Server_Data::string_t(position.c_str(),
-						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
+					Server_Data::string_t(asset_code.c_str(), Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+					Server_Data::string_t(operation.c_str(),  Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+					Server_Data::string_t(position.c_str(),   Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
 
 				m_server_data->is_updated = true;
-
-				std::string asset;
-				std::string scale;
-
-				std::cin >> asset >> scale;
-
-				std::cout << m_market.get_current_chart(asset, scale, 10U) << std::endl;
 			}
 			catch (const std::exception & exception)
 			{
