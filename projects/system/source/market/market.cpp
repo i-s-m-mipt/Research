@@ -569,10 +569,7 @@ namespace solution
 					handle_tagged_charts();
 				}
 
-				if (m_config.required_supports_resistances)
-				{
-					update_supports_resistances();
-				}
+				update_supports_resistances();
 			}
 			catch (const std::exception & exception)
 			{
@@ -952,10 +949,7 @@ namespace solution
 			{
 				make_supports_resistances();
 
-				if (m_config.required_supports_resistances)
-				{
-					save_supports_resistances();
-				}
+				save_supports_resistances();
 
 				make_tagged_charts();
 
@@ -1610,9 +1604,12 @@ namespace solution
 			{
 				const auto scale = m_config.level_resolution;
 
-				for (const auto & asset : m_assets)
+				if (m_config.required_supports_resistances)
 				{
-					get_chart_for_levels(asset, scale);
+					for (const auto & asset : m_assets)
+					{
+						get_chart_for_levels(asset, scale);
+					}
 				}
 
 				std::vector < std::future < void > > futures;
@@ -1727,8 +1724,8 @@ namespace solution
 						static const char delimeter = ',';
 
 						sout <<
-							candle.date_time.month << delimeter << std::setfill('0') << std::setw(2) <<
-							candle.date_time.day   << delimeter << std::setfill('0') << std::setw(2);
+							std::setfill('0') << std::setw(2) << candle.date_time.month << delimeter <<
+							std::setfill('0') << std::setw(2) << candle.date_time.day   << delimeter;
 
 						sout << std::setprecision(6) << std::fixed << std::showpos <<
 							candle.deviation << delimeter;
@@ -1762,7 +1759,7 @@ namespace solution
 						{
 							sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
 
-							sout << "0000" << delimeter << "00" << delimeter;
+							sout << "0000" << delimeter << "00";
 						}
 						else
 						{
@@ -1775,8 +1772,10 @@ namespace solution
 
 							sout << std::setfill('0') << std::setw(4) << std::noshowpos << resistance_alive << delimeter;
 
-							sout << std::setfill('0') << std::setw(2) << candle.resistance.strength << delimeter;
+							sout << std::setfill('0') << std::setw(2) << candle.resistance.strength;
 						}
+
+						sout << "\n";
 					});
 
 				return sout.str();

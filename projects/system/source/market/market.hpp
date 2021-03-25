@@ -524,11 +524,6 @@ namespace solution
 				return m_charts;
 			}
 
-			const auto & self_similarities() const noexcept
-			{
-				return m_self_similarities;
-			}
-
 		public:
 
 			void update_supports_resistances();

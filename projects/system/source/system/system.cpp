@@ -313,6 +313,13 @@ namespace solution
 						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
 
 				m_server_data->is_updated = true;
+
+				std::string asset;
+				std::string scale;
+
+				std::cin >> asset >> scale;
+
+				std::cout << m_market.get_current_chart(asset, scale, 10U) << std::endl;
 			}
 			catch (const std::exception & exception)
 			{
