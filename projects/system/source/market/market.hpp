@@ -501,7 +501,7 @@ namespace solution
 
 			void update_classification_tags(candles_container_t & candles);
 
-			void update_supports_resistances(candles_container_t & candles, const levels_container_t & levels);
+			void update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const;
 
 		private:
 
@@ -528,7 +528,15 @@ namespace solution
 			{
 				return m_self_similarities;
 			}
+
+		public:
+
+			std::string get_current_chart(const std::string & asset, const std::string & scale, std::size_t size) const;
 			
+		private:
+
+			std::string serialize_candles(const candles_container_t & candles) const;
+
 		private:
 
 			static inline const path_t charts_directory = "market/charts";

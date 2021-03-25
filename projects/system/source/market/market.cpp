@@ -1544,7 +1544,7 @@ namespace solution
 			}
 		}
 
-		void Market::update_supports_resistances(candles_container_t & candles, const levels_container_t & levels)
+		void Market::update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const
 		{
 			RUN_LOGGER(logger);
 
@@ -1588,6 +1588,108 @@ namespace solution
 			try
 			{
 				Data::save_tagged_charts(m_charts);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		std::string Market::get_current_chart(const std::string & asset, const std::string & scale, std::size_t size) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::istringstream sin(m_sources.at(asset).at(scale)->get(size));
+
+				candles_container_t candles;
+
+				std::string line;
+
+				while (std::getline(sin, line))
+				{
+					candles.push_back(parse(line));
+				}
+
+				update_deviations(candles);
+
+				update_supports_resistances(candles, m_supports_resistances.at(asset));
+
+				return serialize_candles(candles);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		std::string Market::serialize_candles(const candles_container_t & candles) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::ostringstream sout;
+
+				std::for_each(std::begin(candles), std::end(candles), [&sout](const auto & candle)
+					{
+						static const char delimeter = ',';
+
+						sout <<
+							candle.date_time.month << delimeter << std::setfill('0') << std::setw(2) <<
+							candle.date_time.day   << delimeter << std::setfill('0') << std::setw(2);
+
+						sout << std::setprecision(6) << std::fixed << std::showpos <<
+							candle.deviation << delimeter;
+
+						if (std::abs(candle.price_close) <= std::numeric_limits < double > ::epsilon())
+						{
+							throw std::domain_error("division by zero");
+						}
+
+						if (candle.support.strength == 0U)
+						{
+							sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
+
+							sout << "0000" << delimeter << "00" << delimeter;
+						}
+						else
+						{
+							auto support_deviation = (candle.support.price - candle.price_close) / candle.price_close;
+
+							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+								std::abs(support_deviation) << delimeter;
+
+							auto support_alive = (candle.date_time.to_time_t() - candle.support.begin.to_time_t()) / 86400U;
+
+							sout << std::setfill('0') << std::setw(4) << std::noshowpos << support_alive << delimeter;
+
+							sout << std::setfill('0') << std::setw(2) << candle.support.strength << delimeter;
+						}
+
+						if (candle.resistance.strength == 0U)
+						{
+							sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
+
+							sout << "0000" << delimeter << "00" << delimeter;
+						}
+						else
+						{
+							auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
+
+							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+								std::abs(resistance_deviation) << delimeter;
+
+							auto resistance_alive = (candle.date_time.to_time_t() - candle.resistance.begin.to_time_t()) / 86400U;
+
+							sout << std::setfill('0') << std::setw(4) << std::noshowpos << resistance_alive << delimeter;
+
+							sout << std::setfill('0') << std::setw(2) << candle.resistance.strength << delimeter;
+						}
+					});
+
+				return sout.str();
 			}
 			catch (const std::exception & exception)
 			{
