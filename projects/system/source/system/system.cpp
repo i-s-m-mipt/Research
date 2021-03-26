@@ -268,7 +268,11 @@ namespace solution
 
 						std::cout << "Continue ? (y/n) ";
 
-						if (getchar() == 'n')
+						char c;
+
+						std::cin >> c;
+
+						if (c != 'y')
 						{
 							break;
 						}

@@ -28,11 +28,7 @@ namespace solution
 
 				try
 				{
-					m_shared_memory.destroy_ptr(m_deque);
-
-					const auto shared_memory_name = make_shared_memory_name();
-
-					boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
+					// ...
 				}
 				catch (const std::exception & exception)
 				{
