@@ -1055,24 +1055,31 @@ namespace solution
 			{
 				const auto size = std::size(m_scales);
 
+				std::vector < std::future < double > > futures;
+
+				futures.reserve(std::size(m_assets) * size * (size - 1U) / 2U);
+
 				for (const auto & asset : m_assets)
 				{
-					std::vector < std::future < double > > futures(size * (size - 1U) / 2U);
-
-					for (auto i = 0U, index = 0U; i < size; ++i)
+					for (auto i = 0U; i < size; ++i)
 					{
 						for (auto j = i + 1; j < size; ++j)
 						{
 							std::packaged_task < double() > task([this, asset, i, j]()
 								{ return compute_self_similarity(asset, m_scales[i], m_scales[j]); });
 
-							futures[index++] = boost::asio::post(m_thread_pool, std::move(task));
+							futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
 						}
 					}
+				}
 
+				auto index = 0U;
+
+				for (const auto & asset : m_assets)
+				{
 					m_self_similarities.insert(std::make_pair(asset, self_similarity_matrix_t(boost::extents[size][size])));
 
-					for (auto i = 0U, index = 0U; i < size; ++i)
+					for (auto i = 0U; i < size; ++i)
 					{
 						for (auto j = 0U; j < size; ++j)
 						{
@@ -1109,24 +1116,31 @@ namespace solution
 			{
 				const auto size = std::size(m_assets);
 
+				std::vector < std::future < double > > futures;
+
+				futures.reserve(std::size(m_scales) * size * (size - 1U) / 2U);
+
 				for (const auto & scale : m_scales)
 				{
-					std::vector < std::future < double > > futures(size * (size - 1U) / 2U);
-
-					for (auto i = 0U, index = 0U; i < size; ++i)
+					for (auto i = 0U; i < size; ++i)
 					{
 						for (auto j = i + 1; j < size; ++j)
 						{
 							std::packaged_task < double() > task([this, scale, i, j]()
 								{ return compute_pair_similarity(scale, m_assets[i], m_assets[j]); });
 
-							futures[index++] = boost::asio::post(m_thread_pool, std::move(task));
+							futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
 						}
 					}
+				}
 
+				auto index = 0U;
+
+				for (const auto & scale : m_scales)
+				{
 					m_pair_similarities.insert(std::make_pair(scale, pair_similarity_matrix_t(boost::extents[size][size])));
 
-					for (auto i = 0U, index = 0U; i < size; ++i)
+					for (auto i = 0U; i < size; ++i)
 					{
 						for (auto j = 0U; j < size; ++j)
 						{
@@ -1163,24 +1177,31 @@ namespace solution
 			{
 				const auto size = std::size(m_assets);
 
+				std::vector < std::future < double > > futures;
+
+				futures.reserve(std::size(m_scales) * size * (size - 1U) / 2U);
+
 				for (const auto & scale : m_scales)
 				{
-					std::vector < std::future < double > > futures(size * (size - 1U) / 2U);
-
-					for (auto i = 0U, index = 0U; i < size; ++i)
+					for (auto i = 0U; i < size; ++i)
 					{
 						for (auto j = i + 1; j < size; ++j)
 						{
 							std::packaged_task < double() > task([this, scale, i, j]()
 								{ return compute_pair_correlation(scale, m_assets[i], m_assets[j]); });
 
-							futures[index++] = boost::asio::post(m_thread_pool, std::move(task));
+							futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
 						}
 					}
+				}
 
+				auto index = 0U;
+
+				for (const auto & scale : m_scales)
+				{
 					m_pair_correlations.insert(std::make_pair(scale, pair_correlation_matrix_t(boost::extents[size][size])));
 
-					for (auto i = 0U, index = 0U; i < size; ++i)
+					for (auto i = 0U; i < size; ++i)
 					{
 						for (auto j = 0U; j < size; ++j)
 						{

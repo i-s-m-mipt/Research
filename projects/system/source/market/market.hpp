@@ -396,7 +396,7 @@ namespace solution
 
 		public:
 
-			Market() : m_thread_pool(std::thread::hardware_concurrency())
+			Market() : m_thread_pool(2U * std::thread::hardware_concurrency())
 			{
 				initialize();
 			}
