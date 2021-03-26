@@ -120,11 +120,12 @@ namespace solution
 				config.required_tagged_charts        = raw_config[Key::Config::required_tagged_charts       ].get < bool > ();
 				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();
 				config.max_price_rollback            = raw_config[Key::Config::max_price_rollback           ].get < double > ();
-				config.level_price_max_deviation     = raw_config[Key::Config::level_price_max_deviation    ].get < double > ();
+				config.level_max_deviation           = raw_config[Key::Config::level_max_deviation          ].get < double > ();
 				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
 				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
-				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();
 				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
+				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();
+				config.classification_max_deviation  = raw_config[Key::Config::classification_max_deviation ].get < double > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -1523,7 +1524,7 @@ namespace solution
 						for (auto current = std::next(first); current != std::end(levels);)
 						{
 							if (std::abs(first->price - current->price) / first->price <=
-								m_config.level_price_max_deviation)
+								m_config.level_max_deviation)
 							{
 								++first->strength;
 
@@ -1598,7 +1599,7 @@ namespace solution
 			}
 		}
 
-		void Market::update_regression_tags(candles_container_t & candles)
+		void Market::update_regression_tags(candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);
 
@@ -1631,7 +1632,7 @@ namespace solution
 			}
 		}
 
-		void Market::update_classification_tags(candles_container_t & candles)
+		void Market::update_classification_tags(candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);
 
@@ -1677,13 +1678,13 @@ namespace solution
 
 						if (first_extremum->price_close < last_extremum->price_close)
 						{
-							first_extremum->classification_tag += "OL";
-							last_extremum ->classification_tag += "CL";
+							sample_classification_tags(candles, first_extremum, "OL");
+							sample_classification_tags(candles, last_extremum,  "CL");
 						}
 						else
 						{
-							first_extremum->classification_tag += "OS";
-							last_extremum ->classification_tag += "CS";
+							sample_classification_tags(candles, first_extremum, "OS");
+							sample_classification_tags(candles, last_extremum,  "CS");
 						}
 
 						first = last_extremum;
@@ -1704,6 +1705,47 @@ namespace solution
 					if (candle.classification_tag.empty())
 					{
 						candle.classification_tag += "WW";
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::sample_classification_tags(candles_container_t & candles,
+			candles_container_t::iterator position, std::string tag) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				position->classification_tag += tag;
+
+				for (auto iterator = position; iterator != std::begin(candles); --iterator)
+				{
+					if (std::abs((position->price_close - std::prev(iterator)->price_close) / 
+						position->price_close) <= m_config.classification_max_deviation)
+					{
+						std::prev(iterator)->classification_tag += tag;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				for (auto iterator = std::next(position); iterator != std::end(candles); ++iterator)
+				{
+					if (std::abs((position->price_close - iterator->price_close) /
+						position->price_close) <= m_config.classification_max_deviation)
+					{
+						iterator->classification_tag += tag;
+					}
+					else
+					{
+						break;
 					}
 				}
 			}

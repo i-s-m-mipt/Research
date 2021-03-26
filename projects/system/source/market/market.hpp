@@ -99,15 +99,17 @@ namespace solution
 				double min_price_change   = 0.020;
 				double max_price_rollback = 0.333;
 
-				double level_price_max_deviation = 0.0025;
+				double level_max_deviation = 0.005;
 
 				std::string level_resolution = "D";
 
 				std::size_t level_frame = 5U;
 
+				bool required_quik = false;
+
 				bool required_supports_resistances = false;
 
-				bool required_quik = false;
+				double classification_max_deviation = 0.005;
 			};
 
 		private:
@@ -348,11 +350,12 @@ namespace solution
 						static inline const std::string required_tagged_charts        = "required_tagged_charts";
 						static inline const std::string min_price_change              = "min_price_change";
 						static inline const std::string max_price_rollback            = "max_price_rollback";
-						static inline const std::string level_price_max_deviation     = "level_price_max_deviation";
+						static inline const std::string level_max_deviation           = "level_max_deviation";
 						static inline const std::string level_resolution              = "level_resolution";
 						static inline const std::string level_frame                   = "level_frame";
-						static inline const std::string required_supports_resistances = "required_supports_resistances";
 						static inline const std::string required_quik                 = "required_quik";
+						static inline const std::string required_supports_resistances = "required_supports_resistances";
+						static inline const std::string classification_max_deviation  = "classification_max_deviation";
 					};
 				};
 
@@ -521,9 +524,12 @@ namespace solution
 
 		private:
 
-			void update_regression_tags(candles_container_t & candles);
+			void update_regression_tags(candles_container_t & candles) const;
 
-			void update_classification_tags(candles_container_t & candles);
+			void update_classification_tags(candles_container_t & candles) const;
+
+			void sample_classification_tags(candles_container_t & candles, 
+				candles_container_t::iterator position, std::string tag) const;
 
 			void update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const;
 
