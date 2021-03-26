@@ -265,6 +265,13 @@ namespace solution
 
 							m_server_condition->notify_one();
 						}
+
+						std::cout << "Continue ? (y/n) ";
+
+						if (getchar() == 'n')
+						{
+							break;
+						}
 					}
 				}
 			}
