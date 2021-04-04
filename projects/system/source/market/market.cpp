@@ -1354,7 +1354,31 @@ namespace solution
 
 			try
 			{
-				return 0.0; // TODO
+				const auto & candles_1 = m_charts.at(asset_1).at(scale);
+				const auto & candles_2 = m_charts.at(asset_2).at(scale);
+
+				auto size = std::min(std::size(candles_1), std::size(candles_2));
+
+				std::vector < std::pair < double, int > > deviations_1(size);
+				std::vector < std::pair < double, int > > deviations_2(size);
+
+				auto index = 1;
+
+				std::transform(std::crbegin(candles_1), std::next(std::crbegin(candles_1), size),
+					std::begin(deviations_1), [&index](const auto & candle) { return std::make_pair(candle.deviation, index++); });
+
+				auto index = 1;
+
+				std::transform(std::crbegin(candles_2), std::next(std::crbegin(candles_2), size),
+					std::begin(deviations_2), [&index](const auto & candle) { return std::make_pair(candle.deviation, index++); });
+
+				std::sort(std::begin(deviations_1), std::end(deviations_1), 
+					[](const auto & lhs, const auto & rhs) {return lhs.first < rhs.first; });
+				std::sort(std::begin(deviations_2), std::end(deviations_2),
+					[](const auto & lhs, const auto & rhs) {return lhs.first < rhs.first; });
+
+				return 1.0 - 6.0 * (std::transform_reduce(std::begin(deviations_1), std::end(deviations_1), std::begin(deviations_2),
+					0.0, std::plus(), [](const auto lhs, const auto rhs) { return std::pow(lhs.second - rhs.second, 2); }) / (size * (size * size - 1)));
 			}
 			catch (const std::exception & exception)
 			{
