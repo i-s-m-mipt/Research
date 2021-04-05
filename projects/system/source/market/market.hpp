@@ -528,6 +528,8 @@ namespace solution
 			void sample_classification_tags(candles_container_t & candles, 
 				candles_container_t::iterator position, std::string tag) const;
 
+			void concat_classification_tags(std::string & target, const std::string & tag) const;
+
 			void update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const;
 
 		private:
@@ -561,7 +563,7 @@ namespace solution
 
 		public:
 
-			std::string get_current_chart(const std::string & asset, const std::string & scale, std::size_t size) const;
+			std::string get_current_data(const std::string & asset, const std::string & scale, std::size_t size) const;
 			
 		private:
 

@@ -216,7 +216,7 @@ namespace solution
 					{
 						for (auto j = 0U; j < size; ++j)
 						{
-							sout << std::setw(3 + 1 + 3) << std::right << std::setprecision(3) << std::fixed << matrix[i][j] << " ";
+							sout << std::setw(1 + 1 + 6) << std::right << std::setprecision(6) << std::fixed << matrix[i][j] << " ";
 						}
 
 						sout << "\n";
@@ -304,7 +304,8 @@ namespace solution
 					{
 						for (auto j = 0U; j < size; ++j)
 						{
-							sout << std::setw(1 + 1 + 6) << std::right << std::setprecision(6) << std::fixed << matrix[i][j] << " ";
+							sout << std::setw(2 + 1 + 6) << std::right << std::setprecision(6) << 
+								std::fixed << std::showpos << matrix[i][j] << " ";
 						}
 
 						sout << "\n";
@@ -386,9 +387,19 @@ namespace solution
 						sout << asset << " " << scale << " " << std::size(candles) << "\n\n";
 
 						std::for_each(std::begin(candles), std::end(candles), [&sout](const auto & candle)
-							{ sout << std::setprecision(6) << std::fixed << candle.deviation << " "; });
+							{ 
+								static const char delimeter = ',';
 
-						sout << "\n\n";
+								sout <<
+									candle.date_time.year   << delimeter << std::setfill('0') << std::setw(2) <<
+									candle.date_time.month  << delimeter << std::setfill('0') << std::setw(2) <<
+									candle.date_time.day    << delimeter;
+
+								sout << std::setprecision(6) << std::fixed << std::showpos <<
+									candle.deviation << "\n";
+							});
+
+						sout << "\n";
 					}
 				}
 
@@ -1306,7 +1317,7 @@ namespace solution
 					save_cumulative_distances(cumulative_distances);
 				}
 
-				return cumulative_distances[size_1 - 1][size_2 - 1];
+				return cumulative_distances[size_1 - 1][size_2 - 1] / std::max(size_1, size_2);
 			}
 			catch (const std::exception & exception)
 			{
@@ -1367,7 +1378,7 @@ namespace solution
 				std::transform(std::crbegin(candles_1), std::next(std::crbegin(candles_1), size),
 					std::begin(deviations_1), [&index](const auto & candle) { return std::make_pair(candle.deviation, index++); });
 
-				auto index = 1;
+				index = 1;
 
 				std::transform(std::crbegin(candles_2), std::next(std::crbegin(candles_2), size),
 					std::begin(deviations_2), [&index](const auto & candle) { return std::make_pair(candle.deviation, index++); });
@@ -1392,6 +1403,26 @@ namespace solution
 
 			try
 			{
+				if (scale == "MN")
+				{
+					return 1.0;
+				}
+
+				if (scale == "W")
+				{
+					return 4.0;
+				}
+
+				if (scale == "D")
+				{
+					return 4.0 * 5.0;
+				}
+
+				if (scale == "H")
+				{
+					return 4.0 * 5.0 * 9.0;
+				}
+
 				return 1.0;
 			}
 			catch (const std::exception & exception)
@@ -1766,14 +1797,14 @@ namespace solution
 
 			try
 			{
-				position->classification_tag += tag;
+				concat_classification_tags(position->classification_tag, tag);
 
 				for (auto iterator = position; iterator != std::begin(candles); --iterator)
 				{
 					if (std::abs((position->price_close - std::prev(iterator)->price_close) / 
 						position->price_close) <= m_config.classification_max_deviation)
 					{
-						std::prev(iterator)->classification_tag += tag;
+						concat_classification_tags(std::prev(iterator)->classification_tag, tag);
 					}
 					else
 					{
@@ -1786,12 +1817,33 @@ namespace solution
 					if (std::abs((position->price_close - iterator->price_close) /
 						position->price_close) <= m_config.classification_max_deviation)
 					{
-						iterator->classification_tag += tag;
+						concat_classification_tags(iterator->classification_tag, tag);
 					}
 					else
 					{
 						break;
 					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::concat_classification_tags(std::string & target, const std::string & tag) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				if ((target.empty()) ||
+					(target == "OL" && tag != "CL") ||
+					(target == "CL" && tag != "OL") ||
+					(target == "OS" && tag != "CS") ||
+					(target == "CS" && tag != "OS"))
+				{
+					target += tag;
 				}
 			}
 			catch (const std::exception & exception)
@@ -1937,7 +1989,7 @@ namespace solution
 			}
 		}
 
-		std::string Market::get_current_chart(const std::string & asset, const std::string & scale, std::size_t size) const
+		std::string Market::get_current_data(const std::string & asset, const std::string & scale, std::size_t size) const
 		{
 			RUN_LOGGER(logger);
 
