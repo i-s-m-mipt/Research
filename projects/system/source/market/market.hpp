@@ -98,6 +98,8 @@ namespace solution
 
 				double level_max_deviation = 0.005;
 
+				std::time_t level_max_lifetime = 365LL * 5LL;
+
 				std::string level_resolution = "D";
 
 				std::size_t level_frame = 5U;
@@ -348,6 +350,7 @@ namespace solution
 						static inline const std::string min_price_change              = "min_price_change";
 						static inline const std::string max_price_rollback            = "max_price_rollback";
 						static inline const std::string level_max_deviation           = "level_max_deviation";
+						static inline const std::string level_max_lifetime            = "level_max_lifetime";
 						static inline const std::string level_resolution              = "level_resolution";
 						static inline const std::string level_frame                   = "level_frame";
 						static inline const std::string required_quik                 = "required_quik";

@@ -121,6 +121,7 @@ namespace solution
 				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();
 				config.max_price_rollback            = raw_config[Key::Config::max_price_rollback           ].get < double > ();
 				config.level_max_deviation           = raw_config[Key::Config::level_max_deviation          ].get < double > ();
+				config.level_max_lifetime            = raw_config[Key::Config::level_max_lifetime           ].get < std::time_t > ();
 				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
 				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
 				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
@@ -1865,6 +1866,10 @@ namespace solution
 						if (level.begin >= candle.date_time)
 						{
 							break;
+						}
+						else if (candle.date_time.to_time_t() - level.begin.to_time_t() > 86400U * m_config.level_max_lifetime)
+						{
+							continue;
 						}
 						else
 						{
