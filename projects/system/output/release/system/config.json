@@ -1,4 +1,7 @@
 {
     "run_julia_test": false,
-    "required_quik": false
+    "required_quik": false,
+    "prediction_timeframe": "D",
+    "prediction_timesteps": 20,
+    "transaction_base_value": 1000.0
 }
