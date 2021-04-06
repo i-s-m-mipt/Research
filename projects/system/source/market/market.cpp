@@ -433,7 +433,7 @@ namespace solution
 				{
 					for (const auto & [scale, candles] : scales)
 					{
-						sout << asset << " " << scale << " " << std::size(candles) << "\n\n";
+						sout << asset << " " << scale << " " << std::size(candles) << "\n";
 
 						std::for_each(std::begin(candles), std::end(candles), [&sout](const auto & candle)
 							{ 
@@ -503,8 +503,6 @@ namespace solution
 								
 								sout << candle.classification_tag << "\n";
 							});
-
-						sout << "\n";
 					}
 				}
 
@@ -1755,13 +1753,19 @@ namespace solution
 
 						if (first_extremum->price_close < last_extremum->price_close)
 						{
-							sample_classification_tags(candles, first_extremum, "OL");
-							sample_classification_tags(candles, last_extremum,  "CL");
+							//sample_classification_tags(candles, first_extremum, "OL");
+							//sample_classification_tags(candles, last_extremum,  "CL");
+
+							first_extremum->classification_tag = "OL";
+							last_extremum->classification_tag  = "CL";
 						}
 						else
 						{
-							sample_classification_tags(candles, first_extremum, "OS");
-							sample_classification_tags(candles, last_extremum,  "CS");
+							//sample_classification_tags(candles, first_extremum, "OS");
+							//sample_classification_tags(candles, last_extremum,  "CS");
+
+							first_extremum->classification_tag = "OS";
+							last_extremum->classification_tag  = "CS";
 						}
 
 						first = last_extremum;
@@ -1777,11 +1781,47 @@ namespace solution
 					}
 				}
 
+				std::string state_tag = State_Tag::C;
+
 				for (auto & candle : candles)
 				{
 					if (candle.classification_tag.empty())
 					{
-						candle.classification_tag += "WW";
+						candle.classification_tag = state_tag;
+					}
+					else
+					{
+						if (candle.classification_tag == "OL")
+						{
+							state_tag = State_Tag::L;
+						}
+
+						if (candle.classification_tag == "CL")
+						{
+							state_tag = State_Tag::C;
+						}
+
+						if (candle.classification_tag == "OS")
+						{
+							state_tag = State_Tag::S;
+						}
+
+						if (candle.classification_tag == "CS")
+						{
+							state_tag = State_Tag::C;
+						}
+
+						if (candle.classification_tag == "CSOL")
+						{
+							state_tag = State_Tag::L;
+						}
+
+						if (candle.classification_tag == "CLOS")
+						{
+							state_tag = State_Tag::S;
+						}
+
+						candle.classification_tag = state_tag;
 					}
 				}
 			}

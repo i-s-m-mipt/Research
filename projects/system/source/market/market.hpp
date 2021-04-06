@@ -394,6 +394,15 @@ namespace solution
 
 			using thread_pool_t = boost::asio::thread_pool;
 
+		private:
+
+			struct State_Tag
+			{
+				static inline const std::string C = "C";
+				static inline const std::string L = "L";
+				static inline const std::string S = "S";
+			};
+
 		public:
 
 			Market() : m_thread_pool(2U * std::thread::hardware_concurrency())
