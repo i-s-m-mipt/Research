@@ -340,7 +340,7 @@ namespace solution
 
 		public:
 
-			Market() : m_thread_pool(2U * std::thread::hardware_concurrency())
+			Market(const Config & config) : m_config(config), m_thread_pool(2U * std::thread::hardware_concurrency())
 			{
 				initialize();
 			}
@@ -497,10 +497,6 @@ namespace solution
 			{
 				return m_charts;
 			}
-
-		public:
-
-			void set_config(const Config & config);
 
 		public:
 

@@ -97,7 +97,7 @@ namespace solution
 			{
 				load();
 
-				m_market.set_config(m_config);
+				m_market = std::make_unique < Market > (m_config);
 
 				if (m_config.required_quik)
 				{
@@ -348,10 +348,10 @@ namespace solution
 			{
 				const auto scale = m_config.prediction_timeframe;
 
-				for (const auto & asset : m_market.assets())
+				for (const auto & asset : m_market->assets())
 				{
 					handle_signal(boost::python::extract < std::string > (
-						function(asset.c_str(), scale.c_str(), m_market.get_current_data(
+						function(asset.c_str(), scale.c_str(), m_market->get_current_data(
 							asset, scale, m_config.prediction_timesteps).c_str())));
 				}
 			}
@@ -388,7 +388,7 @@ namespace solution
 
 				std::cin >> asset >> scale >> size;
 
-				std::cout << m_market.get_current_data(asset, scale, size);
+				std::cout << m_market->get_current_data(asset, scale, size);
 
 				m_server_data->transactions.clear();
 

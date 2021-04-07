@@ -10,6 +10,7 @@
 #include <exception>
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -296,7 +297,7 @@ namespace solution
 
 			Config m_config;
 
-			Market m_market;
+			std::unique_ptr < Market > m_market;
 
 			double m_available_money = 0.0;
 

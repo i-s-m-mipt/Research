@@ -1900,20 +1900,6 @@ namespace solution
 			}
 		}
 
-		void Market::set_config(const Config & config)
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				m_config = config;
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
 		void Market::update_supports_resistances()
 		{
 			RUN_LOGGER(logger);
