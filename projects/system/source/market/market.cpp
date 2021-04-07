@@ -121,7 +121,8 @@ namespace solution
 				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();
 				config.max_price_rollback            = raw_config[Key::Config::max_price_rollback           ].get < double > ();
 				config.level_max_deviation           = raw_config[Key::Config::level_max_deviation          ].get < double > ();
-				config.level_max_lifetime            = raw_config[Key::Config::level_max_lifetime           ].get < std::time_t > ();
+				config.level_max_lifetime            = raw_config[Key::Config::level_max_lifetime           ].get < double > ();
+				config.level_max_strength            = raw_config[Key::Config::level_max_strength           ].get < double > ();
 				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
 				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
 				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
@@ -412,7 +413,7 @@ namespace solution
 			}
 		}
 
-		void Market::Data::save_tagged_charts(const charts_container_t & charts)
+		void Market::Data::save_tagged_charts(const charts_container_t & charts, const Config & config)
 		{
 			RUN_LOGGER(logger);
 
@@ -435,20 +436,15 @@ namespace solution
 					{
 						sout << asset << " " << scale << " " << std::size(candles) << "\n";
 
-						std::for_each(std::begin(candles), std::end(candles), [&sout](const auto & candle)
+						std::for_each(std::begin(candles), std::end(candles), [&sout, &config](const auto & candle)
 							{ 
 								static const char delimeter = ',';
 
 								sout <<
-									candle.date_time.year   << delimeter << std::setfill('0') << std::setw(2) <<
-									candle.date_time.month  << delimeter << std::setfill('0') << std::setw(2) <<
-									candle.date_time.day    << delimeter << std::setfill('0') << std::setw(2) <<
-									candle.date_time.hour   << delimeter << std::setfill('0') << std::setw(2) <<
-									candle.date_time.minute << delimeter << std::setfill('0') << std::setw(2) <<
-									candle.date_time.second << delimeter;
-								
-								sout << std::setprecision(6) << std::fixed << std::showpos <<
-									candle.deviation << delimeter;
+									std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.month / months_in_year << delimeter <<
+									std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.day   / days_in_month  << delimeter;
+																
+								sout << std::setprecision(6) << std::fixed << std::showpos << candle.deviation << delimeter;
 
 								if (std::abs(candle.price_close) <= std::numeric_limits < double > ::epsilon())
 								{
@@ -457,42 +453,54 @@ namespace solution
 
 								if (candle.support.strength == 0U)
 								{
-									sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
-
-									sout << "0000" << delimeter << "00" << delimeter;
+									sout <<
+										std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
+										std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
+										std::setprecision(3) << std::fixed << std::noshowpos << 0.0 << delimeter;
 								}
 								else
 								{
-									auto support_deviation = (candle.support.price - candle.price_close) / candle.price_close;
+									auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
 
 									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-										std::abs(support_deviation) << delimeter;
+										(support_deviation > 1.0 ? 1.0 : support_deviation) << delimeter;
 
-									auto support_alive = (candle.date_time.to_time_t() - candle.support.begin.to_time_t()) / 86400U;
+									auto support_alive = (candle.date_time.to_time_t() - candle.support.begin.to_time_t()) / 
+										seconds_in_day / config.level_max_lifetime;
 
-									sout << std::setfill('0') << std::setw(4) << std::noshowpos << support_alive << delimeter;
+									sout << std::setprecision(6) << std::fixed << std::noshowpos << 
+										(support_alive > 1.0 ? 1.0 : support_alive) << delimeter;
 
-									sout << std::setfill('0') << std::setw(2) << candle.support.strength << delimeter;
+									auto support_strength = candle.support.strength / config.level_max_strength;
+
+									sout << std::setprecision(3) << std::fixed << std::noshowpos <<  
+										(support_strength > 1.0 ? 1.0 : support_strength)  << delimeter;
 								}
 
 								if (candle.resistance.strength == 0U)
 								{
-									sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
-
-									sout << "0000" << delimeter << "00" << delimeter;
+									sout <<
+										std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
+										std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
+										std::setprecision(3) << std::fixed << std::noshowpos << 0.0 << delimeter;
 								}
 								else
 								{
 									auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
 
 									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-										std::abs(resistance_deviation) << delimeter;
+										(resistance_deviation > 1.0 ? 1.0 : resistance_deviation) << delimeter;
 
-									auto resistance_alive = (candle.date_time.to_time_t() - candle.resistance.begin.to_time_t()) / 86400U;
+									auto resistance_alive = (candle.date_time.to_time_t() - candle.resistance.begin.to_time_t()) / 
+										seconds_in_day / config.level_max_lifetime;
 
-									sout << std::setfill('0') << std::setw(4) << std::noshowpos << resistance_alive << delimeter;
+									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+										(resistance_alive > 1.0 ? 1.0 : resistance_alive) << delimeter;
 
-									sout << std::setfill('0') << std::setw(2) << candle.resistance.strength << delimeter;
+									auto resistance_strength = candle.resistance.strength / config.level_max_strength;
+
+									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
+										(resistance_strength > 1.0 ? 1.0 : resistance_strength) << delimeter;
 								}
 
 								for (auto regression_tag : candle.regression_tags)
@@ -1907,10 +1915,6 @@ namespace solution
 						{
 							break;
 						}
-						else if (candle.date_time.to_time_t() - level.begin.to_time_t() > 86400U * m_config.level_max_lifetime)
-						{
-							continue;
-						}
 						else
 						{
 							if ((level.price < candle.price_close) &&
@@ -1940,7 +1944,7 @@ namespace solution
 
 			try
 			{
-				Data::save_tagged_charts(m_charts);
+				Data::save_tagged_charts(m_charts, m_config);
 			}
 			catch (const std::exception & exception)
 			{
@@ -2071,16 +2075,15 @@ namespace solution
 			{
 				std::ostringstream sout;
 
-				std::for_each(std::begin(candles), std::end(candles), [&sout](const auto & candle)
+				std::for_each(std::begin(candles), std::end(candles), [this, &sout](const auto & candle)
 					{
 						static const char delimeter = ',';
 
 						sout <<
-							std::setfill('0') << std::setw(2) << candle.date_time.month << delimeter <<
-							std::setfill('0') << std::setw(2) << candle.date_time.day   << delimeter;
+							std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.month / months_in_year << delimeter <<
+							std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.day   / days_in_month  << delimeter;
 
-						sout << std::setprecision(6) << std::fixed << std::showpos <<
-							candle.deviation << delimeter;
+						sout << std::setprecision(6) << std::fixed << std::showpos << candle.deviation << delimeter;
 
 						if (std::abs(candle.price_close) <= std::numeric_limits < double > ::epsilon())
 						{
@@ -2089,42 +2092,54 @@ namespace solution
 
 						if (candle.support.strength == 0U)
 						{
-							sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
-
-							sout << "0000" << delimeter << "00" << delimeter;
+							sout <<
+								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
+								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
+								std::setprecision(3) << std::fixed << std::noshowpos << 0.0 << delimeter;
 						}
 						else
 						{
-							auto support_deviation = (candle.support.price - candle.price_close) / candle.price_close;
+							auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
 
 							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								std::abs(support_deviation) << delimeter;
+								(support_deviation > 1.0 ? 1.0 : support_deviation) << delimeter;
 
-							auto support_alive = (candle.date_time.to_time_t() - candle.support.begin.to_time_t()) / 86400U;
+							auto support_alive = (candle.date_time.to_time_t() - candle.support.begin.to_time_t()) /
+								seconds_in_day / m_config.level_max_lifetime;
 
-							sout << std::setfill('0') << std::setw(4) << std::noshowpos << support_alive << delimeter;
+							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+								(support_alive > 1.0 ? 1.0 : support_alive) << delimeter;
 
-							sout << std::setfill('0') << std::setw(2) << candle.support.strength << delimeter;
+							auto support_strength = candle.support.strength / m_config.level_max_strength;
+
+							sout << std::setprecision(3) << std::fixed << std::noshowpos <<
+								(support_strength > 1.0 ? 1.0 : support_strength) << delimeter;
 						}
 
 						if (candle.resistance.strength == 0U)
 						{
-							sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
-
-							sout << "0000" << delimeter << "00";
+							sout <<
+								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
+								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
+								std::setprecision(3) << std::fixed << std::noshowpos << 0.0;
 						}
 						else
 						{
 							auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
 
 							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								std::abs(resistance_deviation) << delimeter;
+								(resistance_deviation > 1.0 ? 1.0 : resistance_deviation) << delimeter;
 
-							auto resistance_alive = (candle.date_time.to_time_t() - candle.resistance.begin.to_time_t()) / 86400U;
+							auto resistance_alive = (candle.date_time.to_time_t() - candle.resistance.begin.to_time_t()) /
+								seconds_in_day / m_config.level_max_lifetime;
 
-							sout << std::setfill('0') << std::setw(4) << std::noshowpos << resistance_alive << delimeter;
+							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+								(resistance_alive > 1.0 ? 1.0 : resistance_alive) << delimeter;
 
-							sout << std::setfill('0') << std::setw(2) << candle.resistance.strength;
+							auto resistance_strength = candle.resistance.strength / m_config.level_max_strength;
+
+							sout << std::setprecision(3) << std::fixed << std::noshowpos <<
+								(resistance_strength > 1.0 ? 1.0 : resistance_strength);
 						}
 
 						sout << "\n";

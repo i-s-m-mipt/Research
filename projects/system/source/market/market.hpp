@@ -98,7 +98,8 @@ namespace solution
 
 				double level_max_deviation = 0.005;
 
-				std::time_t level_max_lifetime = 365LL * 5LL;
+				double level_max_lifetime = 1825.0;
+				double level_max_strength = 25.0;
 
 				std::string level_resolution = "D";
 
@@ -351,6 +352,7 @@ namespace solution
 						static inline const std::string max_price_rollback            = "max_price_rollback";
 						static inline const std::string level_max_deviation           = "level_max_deviation";
 						static inline const std::string level_max_lifetime            = "level_max_lifetime";
+						static inline const std::string level_max_strength            = "level_max_strength";
 						static inline const std::string level_resolution              = "level_resolution";
 						static inline const std::string level_frame                   = "level_frame";
 						static inline const std::string required_quik                 = "required_quik";
@@ -379,7 +381,7 @@ namespace solution
 
 				static void save_deviations(const charts_container_t & charts);
 
-				static void save_tagged_charts(const charts_container_t & charts);
+				static void save_tagged_charts(const charts_container_t & charts, const Config & config);
 
 				static void save_supports_resistances(const supports_resistances_container_t & supports_resistances);
 
@@ -586,6 +588,13 @@ namespace solution
 			static inline const path_t charts_directory = "market/charts";
 			static inline const path_t levels_directory = "market/levels";
 			static inline const path_t output_directory = "market/output";
+
+		private:
+
+			static inline const std::time_t seconds_in_day = 86400LL;
+
+			static inline const double months_in_year = 12.0; // normalization
+			static inline const double days_in_month  = 31.0; // normalization
 
 		private:
 
