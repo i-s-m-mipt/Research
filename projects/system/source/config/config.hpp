@@ -92,4 +92,57 @@
 #  define _MAC
 #endif // #if !defined(_MAC) && (defined(_68K_) || defined(_MPPC_))
 
+#include <string>
+
+namespace solution
+{
+    namespace system
+    {
+        struct Config
+        {
+            bool required_charts            = false;
+            bool required_self_similarities = false;
+            bool required_pair_similarities = false;
+            bool required_pair_correlations = false;
+
+            int self_similarity_DTW_delta = 1'000'000;
+
+            std::string cumulative_distances_asset;
+            std::string cumulative_distances_scale_1;
+            std::string cumulative_distances_scale_2;
+
+            bool required_deviations = false;
+
+            bool required_tagged_charts = false;
+
+            double min_price_change   = 0.020;
+            double max_price_rollback = 0.333;
+
+            double level_max_deviation = 0.005;
+
+            double level_max_lifetime = 1825.0;
+            double level_max_strength = 25.0;
+
+            std::string level_resolution = "D";
+
+            std::size_t level_frame = 5U;
+
+            bool required_quik = false;
+
+            bool required_supports_resistances = false;
+
+            double classification_max_deviation = 0.005;
+
+            bool run_julia_test = false;
+
+            std::string prediction_timeframe = "D";
+            std::size_t prediction_timesteps = 20U;
+
+            double transaction_base_value = 0.0;
+        };
+
+    } // namespace system
+
+} // namespace solution
+
 #endif // #ifndef SOLUTION_SYSTEM_CONFIG_HPP

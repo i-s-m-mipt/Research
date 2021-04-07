@@ -41,9 +41,11 @@
 
 #include <nlohmann/json.hpp>
 
+#include "../config/config.hpp"
 #include "../market/market.hpp"
 
 #include "../../../shared/source/logger/logger.hpp"
+#include "../../../shared/source/python/python.hpp"
 
 namespace solution 
 {
@@ -66,15 +68,6 @@ namespace solution
 
 		class System
 		{
-		private:
-
-			struct Config
-			{
-				bool run_julia_test = false;
-
-				bool required_quik = false;
-			};
-
 		private:
 
 			class Data
@@ -102,8 +95,30 @@ namespace solution
 				{
 					struct Config
 					{
-						static inline const std::string run_julia_test = "run_julia_test";
-						static inline const std::string required_quik  = "required_quik";
+						static inline const std::string required_charts               = "required_charts";
+						static inline const std::string required_self_similarities    = "required_self_similarities";
+						static inline const std::string required_pair_similarities    = "required_pair_similarities";
+						static inline const std::string required_pair_correlations    = "required_pair_correlations";
+						static inline const std::string self_similarity_DTW_delta     = "self_similarity_DTW_delta";
+						static inline const std::string cumulative_distances_asset    = "cumulative_distances_asset";
+						static inline const std::string cumulative_distances_scale_1  = "cumulative_distances_scale_1";
+						static inline const std::string cumulative_distances_scale_2  = "cumulative_distances_scale_2";
+						static inline const std::string required_deviations           = "required_deviations";
+						static inline const std::string required_tagged_charts        = "required_tagged_charts";
+						static inline const std::string min_price_change              = "min_price_change";
+						static inline const std::string max_price_rollback            = "max_price_rollback";
+						static inline const std::string level_max_deviation           = "level_max_deviation";
+						static inline const std::string level_max_lifetime            = "level_max_lifetime";
+						static inline const std::string level_max_strength            = "level_max_strength";
+						static inline const std::string level_resolution              = "level_resolution";
+						static inline const std::string level_frame                   = "level_frame";
+						static inline const std::string required_quik                 = "required_quik";
+						static inline const std::string required_supports_resistances = "required_supports_resistances";
+						static inline const std::string classification_max_deviation  = "classification_max_deviation";
+						static inline const std::string run_julia_test                = "run_julia_test";
+						static inline const std::string prediction_timeframe          = "prediction_timeframe";
+						static inline const std::string prediction_timesteps          = "prediction_timesteps";
+						static inline const std::string transaction_base_value        = "transaction_base_value";
 					};
 				};
 
@@ -205,6 +220,19 @@ namespace solution
 
 			using holdings_container_t = std::unordered_map < std::string, double > ;
 
+			using transaction_t = Server_Data::Transaction;
+
+			using transactions_container_t = std::vector < transaction_t > ;
+
+		private:
+
+			struct Signal
+			{
+				static inline const std::string C = "C";
+				static inline const std::string L = "L";
+				static inline const std::string S = "S";
+			};
+
 		public:
 
 			System()
@@ -257,6 +285,10 @@ namespace solution
 		private:
 
 			void get_plugin_data();
+
+			void handle_data(const boost::python::object & function) const;
+
+			void handle_signal(const std::string & signal) const;
 
 			void set_server_data() const;
 

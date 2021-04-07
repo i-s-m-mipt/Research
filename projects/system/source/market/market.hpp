@@ -46,6 +46,8 @@
 
 #include "source/source.hpp"
 
+#include "../config/config.hpp"
+
 #include "../../../shared/source/logger/logger.hpp"
 #include "../../../shared/source/python/python.hpp"
 
@@ -73,44 +75,6 @@ namespace solution
 		public:
 
 			using path_t = std::filesystem::path;
-
-		private:
-
-			struct Config
-			{
-				bool required_charts            = false;
-				bool required_self_similarities = false;
-				bool required_pair_similarities = false;
-				bool required_pair_correlations = false;
-
-				int self_similarity_DTW_delta;
-
-				std::string cumulative_distances_asset;
-				std::string cumulative_distances_scale_1;
-				std::string cumulative_distances_scale_2;
-
-				bool required_deviations = false;
-
-				bool required_tagged_charts = false;
-
-				double min_price_change   = 0.020;
-				double max_price_rollback = 0.333;
-
-				double level_max_deviation = 0.005;
-
-				double level_max_lifetime = 1825.0;
-				double level_max_strength = 25.0;
-
-				std::string level_resolution = "D";
-
-				std::size_t level_frame = 5U;
-
-				bool required_quik = false;
-
-				bool required_supports_resistances = false;
-
-				double classification_max_deviation = 0.005;
-			};
 
 		private:
 
@@ -332,38 +296,7 @@ namespace solution
 
 				using path_t = File::path_t;
 
-			private:
-
-				struct Key
-				{
-					struct Config
-					{
-						static inline const std::string required_charts               = "required_charts";
-						static inline const std::string required_self_similarities    = "required_self_similarities";
-						static inline const std::string required_pair_similarities    = "required_pair_similarities";
-						static inline const std::string required_pair_correlations    = "required_pair_correlations";
-						static inline const std::string self_similarity_DTW_delta     = "self_similarity_DTW_delta";
-						static inline const std::string cumulative_distances_asset    = "cumulative_distances_asset";
-						static inline const std::string cumulative_distances_scale_1  = "cumulative_distances_scale_1";
-						static inline const std::string cumulative_distances_scale_2  = "cumulative_distances_scale_2";
-						static inline const std::string required_deviations           = "required_deviations";
-						static inline const std::string required_tagged_charts        = "required_tagged_charts";
-						static inline const std::string min_price_change              = "min_price_change";
-						static inline const std::string max_price_rollback            = "max_price_rollback";
-						static inline const std::string level_max_deviation           = "level_max_deviation";
-						static inline const std::string level_max_lifetime            = "level_max_lifetime";
-						static inline const std::string level_max_strength            = "level_max_strength";
-						static inline const std::string level_resolution              = "level_resolution";
-						static inline const std::string level_frame                   = "level_frame";
-						static inline const std::string required_quik                 = "required_quik";
-						static inline const std::string required_supports_resistances = "required_supports_resistances";
-						static inline const std::string classification_max_deviation  = "classification_max_deviation";
-					};
-				};
-
 			public:
-
-				static void load_config(Config & config);
 
 				static void load_assets(assets_container_t & assets);
 
@@ -435,8 +368,6 @@ namespace solution
 			void load();
 
 		private:
-
-			void load_config();
 
 			void load_assets();
 
@@ -566,6 +497,10 @@ namespace solution
 			{
 				return m_charts;
 			}
+
+		public:
+
+			void set_config(const Config & config);
 
 		public:
 

@@ -16,8 +16,30 @@ namespace solution
 
 				load(File::config_json, raw_config);
 
-				config.run_julia_test = raw_config[Key::Config::run_julia_test].get < bool > ();
-				config.required_quik  = raw_config[Key::Config::required_quik ].get < bool > ();
+				config.required_charts               = raw_config[Key::Config::required_charts              ].get < bool > ();
+				config.required_self_similarities    = raw_config[Key::Config::required_self_similarities   ].get < bool > ();
+				config.required_pair_similarities    = raw_config[Key::Config::required_pair_similarities   ].get < bool > ();
+				config.required_pair_correlations    = raw_config[Key::Config::required_pair_correlations   ].get < bool > ();
+				config.self_similarity_DTW_delta     = raw_config[Key::Config::self_similarity_DTW_delta    ].get < int > ();
+				config.cumulative_distances_asset    = raw_config[Key::Config::cumulative_distances_asset   ].get < std::string > ();
+				config.cumulative_distances_scale_1  = raw_config[Key::Config::cumulative_distances_scale_1 ].get < std::string > ();
+				config.cumulative_distances_scale_2  = raw_config[Key::Config::cumulative_distances_scale_2 ].get < std::string > ();
+				config.required_deviations           = raw_config[Key::Config::required_deviations          ].get < bool > ();
+				config.required_tagged_charts        = raw_config[Key::Config::required_tagged_charts       ].get < bool > ();
+				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();
+				config.max_price_rollback            = raw_config[Key::Config::max_price_rollback           ].get < double > ();
+				config.level_max_deviation           = raw_config[Key::Config::level_max_deviation          ].get < double > ();
+				config.level_max_lifetime            = raw_config[Key::Config::level_max_lifetime           ].get < double > ();
+				config.level_max_strength            = raw_config[Key::Config::level_max_strength           ].get < double > ();
+				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
+				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
+				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
+				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();
+				config.classification_max_deviation  = raw_config[Key::Config::classification_max_deviation ].get < double > ();
+				config.run_julia_test                = raw_config[Key::Config::run_julia_test               ].get < bool > ();
+				config.prediction_timeframe          = raw_config[Key::Config::prediction_timeframe         ].get < std::string > ();
+				config.prediction_timesteps          = raw_config[Key::Config::prediction_timesteps         ].get < std::size_t > ();
+				config.transaction_base_value        = raw_config[Key::Config::transaction_base_value       ].get < double > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -74,6 +96,8 @@ namespace solution
 			try
 			{
 				load();
+
+				m_market.set_config(m_config);
 
 				if (m_config.required_quik)
 				{
@@ -246,6 +270,12 @@ namespace solution
 
 			try
 			{
+				shared::Python python;
+
+				boost::python::exec("from system import predict", python.global(), python.global());
+
+				boost::python::object function = python.global()["predict"];
+
 				if (m_config.required_quik)
 				{
 					while (true)
@@ -258,6 +288,8 @@ namespace solution
 							get_plugin_data();
 						}
 
+						handle_data(function);
+
 						{
 							boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
@@ -266,7 +298,7 @@ namespace solution
 							m_server_condition->notify_one();
 						}
 
-						std::cout << "Continue ? (y/n) ";
+						std::cout << "Continue ? (y/n) "; // TODO
 
 						char c;
 
@@ -308,6 +340,41 @@ namespace solution
 			}
 		}
 
+		void System::handle_data(const boost::python::object & function) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto scale = m_config.prediction_timeframe;
+
+				for (const auto & asset : m_market.assets())
+				{
+					handle_signal(boost::python::extract < std::string > (
+						function(asset.c_str(), scale.c_str(), m_market.get_current_data(
+							asset, scale, m_config.prediction_timesteps).c_str())));
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::handle_signal(const std::string & signal) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
 		void System::set_server_data() const
 		{
 			RUN_LOGGER(logger);
@@ -321,7 +388,7 @@ namespace solution
 
 				std::cin >> asset >> scale >> size;
 
-				std::cout << m_market.get_current_chart(asset, scale, size);
+				std::cout << m_market.get_current_data(asset, scale, size);
 
 				m_server_data->transactions.clear();
 

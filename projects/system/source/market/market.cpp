@@ -98,43 +98,6 @@ namespace solution
 			}
 		}
 
-		void Market::Data::load_config(Config & config)
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				json_t raw_config;
-
-				load(File::config_json, raw_config);
-
-				config.required_charts               = raw_config[Key::Config::required_charts              ].get < bool > ();
-				config.required_self_similarities    = raw_config[Key::Config::required_self_similarities   ].get < bool > ();
-				config.required_pair_similarities    = raw_config[Key::Config::required_pair_similarities   ].get < bool > ();
-				config.required_pair_correlations    = raw_config[Key::Config::required_pair_correlations   ].get < bool > ();
-				config.self_similarity_DTW_delta     = raw_config[Key::Config::self_similarity_DTW_delta    ].get < int > ();
-				config.cumulative_distances_asset    = raw_config[Key::Config::cumulative_distances_asset   ].get < std::string > ();
-				config.cumulative_distances_scale_1  = raw_config[Key::Config::cumulative_distances_scale_1 ].get < std::string > ();
-				config.cumulative_distances_scale_2  = raw_config[Key::Config::cumulative_distances_scale_2 ].get < std::string > ();
-				config.required_deviations           = raw_config[Key::Config::required_deviations          ].get < bool > ();
-				config.required_tagged_charts        = raw_config[Key::Config::required_tagged_charts       ].get < bool > ();
-				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();
-				config.max_price_rollback            = raw_config[Key::Config::max_price_rollback           ].get < double > ();
-				config.level_max_deviation           = raw_config[Key::Config::level_max_deviation          ].get < double > ();
-				config.level_max_lifetime            = raw_config[Key::Config::level_max_lifetime           ].get < double > ();
-				config.level_max_strength            = raw_config[Key::Config::level_max_strength           ].get < double > ();
-				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
-				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
-				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
-				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();
-				config.classification_max_deviation  = raw_config[Key::Config::classification_max_deviation ].get < double > ();
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
 		void Market::Data::load_assets(assets_container_t & assets)
 		{
 			RUN_LOGGER(logger);
@@ -669,24 +632,9 @@ namespace solution
 
 			try
 			{
-				load_config();
 				load_assets();
 				load_scales();
 				load_charts();
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		void Market::load_config()
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				Data::load_config(m_config);
 			}
 			catch (const std::exception & exception)
 			{
@@ -1945,6 +1893,20 @@ namespace solution
 			try
 			{
 				Data::save_tagged_charts(m_charts, m_config);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::set_config(const Config & config)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_config = config;
 			}
 			catch (const std::exception & exception)
 			{
