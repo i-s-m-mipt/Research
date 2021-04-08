@@ -390,6 +390,12 @@ namespace solution
 
 				std::cout << m_market->get_current_data(asset, scale, size);
 
+				for (const auto [asset, position] : m_holdings)
+				{
+					std::cout << asset << " " << 
+						std::showpos << std::setprecision(2) << std::fixed << position << std::noshowpos << std::endl;
+				}
+
 				m_server_data->transactions.clear();
 
 				std::string asset_code;

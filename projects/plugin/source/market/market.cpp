@@ -449,50 +449,42 @@ namespace solution
 			{
 				holdings_container_t holdings;
 
-				m_state.get_global("getNumberOf");
-
-				m_state.push_string("firm_holding");
-
-				m_state.call(1);
-
-				auto size = static_cast < std::size_t > (m_state.to_integer());
-
-				for (auto i = 0U; i < size; ++i)
+				for (auto t = 0U; t < 3U; ++t)
 				{
-					m_state.get_global("getItem");
+					for (const auto & [class_code, asset_code] : m_assets)
+					{
+						if (class_code == "TQBR")
+						{
+							m_state.get_global("getDepoEx");
 
-					m_state.push_string("firm_holding");
-					m_state.push_number(i);
+							m_state.push_string(m_config.id);
+							m_state.push_string(m_config.code);
+							m_state.push_string(asset_code);
+							m_state.push_string(m_config.account);
+							m_state.push_number(t);
 
-					m_state.call(2);
+							m_state.call(5);
 
-					m_state.push_string("sec_code");
+							if (!m_state.is_nil())
+							{
+								m_state.push_string("currentbal");
 
-					m_state.get_table();
+								m_state.get_table();
 
-					auto asset = static_cast < std::string > (m_state.to_string());
+								auto balance = static_cast < int > (m_state.to_number());
 
-					m_state.pop(2);
+								if (balance != 0)
+								{
+									holdings[asset_code] += balance * std::begin(m_sources.at(asset_code))->second->last_price();
+								}
 
-					m_state.get_global("getItem");
+								m_state.pop();
+							}
 
-					m_state.push_string("firm_holding");
-					m_state.push_number(i);
-
-					m_state.call(2);
-
-					m_state.push_string("currentpos");
-
-					m_state.get_table();
-
-					auto position = static_cast < double > (m_state.to_number());
-
-					m_state.pop(2);
-
-					holdings[asset] = position;
+							m_state.pop();
+						}
+					}
 				}
-
-				m_state.pop();
 
 				return holdings;
 			}
