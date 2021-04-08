@@ -340,7 +340,7 @@ namespace solution
 			}
 		}
 
-		void System::handle_data(const boost::python::object & function) const
+		void System::handle_data(const boost::python::object & function)
 		{
 			RUN_LOGGER(logger);
 
@@ -348,11 +348,61 @@ namespace solution
 			{
 				const auto scale = m_config.prediction_timeframe;
 
+				m_transactions.clear();
+
 				for (const auto & asset : m_market->assets())
 				{
-					handle_signal(boost::python::extract < std::string > (
+					handle_state(asset, boost::python::extract < std::string > (
 						function(asset.c_str(), scale.c_str(), m_market->get_current_data(
 							asset, scale, m_config.prediction_timesteps).c_str())));
+				}
+			}
+			catch (const boost::python::error_already_set &)
+			{
+				logger.write(Severity::error, shared::Python::exception());
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::handle_state(const std::string & asset, const std::string & state)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				if (m_handled_assets.find(asset) != std::end(m_handled_assets)) // ?
+				{
+					return;
+				}
+
+				auto current_position = 0.0;
+
+				if (auto iterator = m_holdings.find(asset); iterator != std::end(m_holdings))
+				{
+					current_position = iterator->second;
+				}
+
+				if (state == State::C && current_position < 0.0)
+				{
+					insert_transaction(asset, "B", std::abs(current_position));
+				}
+
+				if (state == State::C && current_position > 0.0)
+				{
+					insert_transaction(asset, "S", std::abs(current_position));
+				}
+
+				if (state == State::L && current_position <= 0.0)
+				{
+					insert_transaction(asset, "B", std::abs(current_position) + m_config.transaction_base_value);
+				}
+
+				if (state == State::S && current_position >= 0.0)
+				{
+					insert_transaction(asset, "S", std::abs(current_position) + m_config.transaction_base_value);
 				}
 			}
 			catch (const std::exception & exception)
@@ -361,13 +411,15 @@ namespace solution
 			}
 		}
 
-		void System::handle_signal(const std::string & signal) const
+		void System::insert_transaction(const std::string & asset, const std::string & operation, double position)
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				
+				m_transactions.push_back({ asset, operation, position });
+
+				m_handled_assets[asset] = clock_t::now();
 			}
 			catch (const std::exception & exception)
 			{
@@ -405,10 +457,24 @@ namespace solution
 				std::cin >> asset_code >> operation >> position;
 
 				m_server_data->transactions.push_back({
-					Server_Data::string_t(asset_code.c_str(), Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-					Server_Data::string_t(operation.c_str(),  Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-					Server_Data::string_t(position.c_str(),   Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
+					Server_Data::string_t(asset_code.c_str(), 
+						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+					Server_Data::string_t(operation.c_str(),  
+						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+					Server_Data::string_t(position.c_str(),   
+						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
 
+				//for (const auto & transaction : m_transactions)
+				//{
+				//	m_server_data->transactions.push_back({
+				//		Server_Data::string_t(transaction.asset.c_str(),      
+				//			Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+				//		Server_Data::string_t(transaction.operation.c_str(),  
+				//			Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+				//		Server_Data::string_t(std::to_string(transaction.position).c_str(),   
+				//			Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
+				//}
+				
 				m_server_data->is_updated = true;
 			}
 			catch (const std::exception & exception)

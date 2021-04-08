@@ -7,6 +7,7 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
+#include <chrono>
 #include <exception>
 #include <filesystem>
 #include <iostream>
@@ -221,18 +222,34 @@ namespace solution
 
 			using holdings_container_t = std::unordered_map < std::string, double > ;
 
-			using transaction_t = Server_Data::Transaction;
-
-			using transactions_container_t = std::vector < transaction_t > ;
-
 		private:
 
-			struct Signal
+			struct State
 			{
 				static inline const std::string C = "C";
 				static inline const std::string L = "L";
 				static inline const std::string S = "S";
 			};
+
+		private:
+
+			struct Transaction
+			{
+				std::string asset;
+				std::string operation;
+
+				double position;
+			};
+
+		private:
+
+			using transactions_container_t = std::vector < Transaction > ;
+
+			using clock_t = std::chrono::system_clock;
+
+			using time_point_t = clock_t::time_point;
+
+			using handled_assets_container_t = std::unordered_map < std::string, time_point_t > ;
 
 		public:
 
@@ -287,9 +304,11 @@ namespace solution
 
 			void get_plugin_data();
 
-			void handle_data(const boost::python::object & function) const;
+			void handle_data(const boost::python::object & function);
 
-			void handle_signal(const std::string & signal) const;
+			void handle_state(const std::string & asset, const std::string & state);
+
+			void insert_transaction(const std::string & asset, const std::string & operation, double position);
 
 			void set_server_data() const;
 
@@ -302,6 +321,10 @@ namespace solution
 			double m_available_money = 0.0;
 
 			holdings_container_t m_holdings;
+
+			transactions_container_t m_transactions;
+
+			handled_assets_container_t m_handled_assets;
 
 		private:
 
