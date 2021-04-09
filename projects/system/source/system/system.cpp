@@ -136,6 +136,78 @@ namespace solution
 			try
 			{
 				load_config();
+
+				load_dividends();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::load_config()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::load_config(m_config);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		std::time_t to_time(const std::string & date)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::tm tm = { 0 }; // !
+
+				std::stringstream sin(date);
+
+				sin >> std::get_time(&tm, "%d.%m.%Y");
+
+				return mktime(&tm);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::load_dividends()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				shared::Python python;
+
+				boost::python::exec("from system import get_dividends", python.global(), python.global());
+
+				std::stringstream sin(boost::python::extract < std::string > (python.global()["get_dividends"]()));
+
+				auto array = json_t::parse(sin);
+
+				for (const auto & object : array)
+				{
+					auto asset    = object[Dividend::Key::asset   ].get < std::string > ();
+
+					auto dividend = object[Dividend::Key::dividend].get < double > ();
+
+					auto buy_date = to_time(object[Dividend::Key::buy_date].get < std::string > ());
+					auto gap_date = to_time(object[Dividend::Key::gap_date].get < std::string > ());
+
+					m_dividends[asset] = { dividend, buy_date, gap_date };
+				}
+			}
+			catch (const boost::python::error_already_set &)
+			{
+				logger.write(Severity::error, shared::Python::exception());
 			}
 			catch (const std::exception & exception)
 			{
@@ -175,20 +247,6 @@ namespace solution
 			try
 			{
 				return "QUIK";
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < system_exception > (logger, exception);
-			}
-		}
-
-		void System::load_config()
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				Data::load_config(m_config);
 			}
 			catch (const std::exception & exception)
 			{
@@ -311,6 +369,10 @@ namespace solution
 					}
 				}
 			}
+			catch (const boost::python::error_already_set &)
+			{
+				logger.write(Severity::error, shared::Python::exception());
+			}
 			catch (const std::exception & exception)
 			{
 				shared::catch_handler < system_exception > (logger, exception);
@@ -385,7 +447,7 @@ namespace solution
 					current_position = iterator->second;
 				}
 
-				if (state == State::C && current_position < 0.0)
+				if ((state == State::C || has_dividends(asset)) && current_position < 0.0)
 				{
 					insert_transaction(asset, "B", std::abs(current_position));
 				}
@@ -400,10 +462,35 @@ namespace solution
 					insert_transaction(asset, "B", std::abs(current_position) + m_config.transaction_base_value);
 				}
 
-				if (state == State::S && current_position >= 0.0)
+				if (state == State::S && current_position >= 0.0 && !has_dividends(asset))
 				{
 					insert_transaction(asset, "S", std::abs(current_position) + m_config.transaction_base_value);
 				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		bool System::has_dividends(const std::string & asset) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				if (auto iterator = m_dividends.find(asset); iterator != std::end(m_dividends))
+				{
+					auto time = iterator->second.gap_date - 
+						std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+					if (time > 0LL && time < seconds_in_day * 10LL)
+					{
+						return true;
+					}
+				}
+					
+				return false;
 			}
 			catch (const std::exception & exception)
 			{

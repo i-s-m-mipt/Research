@@ -8,10 +8,14 @@
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
 #include <chrono>
+#include <cstdlib>
+#include <ctime>
 #include <exception>
 #include <filesystem>
+#include <iomanip>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -251,6 +255,34 @@ namespace solution
 
 			using handled_assets_container_t = std::unordered_map < std::string, time_point_t > ;
 
+		private:
+
+			struct Dividend
+			{
+			public:
+
+				struct Key
+				{
+					static inline const std::string asset    = "asset";
+					static inline const std::string dividend = "dividend";
+					static inline const std::string buy_date = "buy_date";
+					static inline const std::string gap_date = "gap_date";
+				};
+
+			public:
+
+				double dividend;
+				
+				std::time_t buy_date;
+				std::time_t gap_date;
+			};
+
+		private:
+
+			using dividends_container_t = std::unordered_map < std::string, Dividend > ;
+
+			using json_t = nlohmann::json;
+
 		public:
 
 			System()
@@ -284,6 +316,8 @@ namespace solution
 
 			void load_config();
 
+			void load_dividends();
+
 		private:
 
 			void initialize_shared_memory();
@@ -308,13 +342,21 @@ namespace solution
 
 			void handle_state(const std::string & asset, const std::string & state);
 
+			bool has_dividends(const std::string & asset) const;
+
 			void insert_transaction(const std::string & asset, const std::string & operation, double position);
 
 			void set_server_data() const;
 
 		private:
 
+			static inline const std::time_t seconds_in_day = 86400LL;
+
+		private:
+
 			Config m_config;
+
+			dividends_container_t m_dividends;
 
 			std::unique_ptr < Market > m_market;
 
