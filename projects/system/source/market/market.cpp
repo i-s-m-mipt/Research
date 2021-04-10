@@ -349,7 +349,7 @@ namespace solution
 				{
 					for (const auto & [scale, candles] : scales)
 					{
-						sout << asset << " " << scale << " " << std::size(candles) << "\n\n";
+						sout << asset << " " << scale << " " << std::size(candles) << "\n";
 
 						std::for_each(std::begin(candles), std::end(candles), [&sout](const auto & candle)
 							{ 
