@@ -449,40 +449,37 @@ namespace solution
 			{
 				holdings_container_t holdings;
 
-				for (auto t = 0U; t < 3U; ++t)
+				for (const auto & [class_code, asset_code] : m_assets)
 				{
-					for (const auto & [class_code, asset_code] : m_assets)
+					if (class_code == "TQBR")
 					{
-						if (class_code == "TQBR")
+						m_state.get_global("getDepoEx");
+
+						m_state.push_string(m_config.id);
+						m_state.push_string(m_config.code);
+						m_state.push_string(asset_code);
+						m_state.push_string(m_config.account);
+						m_state.push_number(2);
+
+						m_state.call(5);
+
+						if (!m_state.is_nil())
 						{
-							m_state.get_global("getDepoEx");
+							m_state.push_string("currentbal");
 
-							m_state.push_string(m_config.id);
-							m_state.push_string(m_config.code);
-							m_state.push_string(asset_code);
-							m_state.push_string(m_config.account);
-							m_state.push_number(t);
+							m_state.get_table();
 
-							m_state.call(5);
+							auto balance = static_cast < int > (m_state.to_number());
 
-							if (!m_state.is_nil())
+							if (balance != 0)
 							{
-								m_state.push_string("currentbal");
-
-								m_state.get_table();
-
-								auto balance = static_cast < int > (m_state.to_number());
-
-								if (balance != 0)
-								{
-									holdings[asset_code] += balance * std::begin(m_sources.at(asset_code))->second->last_price();
-								}
-
-								m_state.pop();
+								holdings[asset_code] = balance * std::begin(m_sources.at(asset_code))->second->last_price();
 							}
 
 							m_state.pop();
 						}
+
+						m_state.pop();
 					}
 				}
 
