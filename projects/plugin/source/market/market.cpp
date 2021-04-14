@@ -397,6 +397,8 @@ namespace solution
 						transaction["QUANTITY"   ] = std::to_string(compute_lot_quantity(asset_code, position));
 
 						send_message(send_transaction(transaction));
+
+						std::this_thread::sleep_for(std::chrono::seconds(1));
 					}
 					catch (const std::exception & exception)
 					{
