@@ -178,13 +178,5 @@
     {
         "class_code": "TQBR",
         "asset_code": "GLTR"
-    },
-    {
-        "class_code": "RTSIDX",
-        "asset_code": "IMOEX"
-    },
-    {
-        "class_code": "RTSIDX",
-        "asset_code": "RTSI"
     }
 ]
