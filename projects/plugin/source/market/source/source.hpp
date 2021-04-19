@@ -232,7 +232,7 @@ namespace solution
 
 				static inline const std::string references = "references";
 
-				static inline const std::size_t default_size = 40U;
+				static inline const std::size_t default_size = 100U;
 
 			private:
 
