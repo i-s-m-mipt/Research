@@ -186,6 +186,11 @@ namespace solution
 
 				double deviation = 0.0;
 
+				double deviation_open = 0.0;
+
+				double deviation_max = 0.0;
+				double deviation_min = 0.0;
+
 				std::array < double, prediction_range > regression_tags;
 
 				std::string classification_tag;

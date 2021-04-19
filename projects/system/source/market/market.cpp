@@ -407,7 +407,11 @@ namespace solution
 									std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.month / months_in_year << delimeter <<
 									std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.day   / days_in_month  << delimeter;
 																
-								sout << std::setprecision(6) << std::fixed << std::showpos << candle.deviation << delimeter;
+								sout <<
+									std::setprecision(6) << std::fixed << std::showpos   << candle.deviation      << delimeter <<
+									std::setprecision(6) << std::fixed << std::showpos   << candle.deviation_open << delimeter <<
+									std::setprecision(6) << std::fixed << std::noshowpos << candle.deviation_max  << delimeter <<
+									std::setprecision(6) << std::fixed << std::noshowpos << candle.deviation_min  << delimeter;
 
 								if (std::abs(candle.price_close) <= std::numeric_limits < double > ::epsilon())
 								{
@@ -869,14 +873,16 @@ namespace solution
 			{
 				for (auto i = 0U; i < std::size(candles); ++i)
 				{
+					if (std::abs(candles[i].price_open) <= std::numeric_limits < double > ::epsilon())
+					{
+						throw std::domain_error("division by zero");
+					}
+
+					candles[i].deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
+
 					if (i == 0U)
 					{
-						if (std::abs(candles[i].price_open) <= std::numeric_limits < double > ::epsilon())
-						{
-							throw std::domain_error("division by zero");
-						}
-
-						candles[i].deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
+						candles[i].deviation_open = 0.0;
 					}
 					else
 					{
@@ -885,8 +891,11 @@ namespace solution
 							throw std::domain_error("division by zero");
 						}
 
-						candles[i].deviation = (candles[i].price_close - candles[i - 1].price_close) / candles[i - 1].price_close;
+						candles[i].deviation_open = (candles[i].price_open - candles[i - 1].price_close) / candles[i - 1].price_close;
 					}
+
+					candles[i].deviation_max = (candles[i].price_high - candles[i].price_open) / candles[i].price_open;
+					candles[i].deviation_min = (candles[i].price_open - candles[i].price_low ) / candles[i].price_open;
 				}
 			}
 			catch (const std::exception & exception)
@@ -2031,7 +2040,11 @@ namespace solution
 							std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.month / months_in_year << delimeter <<
 							std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.day   / days_in_month  << delimeter;
 
-						sout << std::setprecision(6) << std::fixed << std::showpos << candle.deviation << delimeter;
+						sout <<
+							std::setprecision(6) << std::fixed << std::showpos   << candle.deviation      << delimeter <<
+							std::setprecision(6) << std::fixed << std::showpos   << candle.deviation_open << delimeter <<
+							std::setprecision(6) << std::fixed << std::noshowpos << candle.deviation_max  << delimeter <<
+							std::setprecision(6) << std::fixed << std::noshowpos << candle.deviation_min  << delimeter;
 
 						if (std::abs(candle.price_close) <= std::numeric_limits < double > ::epsilon())
 						{
