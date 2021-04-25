@@ -336,36 +336,22 @@ namespace solution
 
 				if (m_config.required_quik)
 				{
-					while (true)
 					{
-						{
-							boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
+						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
 
-							m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
+						m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
 
-							get_plugin_data();
-						}
+						get_plugin_data();
+					}
 
-						handle_data(function);
+					handle_data(function);
 
-						{
-							boost::interprocess::scoped_lock server_lock(*m_server_mutex);
+					{
+						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
-							set_server_data();
+						set_server_data();
 
-							m_server_condition->notify_one();
-						}
-
-						std::cout << "Continue ? (y/n) "; // TODO
-
-						char c;
-
-						std::cin >> c;
-
-						if (c != 'y')
-						{
-							break;
-						}
+						m_server_condition->notify_one();
 					}
 				}
 			}
@@ -520,47 +506,32 @@ namespace solution
 
 			try
 			{
-				std::string asset;
-				std::string scale;
-
-				std::size_t size;
-
-				std::cin >> asset >> scale >> size;
-
-				std::cout << m_market->get_current_data(asset, scale, size);
-
-				for (const auto [asset, position] : m_holdings)
-				{
-					std::cout << asset << " " << 
-						std::showpos << std::setprecision(2) << std::fixed << position << std::noshowpos << std::endl;
-				}
-
 				m_server_data->transactions.clear();
 
-				std::string asset_code;
-				std::string operation;
-				std::string position;
+				for (const auto & transaction : m_transactions)
+				{
+					std::cout << std::setw(5) << std::left << std::setfill(' ') << transaction.asset << 
+						" " << transaction.operation << " " << transaction.position << std::endl;
 
-				std::cin >> asset_code >> operation >> position;
+					m_server_data->transactions.push_back({
+						Server_Data::string_t(transaction.asset.c_str(),      
+							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+						Server_Data::string_t(transaction.operation.c_str(),  
+							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+						Server_Data::string_t(std::to_string(transaction.position).c_str(),   
+							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
+				}
 
-				m_server_data->transactions.push_back({
-					Server_Data::string_t(asset_code.c_str(), 
-						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-					Server_Data::string_t(operation.c_str(),  
-						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-					Server_Data::string_t(position.c_str(),   
-						Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
+				std::cout << std::endl << "Accept? (y/n) ";
 
-				//for (const auto & transaction : m_transactions)
-				//{
-				//	m_server_data->transactions.push_back({
-				//		Server_Data::string_t(transaction.asset.c_str(),      
-				//			Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-				//		Server_Data::string_t(transaction.operation.c_str(),  
-				//			Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-				//		Server_Data::string_t(std::to_string(transaction.position).c_str(),   
-				//			Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
-				//}
+				char c;
+
+				std::cin >> c;
+
+				if (c != 'y')
+				{
+					m_server_data->transactions.clear();
+				}
 				
 				m_server_data->is_updated = true;
 			}

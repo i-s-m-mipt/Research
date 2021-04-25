@@ -127,6 +127,11 @@ namespace solution
 
 				try
 				{
+					while (max_size() < m_size)
+					{
+						std::this_thread::yield();
+					}
+
 					const auto size = max_size();
 
 					if (size >= m_size)
