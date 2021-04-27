@@ -1,6 +1,6 @@
 import sys
 from urllib.parse   import urlencode
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from datetime       import timedelta, datetime
 from time           import sleep
 
@@ -398,8 +398,11 @@ def get_piece(asset, timeframe, first, last, path) :
         ])
 
         url = domain + asset + "_" + timeframe + ".txt?" + properties
+        
+        request = Request(url, headers = {"User-Agent": "Mozilla/5.0"}) # ?
 
-        text = urlopen(url).readlines()
+        text = urlopen(request).readlines()
+        
         lines = []
         
         for line in text :
