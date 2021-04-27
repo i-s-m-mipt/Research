@@ -348,6 +348,7 @@ service/
 *.csv
 *.data
 *.json
+*.h5
 !scales.data
 !assets.data
 !config.json
