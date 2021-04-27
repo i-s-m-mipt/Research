@@ -2082,7 +2082,7 @@ namespace solution
 							sout <<
 								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
 								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-								std::setprecision(3) << std::fixed << std::noshowpos << 0.0;
+								std::setprecision(3) << std::fixed << std::noshowpos << 0.0 << delimeter;
 						}
 						else
 						{
@@ -2100,10 +2100,8 @@ namespace solution
 							auto resistance_strength = candle.resistance.strength / m_config.level_max_strength;
 
 							sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-								(resistance_strength > 1.0 ? 1.0 : resistance_strength);
+								(resistance_strength > 1.0 ? 1.0 : resistance_strength) << delimeter;
 						}
-
-						sout << "\n";
 					});
 
 				return sout.str();
