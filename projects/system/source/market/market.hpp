@@ -399,10 +399,6 @@ namespace solution
 
 		private:
 
-			void initialize_sources();
-
-		private:
-
 			void handle_self_similarities();
 
 			void handle_pair_similarities();
@@ -502,7 +498,9 @@ namespace solution
 				return m_charts;
 			}
 
-		public:
+		private:
+
+			void initialize_sources();
 
 			void update_supports_resistances();
 

@@ -638,7 +638,11 @@ namespace solution
 			{
 				load_assets();
 				load_scales();
-				load_charts();
+
+				if (!m_config.required_quik)
+				{
+					load_charts();
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -896,26 +900,6 @@ namespace solution
 
 					candles[i].deviation_max = (candles[i].price_high - candles[i].price_open) / candles[i].price_open;
 					candles[i].deviation_min = (candles[i].price_open - candles[i].price_low ) / candles[i].price_open;
-				}
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		void Market::initialize_sources()
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				for (const auto & asset : m_assets)
-				{
-					for (const auto & scale : m_scales)
-					{
-						m_sources[asset][scale] = std::make_shared < Source > (asset, scale);
-					}
 				}
 			}
 			catch (const std::exception & exception)
@@ -1902,6 +1886,26 @@ namespace solution
 			try
 			{
 				Data::save_tagged_charts(m_charts, m_config);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::initialize_sources()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & asset : m_assets)
+				{
+					for (const auto & scale : m_scales)
+					{
+						m_sources[asset][scale] = std::make_shared < Source > (asset, scale);
+					}
+				}
 			}
 			catch (const std::exception & exception)
 			{
