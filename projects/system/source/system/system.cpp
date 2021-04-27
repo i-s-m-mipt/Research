@@ -375,10 +375,26 @@ namespace solution
 
 				m_holdings.clear();
 
-				for (const auto & [asset, position] : m_plugin_data->holdings)
+				std::cout << "Current positions: " << std::endl << std::endl;
+
+				if (m_plugin_data->holdings.empty())
 				{
-					m_holdings.emplace(asset.c_str(), position);
+					std::cout << "-" << std::endl;
 				}
+				else
+				{
+					for (const auto & [asset, position] : m_plugin_data->holdings)
+					{
+						m_holdings.emplace(asset.c_str(), position);
+
+						std::cout <<
+							std::setw(5) << std::left << std::setfill(' ') << asset << " " <<
+							std::setw(10) << std::right << std::setprecision(2) << std::fixed << std::showpos <<
+							position << std::endl;
+					}
+				}				
+
+				std::cout << std::endl;
 
 				m_plugin_data->is_updated = false;
 			}
@@ -433,7 +449,9 @@ namespace solution
 					current_position = iterator->second;
 				}
 
-				if ((state == State::C || has_dividends(asset)) && current_position < 0.0)
+				auto has_dividends_flag = has_dividends(asset);
+
+				if ((state == State::C || has_dividends_flag) && current_position < 0.0)
 				{
 					insert_transaction(asset, "B", std::abs(current_position));
 				}
@@ -448,7 +466,7 @@ namespace solution
 					insert_transaction(asset, "B", std::abs(current_position) + m_config.transaction_base_value);
 				}
 
-				if (state == State::S && current_position >= 0.0 && !has_dividends(asset))
+				if (state == State::S && current_position >= 0.0 && !has_dividends_flag)
 				{
 					insert_transaction(asset, "S", std::abs(current_position) + m_config.transaction_base_value);
 				}
@@ -472,6 +490,9 @@ namespace solution
 
 					if (time > 0LL && time < seconds_in_day * 10LL)
 					{
+						std::cout << std::setw(5) << std::left << std::setfill(' ') <<
+							asset << " has dividends soon.\n";
+
 						return true;
 					}
 				}
@@ -508,11 +529,10 @@ namespace solution
 			{
 				m_server_data->transactions.clear();
 
+				std::cout << std::endl << "Required operations: " << std::endl << std::endl;
+
 				for (const auto & transaction : m_transactions)
 				{
-					std::cout << std::setw(5) << std::left << std::setfill(' ') << transaction.asset << 
-						" " << transaction.operation << " " << transaction.position << std::endl;
-
 					m_server_data->transactions.push_back({
 						Server_Data::string_t(transaction.asset.c_str(),      
 							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
@@ -520,6 +540,9 @@ namespace solution
 							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
 						Server_Data::string_t(std::to_string(transaction.position).c_str(),   
 							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
+
+					std::cout << std::setw(5) << std::left << std::setfill(' ') << transaction.asset << " " << transaction.operation << " " << 
+						std::setw(9) << std::right << std::setprecision(2) << std::fixed << std::noshowpos << transaction.position << std::endl;
 				}
 
 				std::cout << std::endl << "Accept? (y/n) ";
