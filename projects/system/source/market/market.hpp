@@ -284,7 +284,6 @@ namespace solution
 				{
 					using path_t = std::filesystem::path;
 
-					static inline const path_t config_json = "market/config.json";
 					static inline const path_t assets_data = "market/assets.data";
 					static inline const path_t scales_data = "market/scales.data";
 
