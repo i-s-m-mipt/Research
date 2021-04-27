@@ -1,6 +1,7 @@
 from html.parser import HTMLParser
 from urllib      import request
 import json
+import numpy as np
 import sys
 
 def get_dividends():
@@ -50,17 +51,32 @@ def get_dividends():
               for row in parsed[1:] if len(row) == len(parsed[1])]
     return json.dumps(parsed)
 
-# load trained models here as globals
+import os
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
+import tensorflow as tf
+
+from tensorflow import keras
+
+model = keras.models.load_model("model.h5", compile = False)
 
 def predict(asset, scale, data) :
 
     try:
 
-        # call predict of required model for asset, scale here
-
-        # use data as required prehistory for predict function
+        data = data[:-1]
         
-        return "C" # or "L", "S"
+        batch = []
+        
+        batch.append([float(x) for x in data.split(",")])
+        
+        batch = np.array(batch).astype(np.float32)
+
+        states = ["C", "L", "S"]
+        
+        return states[np.argmax(model(batch)[0].numpy())]
 
     except:
 
