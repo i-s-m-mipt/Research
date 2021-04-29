@@ -531,30 +531,28 @@ namespace solution
 
 				std::cout << std::endl << "Required operations: " << std::endl << std::endl;
 
-				for (const auto & transaction : m_transactions)
-				{
-					m_server_data->transactions.push_back({
-						Server_Data::string_t(transaction.asset.c_str(),      
-							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-						Server_Data::string_t(transaction.operation.c_str(),  
-							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
-						Server_Data::string_t(std::to_string(transaction.position).c_str(),   
-							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
-
-					std::cout << std::setw(5) << std::left << std::setfill(' ') << transaction.asset << " " << transaction.operation << " " << 
-						std::setw(9) << std::right << std::setprecision(2) << std::fixed << std::noshowpos << transaction.position << std::endl;
-				}
-
-				std::cout << std::endl << "Accept? (y/n) ";
-
 				char c;
 
-				std::cin >> c;
-
-				if (c != 'y')
+				for (const auto & transaction : m_transactions)
 				{
-					m_server_data->transactions.clear();
+					std::cout << std::setw(5) << std::left << std::setfill(' ') << transaction.asset << " " << transaction.operation << " " <<
+						std::setw(9) << std::right << std::setprecision(2) << std::fixed << std::noshowpos << transaction.position << " - accept? (y/n) ";
+
+					std::cin >> c;
+
+					if (c == 'y')
+					{
+						m_server_data->transactions.push_back({
+						Server_Data::string_t(transaction.asset.c_str(),
+							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+						Server_Data::string_t(transaction.operation.c_str(),
+							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
+						Server_Data::string_t(std::to_string(transaction.position).c_str(),
+							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
+					}
 				}
+
+				std::cout << std::endl;
 				
 				m_server_data->is_updated = true;
 			}
