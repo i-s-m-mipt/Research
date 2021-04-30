@@ -398,6 +398,8 @@ namespace solution
 					}
 				}
 
+				m_server_data->transactions.clear();
+
 				m_server_data->is_updated = false;
 			}
 			catch (const std::exception & exception)
