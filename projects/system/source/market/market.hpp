@@ -511,6 +511,8 @@ namespace solution
 		public:
 
 			std::string get_current_data(const std::string & asset, const std::string & scale, std::size_t size) const;
+
+			void print_last_candle(const std::string & asset, const candles_container_t & candles) const;
 			
 		private:
 

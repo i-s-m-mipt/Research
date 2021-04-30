@@ -339,8 +339,6 @@ namespace solution
 					{
 						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
 
-						m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
-
 						get_plugin_data();
 					}
 
@@ -350,8 +348,6 @@ namespace solution
 						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
 						set_server_data();
-
-						m_server_condition->notify_one();
 					}
 				}
 			}
@@ -490,12 +486,13 @@ namespace solution
 
 					if (time > 0LL && time < seconds_in_day * 10LL)
 					{
-						std::cout << std::setw(5) << std::left << std::setfill(' ') <<
-							asset << " has dividends soon.\n";
+						std::cout << "has dividends soon" << std::endl;
 
 						return true;
 					}
 				}
+
+				std::cout << std::endl;
 					
 				return false;
 			}

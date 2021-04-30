@@ -2020,7 +2020,49 @@ namespace solution
 
 				update_supports_resistances(candles, m_supports_resistances.at(asset));
 
+				print_last_candle(asset, candles);
+
 				return serialize_candles(candles);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::print_last_candle(const std::string & asset, const candles_container_t & candles) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::cout << std::setw(5) << std::left << std::setfill(' ') << asset << " ";
+				
+				const auto & candle = candles.back();
+
+				std::cout <<
+					std::setw(4) << std::setfill('0') << candle.date_time.year  << '.' <<
+					std::setw(2) << std::setfill('0') << candle.date_time.month << '.' <<
+					std::setw(2) << std::setfill('0') << candle.date_time.day   << " ";
+
+				std::cout << std::setprecision(2) << std::fixed << std::showpos <<
+					100.0 * (candle.deviation_open + candle.deviation) << " ";
+
+				std::cout << std::setw(12) << std::right << std::setfill(' ') << 
+					std::setprecision(6) << std::fixed << std::noshowpos << candle.support.price << " ";
+
+				std::cout <<
+					std::setw(4) << std::setfill('0') << candle.support.begin.year  << '.' <<
+					std::setw(2) << std::setfill('0') << candle.support.begin.month << '.' <<
+					std::setw(2) << std::setfill('0') << candle.support.begin.day   << " ";
+
+				std::cout << std::setw(12) << std::right << std::setfill(' ') <<
+					std::setprecision(6) << std::fixed << std::noshowpos << candle.resistance.price << " ";
+
+				std::cout <<
+					std::setw(4) << std::setfill('0') << candle.resistance.begin.year  << '.' <<
+					std::setw(2) << std::setfill('0') << candle.resistance.begin.month << '.' <<
+					std::setw(2) << std::setfill('0') << candle.resistance.begin.day   << " ";
 			}
 			catch (const std::exception & exception)
 			{

@@ -290,23 +290,15 @@ namespace solution
 						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
 
 						set_plugin_data();
-
-						m_plugin_condition->notify_one();
 					}
 
 					{
 						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
-						m_server_condition->wait(server_lock, [this]() 
-							{ return ((m_status.load() != Status::running) || m_server_data->is_updated); });
-
-						if (m_status.load() != Status::running)
-						{
-							break;
-						}
-
 						get_server_data();
 					}
+
+					std::this_thread::sleep_for(std::chrono::seconds(1));
 				}
 			}
 			catch (const std::exception & exception)
