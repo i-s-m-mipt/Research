@@ -432,15 +432,15 @@ def get(asset, timeframe, path) :
         total = 365 * 25
         batch = 365
 
-        first = datetime.now().date() - timedelta(1)
-        last  = first                 - timedelta(batch)
+        first = datetime.now().date() - timedelta(days = 1)
+        last  = first                 - timedelta(days = batch)
         
         for i in range(0, total, batch):
             
             get_piece(asset, timeframe, last, first, path)
 
-            first = last  - timedelta(1)
-            last  = first - timedelta(batch)
+            first = last  - timedelta(days = 2)
+            last  = first - timedelta(days = batch)
 
             sleep(1)
 
@@ -460,8 +460,8 @@ def get_for_levels(asset, timeframe, path) :
 
         total = 365 * 10
 
-        first = datetime.now().date() - timedelta(1)
-        last  = first                 - timedelta(total)
+        first = datetime.now().date() - timedelta(days = 1)
+        last  = first                 - timedelta(days = total)
             
         get_piece(asset, timeframe, last, first, path)
 
