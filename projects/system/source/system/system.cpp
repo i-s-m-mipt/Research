@@ -447,24 +447,39 @@ namespace solution
 
 				auto has_dividends_flag = has_dividends(asset);
 
-				if ((state == State::C || has_dividends_flag) && current_position < 0.0)
+				if (state == State::C && current_position < 0.0)
 				{
 					insert_transaction(asset, "B", std::abs(current_position));
 				}
-
+				else
 				if (state == State::C && current_position > 0.0)
 				{
 					insert_transaction(asset, "S", std::abs(current_position));
 				}
-
+				else
 				if (state == State::L && current_position <= 0.0)
 				{
-					insert_transaction(asset, "B", std::abs(current_position) + m_config.transaction_base_value);
+					if (current_position != 0.0)
+					{
+						insert_transaction(asset, "B", std::abs(current_position));
+					}
+					
+					insert_transaction(asset, "B", m_config.transaction_base_value);
 				}
-
+				else
 				if (state == State::S && current_position >= 0.0 && !has_dividends_flag)
 				{
-					insert_transaction(asset, "S", std::abs(current_position) + m_config.transaction_base_value);
+					if (current_position != 0.0)
+					{
+						insert_transaction(asset, "S", std::abs(current_position));
+					}
+					
+					insert_transaction(asset, "S", m_config.transaction_base_value);
+				}
+				else
+				if (has_dividends_flag && current_position < 0.0)
+				{
+					insert_transaction(asset, "B", std::abs(current_position));
 				}
 			}
 			catch (const std::exception & exception)
