@@ -17,10 +17,11 @@
     "level_resolution": "D",
     "level_frame": 10,
     "required_quik": true,
-    "required_supports_resistances": true,
+    "required_supports_resistances": false,
     "classification_max_deviation": 0.005,
     "run_julia_test": false,
     "prediction_timeframe": "D",
     "prediction_timesteps": 60,
-    "transaction_base_value": 80000.0
+    "transaction_base_value": 100000.0,
+    "days_for_dividends": 5
 }

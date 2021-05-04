@@ -139,6 +139,8 @@ namespace solution
             std::size_t prediction_timesteps = 20U;
 
             double transaction_base_value = 0.0;
+
+            std::time_t days_for_dividends = 5LL;
         };
 
     } // namespace system

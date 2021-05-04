@@ -40,6 +40,7 @@ namespace solution
 				config.prediction_timeframe          = raw_config[Key::Config::prediction_timeframe         ].get < std::string > ();
 				config.prediction_timesteps          = raw_config[Key::Config::prediction_timesteps         ].get < std::size_t > ();
 				config.transaction_base_value        = raw_config[Key::Config::transaction_base_value       ].get < double > ();
+				config.days_for_dividends            = raw_config[Key::Config::days_for_dividends           ].get < std::time_t > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -433,6 +434,21 @@ namespace solution
 
 			try
 			{
+				if (state == State::C)
+				{
+					++m_global_background_C;
+				}
+
+				if (state == State::L)
+				{
+					++m_global_background_L;
+				}
+
+				if (state == State::S)
+				{
+					++m_global_background_S;
+				}
+
 				if (m_handled_assets.find(asset) != std::end(m_handled_assets)) // ?
 				{
 					return;
@@ -499,7 +515,7 @@ namespace solution
 					auto time = iterator->second.gap_date - 
 						std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-					if (time > 0LL && time < seconds_in_day * 10LL)
+					if (time > 0LL && time < seconds_in_day * m_config.days_for_dividends)
 					{
 						std::cout << "has dividends soon" << std::endl;
 
@@ -540,6 +556,12 @@ namespace solution
 			try
 			{
 				m_server_data->transactions.clear();
+
+				std::cout << std::endl << "Global background: " << std::endl << std::endl;
+
+				std::cout << "C: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_C << std::endl;
+				std::cout << "L: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_L << std::endl;
+				std::cout << "S: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_S << std::endl;
 
 				std::cout << std::endl << "Required operations: " << std::endl << std::endl;
 

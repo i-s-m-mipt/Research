@@ -125,6 +125,7 @@ namespace solution
 						static inline const std::string prediction_timeframe          = "prediction_timeframe";
 						static inline const std::string prediction_timesteps          = "prediction_timesteps";
 						static inline const std::string transaction_base_value        = "transaction_base_value";
+						static inline const std::string days_for_dividends            = "days_for_dividends";
 					};
 				};
 
@@ -367,6 +368,10 @@ namespace solution
 			transactions_container_t m_transactions;
 
 			handled_assets_container_t m_handled_assets;
+
+			int m_global_background_C = 0;
+			int m_global_background_L = 0;
+			int m_global_background_S = 0;
 
 		private:
 
