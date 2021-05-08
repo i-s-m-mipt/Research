@@ -26,6 +26,7 @@ namespace solution
 				config.cumulative_distances_scale_2  = raw_config[Key::Config::cumulative_distances_scale_2 ].get < std::string > ();
 				config.required_deviations           = raw_config[Key::Config::required_deviations          ].get < bool > ();
 				config.required_tagged_charts        = raw_config[Key::Config::required_tagged_charts       ].get < bool > ();
+				config.required_environment          = raw_config[Key::Config::required_environment         ].get < bool > ();
 				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();
 				config.max_price_rollback            = raw_config[Key::Config::max_price_rollback           ].get < double > ();
 				config.level_max_deviation           = raw_config[Key::Config::level_max_deviation          ].get < double > ();
@@ -33,6 +34,7 @@ namespace solution
 				config.level_max_strength            = raw_config[Key::Config::level_max_strength           ].get < double > ();
 				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
 				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
+				config.required_level_reduction      = raw_config[Key::Config::required_level_reduction     ].get < bool > ();
 				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
 				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();
 				config.classification_max_deviation  = raw_config[Key::Config::classification_max_deviation ].get < double > ();

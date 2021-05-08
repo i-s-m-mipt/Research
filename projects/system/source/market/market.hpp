@@ -293,6 +293,7 @@ namespace solution
 					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
 					static inline const path_t deviations_data           = "market/output/deviations.data";
 					static inline const path_t tagged_charts_data        = "market/output/tagged_charts.data";
+					static inline const path_t environment_data          = "market/output/environment.data";
 					static inline const path_t supports_resistances_data = "market/output/supports_resistances.data";
 				};
 
@@ -319,6 +320,8 @@ namespace solution
 				static void save_deviations(const charts_container_t & charts);
 
 				static void save_tagged_charts(const charts_container_t & charts, const Config & config);
+
+				static void save_environment(const charts_container_t & charts, const Config & config);
 
 				static void save_supports_resistances(const supports_resistances_container_t & supports_resistances);
 
@@ -409,6 +412,8 @@ namespace solution
 
 			void handle_tagged_charts();
 
+			void handle_environment();
+
 			void handle_quik_initialization();
 
 		private:
@@ -481,6 +486,12 @@ namespace solution
 
 			void save_tagged_charts() const;
 
+		private:
+
+			void make_environment();
+
+			void save_environment() const;
+
 		public:
 
 			const auto & assets() const noexcept
@@ -530,6 +541,8 @@ namespace solution
 
 			static inline const double months_in_year = 12.0; // normalization
 			static inline const double days_in_month  = 31.0; // normalization
+
+			static inline const double deviation_multiplier = 10.0; // normalization
 
 		private:
 

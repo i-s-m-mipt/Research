@@ -111,6 +111,7 @@ namespace solution
 						static inline const std::string cumulative_distances_scale_2  = "cumulative_distances_scale_2";
 						static inline const std::string required_deviations           = "required_deviations";
 						static inline const std::string required_tagged_charts        = "required_tagged_charts";
+						static inline const std::string required_environment          = "required_environment";
 						static inline const std::string min_price_change              = "min_price_change";
 						static inline const std::string max_price_rollback            = "max_price_rollback";
 						static inline const std::string level_max_deviation           = "level_max_deviation";
@@ -118,6 +119,7 @@ namespace solution
 						static inline const std::string level_max_strength            = "level_max_strength";
 						static inline const std::string level_resolution              = "level_resolution";
 						static inline const std::string level_frame                   = "level_frame";
+						static inline const std::string required_level_reduction      = "required_level_reduction";
 						static inline const std::string required_quik                 = "required_quik";
 						static inline const std::string required_supports_resistances = "required_supports_resistances";
 						static inline const std::string classification_max_deviation  = "classification_max_deviation";

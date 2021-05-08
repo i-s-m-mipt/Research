@@ -115,6 +115,8 @@ namespace solution
 
             bool required_tagged_charts = false;
 
+            bool required_environment = false;
+
             double min_price_change   = 0.020;
             double max_price_rollback = 0.333;
 
@@ -126,6 +128,8 @@ namespace solution
             std::string level_resolution = "D";
 
             std::size_t level_frame = 5U;
+
+            bool required_level_reduction = false;
 
             bool required_quik = false;
 

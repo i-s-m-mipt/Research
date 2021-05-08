@@ -393,6 +393,8 @@ namespace solution
 
 				std::ostringstream sout;
 
+				static const char delimeter = ',';
+
 				for (const auto & [asset, scales] : charts)
 				{
 					for (const auto & [scale, candles] : scales)
@@ -401,8 +403,6 @@ namespace solution
 
 						std::for_each(std::begin(candles), std::end(candles), [&sout, &config](const auto & candle)
 							{ 
-								static const char delimeter = ',';
-
 								sout <<
 									std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.month / months_in_year << delimeter <<
 									std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.day   / days_in_month  << delimeter;
@@ -478,6 +478,114 @@ namespace solution
 								
 								sout << candle.classification_tag << "\n";
 							});
+					}
+				}
+
+				fout << sout.str();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::Data::save_environment(const charts_container_t & charts, const Config & config)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = File::environment_data;
+
+				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
+
+				if (!fout)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				std::ostringstream sout;
+
+				static const char delimeter = ',';
+
+				for (const auto & [asset, scales] : charts)
+				{
+					for (const auto & [scale, candles] : scales)
+					{
+						const auto delta = config.prediction_timesteps - 1U;
+
+						const auto size = std::size(candles) - delta;
+
+						sout << asset << " " << scale << " " << size << "\n";
+
+						for (auto i = delta; i < std::size(candles); ++i)
+						{
+							const auto & candle = candles[i];
+
+							for (auto j = 1U; j < 13U; ++j)
+							{
+								if (j == candle.date_time.month)
+								{
+									sout << "1" << delimeter;
+								}
+								else
+								{
+									sout << "0" << delimeter;
+								}
+							}
+
+							sout << std::setprecision(3) << std::fixed << std::noshowpos << 
+								candle.date_time.day / days_in_month << delimeter;
+
+							Level level;
+
+							auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
+
+							if (support_deviation < config.level_max_deviation)
+							{
+								level = candle.support;
+							}
+
+							auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
+
+							if (resistance_deviation < config.level_max_deviation && 
+								resistance_deviation < support_deviation && 
+								candle.support.begin < candle.resistance.begin)
+							{
+								level = candle.resistance;
+							}
+
+							if (level.strength != 0U)
+							{
+								auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
+									seconds_in_day / config.level_max_lifetime;
+
+								sout << "1" << delimeter << std::setprecision(6) << std::fixed << std::noshowpos <<
+									(level_alive > 1.0 ? 1.0 : level_alive) << delimeter;
+							}
+							else
+							{
+								sout << "0" << delimeter << std::setprecision(6) << std::fixed << std::noshowpos <<
+									0.0 << delimeter;
+							}
+
+							for (auto j = 0U; j < config.prediction_timesteps; ++j)
+							{
+								auto deviation_1 = candles[i - delta + j].deviation_open * deviation_multiplier;
+								auto deviation_2 = candles[i - delta + j].deviation      * deviation_multiplier;
+
+								sout <<
+									std::setprecision(6) << std::fixed << std::showpos << (deviation_1 > 1.0 ? 1.0 : deviation_1) << delimeter <<
+									std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2);
+
+								if (j != delta)
+								{
+									sout << delimeter;
+								}
+							}
+
+							sout << '\n';
+						}
 					}
 				}
 
@@ -603,6 +711,11 @@ namespace solution
 				if (m_config.required_tagged_charts)
 				{
 					handle_tagged_charts();
+				}
+
+				if (m_config.required_environment)
+				{
+					handle_environment();
 				}
 
 				if (m_config.required_quik)
@@ -983,6 +1096,26 @@ namespace solution
 				make_tagged_charts();
 
 				save_tagged_charts();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::handle_environment()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				make_supports_resistances();
+
+				save_supports_resistances();
+
+				make_environment();
+
+				save_environment();
 			}
 			catch (const std::exception & exception)
 			{
@@ -1527,7 +1660,14 @@ namespace solution
 					first = last;
 				}
 
-				return reduce_levels(std::move(levels));
+				if (m_config.required_level_reduction)
+				{
+					return reduce_levels(std::move(levels));
+				}
+				else
+				{
+					return levels;
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -1886,6 +2026,55 @@ namespace solution
 			try
 			{
 				Data::save_tagged_charts(m_charts, m_config);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::make_environment()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::vector < std::future < void > > futures;
+
+				futures.reserve(std::size(m_assets) * std::size(m_scales));
+
+				for (const auto & asset : m_assets)
+				{
+					for (const auto & scale : m_scales)
+					{
+						std::packaged_task < void() > task([this, asset, scale]()
+							{
+								auto & candles = m_charts.at(asset).at(scale);
+
+								auto & levels = m_supports_resistances.at(asset);
+
+								update_supports_resistances(candles, levels);
+							});
+
+						futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
+					}
+				}
+
+				std::for_each(std::begin(futures), std::end(futures), [](auto & future) { future.wait(); });
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::save_environment() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::save_environment(m_charts, m_config);
 			}
 			catch (const std::exception & exception)
 			{
