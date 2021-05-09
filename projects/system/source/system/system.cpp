@@ -415,9 +415,13 @@ namespace solution
 
 				for (const auto & asset : m_market->assets())
 				{
+					auto data = m_market->get_current_data(
+						asset, scale, m_config.prediction_timesteps);
+
+					// std::cout << std::endl << data << std::endl;
+
 					handle_state(asset, boost::python::extract < std::string > (
-						function(asset.c_str(), scale.c_str(), m_market->get_current_data(
-							asset, scale, m_config.prediction_timesteps).c_str())));
+						function(asset.c_str(), scale.c_str(), data.c_str())));
 				}
 			}
 			catch (const boost::python::error_already_set &)

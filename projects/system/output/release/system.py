@@ -65,8 +65,6 @@ model = keras.models.load_model("model.h5", compile = False)
 def predict(asset, scale, data) :
 
     try:
-
-        data = data[:-1]
         
         batch = []
         
