@@ -576,15 +576,16 @@ namespace solution
 
 								sout <<
 									std::setprecision(6) << std::fixed << std::showpos << (deviation_1 > 1.0 ? 1.0 : deviation_1) << delimeter <<
-									std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2);
-
-								if (j != delta)
-								{
-									sout << delimeter;
-								}
+									std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2) << delimeter;
 							}
 
-							sout << '\n';
+							for (auto regression_tag : candle.regression_tags)
+							{
+								sout << std::setprecision(6) << std::fixed << std::showpos <<
+									regression_tag << delimeter;
+							}
+
+							sout << candle.classification_tag << "\n";
 						}
 					}
 				}
@@ -2050,6 +2051,10 @@ namespace solution
 						std::packaged_task < void() > task([this, asset, scale]()
 							{
 								auto & candles = m_charts.at(asset).at(scale);
+
+								update_regression_tags(candles);
+
+								update_classification_tags(candles);
 
 								auto & levels = m_supports_resistances.at(asset);
 
