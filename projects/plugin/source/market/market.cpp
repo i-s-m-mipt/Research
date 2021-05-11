@@ -539,7 +539,7 @@ namespace solution
 			{
 				auto source = std::begin(m_sources.at(asset_code))->second;
 
-				return (static_cast < std::size_t > (std::ceil(position / (source->last_price() *
+				return (static_cast < std::size_t > (std::round(position / (source->last_price() *
 					get_lot_size(source->class_code(), source->asset_code())))));
 			}
 			catch (const std::exception & exception)
