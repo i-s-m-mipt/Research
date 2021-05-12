@@ -19,7 +19,7 @@
     "level_frame": 10,
     "required_level_reduction": false,
     "required_quik": true,
-    "required_supports_resistances": false,
+    "required_supports_resistances": true,
     "classification_max_deviation": 0.005,
     "run_julia_test": false,
     "prediction_timeframe": "D",
