@@ -298,7 +298,7 @@ namespace solution
 						get_server_data();
 					}
 
-					std::this_thread::sleep_for(std::chrono::seconds(1));
+					std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				}
 			}
 			catch (const std::exception & exception)
@@ -390,7 +390,7 @@ namespace solution
 
 						send_message(send_transaction(transaction));
 
-						std::this_thread::sleep_for(std::chrono::seconds(1));
+						std::this_thread::sleep_for(std::chrono::milliseconds(1));
 					}
 					catch (const std::exception & exception)
 					{

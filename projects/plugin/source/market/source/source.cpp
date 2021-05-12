@@ -31,6 +31,7 @@ namespace solution
 				try
 				{
 					m_shared_memory.destroy_ptr(m_deque);
+					m_shared_memory.destroy_ptr(m_mutex);
 
 					const auto shared_memory_name = make_shared_memory_name();
 
@@ -100,6 +101,9 @@ namespace solution
 
 					m_deque = m_shared_memory.construct < deque_t > (
 						boost::interprocess::unique_instance) (allocator);
+
+					m_mutex = m_shared_memory.construct < mutex_t > (
+						boost::interprocess::unique_instance) ();
 				}
 				catch (const std::exception & exception)
 				{
@@ -136,6 +140,8 @@ namespace solution
 
 					if (size >= m_size)
 					{
+						boost::interprocess::scoped_lock lock(*m_mutex);
+
 						if (m_deque->size() == 0)
 						{
 							for (index_t index = size - m_size + 1; index <= size; ++index)

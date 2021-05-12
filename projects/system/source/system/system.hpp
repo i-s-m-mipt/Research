@@ -128,6 +128,7 @@ namespace solution
 						static inline const std::string prediction_timesteps          = "prediction_timesteps";
 						static inline const std::string transaction_base_value        = "transaction_base_value";
 						static inline const std::string days_for_dividends            = "days_for_dividends";
+						static inline const std::string deviation_threshold           = "deviation_threshold";
 					};
 				};
 
@@ -252,11 +253,7 @@ namespace solution
 
 			using transactions_container_t = std::vector < Transaction > ;
 
-			using clock_t = std::chrono::system_clock;
-
-			using time_point_t = clock_t::time_point;
-
-			using handled_assets_container_t = std::unordered_map < std::string, time_point_t > ;
+			using deviations_container_t = Market::deviations_container_t;
 
 		private:
 
@@ -339,6 +336,8 @@ namespace solution
 
 		private:
 
+			bool is_session_open() const;
+
 			void get_plugin_data();
 
 			void handle_data(const boost::python::object & function);
@@ -347,7 +346,7 @@ namespace solution
 
 			bool has_dividends(const std::string & asset) const;
 
-			void insert_transaction(const std::string & asset, const std::string & operation, double position);
+			bool insert_transaction(const std::string & asset, const std::string & operation, double position);
 
 			void set_server_data() const;
 
@@ -369,7 +368,7 @@ namespace solution
 
 			transactions_container_t m_transactions;
 
-			handled_assets_container_t m_handled_assets;
+			deviations_container_t m_deviations;
 
 			int m_global_background_C = 0;
 			int m_global_background_L = 0;

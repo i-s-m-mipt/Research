@@ -43,6 +43,7 @@ namespace solution
 				config.prediction_timesteps          = raw_config[Key::Config::prediction_timesteps         ].get < std::size_t > ();
 				config.transaction_base_value        = raw_config[Key::Config::transaction_base_value       ].get < double > ();
 				config.days_for_dividends            = raw_config[Key::Config::days_for_dividends           ].get < std::time_t > ();
+				config.deviation_threshold           = raw_config[Key::Config::deviation_threshold          ].get < double > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -339,24 +340,52 @@ namespace solution
 
 				if (m_config.required_quik)
 				{
+					while (!is_session_open())
 					{
-						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
-
-						get_plugin_data();
+						std::this_thread::yield();
 					}
 
-					handle_data(function);
-
+					while (is_session_open())
 					{
-						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
+						{
+							boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
 
-						set_server_data();
+							get_plugin_data();
+						}
+
+						handle_data(function);
+
+						{
+							boost::interprocess::scoped_lock server_lock(*m_server_mutex);
+
+							set_server_data();
+						}
+
+						std::this_thread::sleep_for(std::chrono::milliseconds(1));
 					}
 				}
 			}
 			catch (const boost::python::error_already_set &)
 			{
 				logger.write(Severity::error, shared::Python::exception());
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		bool System::is_session_open() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto time = std::time(nullptr);
+
+				auto tm = *std::localtime(&time);
+
+				return ((tm.tm_hour >= 10) && ((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 50)));
 			}
 			catch (const std::exception & exception)
 			{
@@ -374,11 +403,11 @@ namespace solution
 
 				m_holdings.clear();
 
-				std::cout << "Current positions: " << std::endl << std::endl;
+				// std::cout << "Current positions: " << std::endl << std::endl;
 
 				if (m_plugin_data->holdings.empty())
 				{
-					std::cout << "-" << std::endl;
+					// std::cout << "-" << std::endl;
 				}
 				else
 				{
@@ -386,14 +415,16 @@ namespace solution
 					{
 						m_holdings.emplace(asset.c_str(), position);
 
+						/*
 						std::cout <<
 							std::setw(5) << std::left << std::setfill(' ') << asset << " " <<
 							std::setw(10) << std::right << std::setprecision(2) << std::fixed << std::showpos <<
 							position << std::endl;
+						*/
 					}
 				}				
 
-				std::cout << std::endl;
+				// std::cout << std::endl;
 
 				m_plugin_data->is_updated = false;
 			}
@@ -410,6 +441,10 @@ namespace solution
 			try
 			{
 				const auto scale = m_config.prediction_timeframe;
+
+				m_global_background_C = 0;
+				m_global_background_L = 0;
+				m_global_background_S = 0;
 
 				m_transactions.clear();
 
@@ -455,53 +490,57 @@ namespace solution
 					++m_global_background_S;
 				}
 
-				if (m_handled_assets.find(asset) != std::end(m_handled_assets)) // ?
-				{
-					return;
-				}
+				const auto last_deviation = m_market->get_last_deviation(asset);
 
-				auto current_position = 0.0;
+				if ((m_deviations.find(asset) == std::end(m_deviations)) ||
+					(std::abs(m_deviations[asset] - last_deviation) > m_config.deviation_threshold))
+				{
+					auto current_position = 0.0;
 
-				if (auto iterator = m_holdings.find(asset); iterator != std::end(m_holdings))
-				{
-					current_position = iterator->second;
-				}
-
-				auto has_dividends_flag = has_dividends(asset);
-
-				if (state == State::C && current_position < 0.0)
-				{
-					insert_transaction(asset, "B", std::abs(current_position));
-				}
-				else
-				if (state == State::C && current_position > 0.0)
-				{
-					insert_transaction(asset, "S", std::abs(current_position));
-				}
-				else
-				if (state == State::L && current_position <= 0.0)
-				{
-					if (current_position != 0.0)
+					if (auto iterator = m_holdings.find(asset); iterator != std::end(m_holdings))
 					{
-						insert_transaction(asset, "B", std::abs(current_position));
+						current_position = iterator->second;
 					}
-					
-					insert_transaction(asset, "B", m_config.transaction_base_value);
-				}
-				else
-				if (state == State::S && current_position >= 0.0 && !has_dividends_flag)
-				{
-					if (current_position != 0.0)
+
+					auto has_dividends_flag = has_dividends(asset);
+
+					auto flag = false;
+
+					if (state == State::C && current_position < 0.0)
 					{
-						insert_transaction(asset, "S", std::abs(current_position));
+						flag = insert_transaction(asset, "B", std::abs(current_position));
 					}
-					
-					insert_transaction(asset, "S", m_config.transaction_base_value);
-				}
-				else
-				if (has_dividends_flag && current_position < 0.0)
-				{
-					insert_transaction(asset, "B", std::abs(current_position));
+					else if (state == State::C && current_position > 0.0)
+					{
+						flag = insert_transaction(asset, "S", std::abs(current_position));
+					}
+					else if (state == State::L && current_position <= 0.0)
+					{
+						if (current_position != 0.0)
+						{
+							flag = insert_transaction(asset, "B", std::abs(current_position));
+						}
+
+						flag = insert_transaction(asset, "B", m_config.transaction_base_value);
+					}
+					else if (state == State::S && current_position >= 0.0 && !has_dividends_flag)
+					{
+						if (current_position != 0.0)
+						{
+							flag = insert_transaction(asset, "S", std::abs(current_position));
+						}
+						
+						flag = insert_transaction(asset, "S", m_config.transaction_base_value);
+					}
+					else if (has_dividends_flag && current_position < 0.0)
+					{
+						flag = insert_transaction(asset, "B", std::abs(current_position));
+					}
+
+					if (flag)
+					{
+						m_deviations[asset] = last_deviation;
+					}
 				}
 			}
 			catch (const std::exception & exception)
@@ -523,13 +562,13 @@ namespace solution
 
 					if (time > 0LL && time < seconds_in_day * m_config.days_for_dividends)
 					{
-						std::cout << "has dividends soon" << std::endl;
+						// std::cout << "has dividends soon" << std::endl;
 
 						return true;
 					}
 				}
 
-				std::cout << std::endl;
+				// std::cout << std::endl;
 					
 				return false;
 			}
@@ -539,7 +578,7 @@ namespace solution
 			}
 		}
 
-		void System::insert_transaction(const std::string & asset, const std::string & operation, double position)
+		bool System::insert_transaction(const std::string & asset, const std::string & operation, double position)
 		{
 			RUN_LOGGER(logger);
 
@@ -547,7 +586,7 @@ namespace solution
 			{
 				m_transactions.push_back({ asset, operation, position });
 
-				m_handled_assets[asset] = clock_t::now();
+				return true;
 			}
 			catch (const std::exception & exception)
 			{
@@ -563,36 +602,31 @@ namespace solution
 			{
 				m_server_data->transactions.clear();
 
-				std::cout << std::endl << "Global background: " << std::endl << std::endl;
+				// std::cout << std::endl << "Global background: " << std::endl << std::endl;
 
-				std::cout << "C: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_C << std::endl;
-				std::cout << "L: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_L << std::endl;
-				std::cout << "S: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_S << std::endl;
-
-				std::cout << std::endl << "Required operations: " << std::endl << std::endl;
-
-				char c;
+				// std::cout << "C: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_C << std::endl;
+				// std::cout << "L: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_L << std::endl;
+				// std::cout << "S: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_S << std::endl;
 
 				for (const auto & transaction : m_transactions)
 				{
+					auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+					std::cout << std::put_time(std::localtime(&time), "%y.%m.%d %H:%M:%S") << " : ";
+
 					std::cout << std::setw(5) << std::left << std::setfill(' ') << transaction.asset << " " << transaction.operation << " " <<
-						std::setw(9) << std::right << std::setprecision(2) << std::fixed << std::noshowpos << transaction.position << " - accept? (y/n) ";
+						std::setw(9) << std::right << std::setprecision(2) << std::fixed << std::noshowpos << transaction.position << std::endl;
 
-					std::cin >> c;
-
-					if (c == 'y')
-					{
-						m_server_data->transactions.push_back({
+					m_server_data->transactions.push_back({
 						Server_Data::string_t(transaction.asset.c_str(),
 							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
 						Server_Data::string_t(transaction.operation.c_str(),
 							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())),
 						Server_Data::string_t(std::to_string(transaction.position).c_str(),
 							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
-					}
 				}
 
-				std::cout << std::endl;
+				// std::cout << std::endl;
 				
 				m_server_data->is_updated = true;
 			}

@@ -21,6 +21,7 @@
 #include <boost/interprocess/containers/deque.hpp>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
 #include "../../detail/lua/state.hpp"
@@ -65,6 +66,8 @@ namespace solution
 				using record_allocator_t = boost::interprocess::allocator < record_t, segment_manager_t > ;
 
 				using deque_t = boost::interprocess::deque < record_t, record_allocator_t > ;
+
+				using mutex_t = boost::interprocess::interprocess_mutex;
 
 			private:
 
@@ -251,6 +254,8 @@ namespace solution
 				shared_memory_t m_shared_memory;
 
 				deque_t * m_deque;
+
+				mutex_t * m_mutex;
 
 			private:
 

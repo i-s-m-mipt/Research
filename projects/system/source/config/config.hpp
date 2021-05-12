@@ -145,6 +145,8 @@ namespace solution
             double transaction_base_value = 0.0;
 
             std::time_t days_for_dividends = 5LL;
+
+            double deviation_threshold = 1.0;
         };
 
     } // namespace system
