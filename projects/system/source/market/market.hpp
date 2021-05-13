@@ -347,10 +347,6 @@ namespace solution
 
 		public:
 
-			using deviations_container_t = std::unordered_map < std::string, double > ;
-
-		public:
-
 			Market(const Config & config) : m_config(config), m_thread_pool(2U * std::thread::hardware_concurrency())
 			{
 				initialize();
@@ -533,16 +529,10 @@ namespace solution
 		private:
 
 			void print_last_candle(const std::string & asset, const candles_container_t & candles) const;
-
-			void update_last_deviation(const std::string & asset, const Candle & candle);
 			
 		private:
 
 			std::string serialize_candles(const candles_container_t & candles) const;
-
-		public:
-
-			double get_last_deviation(const std::string & asset) const;
 
 		private:
 
@@ -578,8 +568,6 @@ namespace solution
 			pair_correlations_container_t m_pair_correlations;
 
 			supports_resistances_container_t m_supports_resistances;
-
-			deviations_container_t m_deviations;
 
 			thread_pool_t m_thread_pool;
 		};

@@ -256,8 +256,6 @@ namespace solution
 
 			using transactions_container_t = std::vector < Transaction > ;
 
-			using deviations_container_t = Market::deviations_container_t;
-
 			using clock_t = std::chrono::steady_clock;
 
 			using time_point_t = clock_t::time_point;
@@ -360,7 +358,7 @@ namespace solution
 
 			bool has_dividends(const std::string & asset) const;
 
-			bool insert_transaction(const std::string & asset, const std::string & operation, double position);
+			void insert_transaction(const std::string & asset, const std::string & operation, double position);
 
 			void set_server_data() const;
 
@@ -381,8 +379,6 @@ namespace solution
 			holdings_container_t m_holdings;
 
 			transactions_container_t m_transactions;
-
-			deviations_container_t m_deviations;
 
 			states_container_t m_states;
 

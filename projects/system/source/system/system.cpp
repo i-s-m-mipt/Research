@@ -548,57 +548,44 @@ namespace solution
 
 			try
 			{
-				const auto last_deviation = m_market->get_last_deviation(asset);
+				auto current_position = 0.0;
 
-				if ((m_deviations.find(asset) == std::end(m_deviations)) ||
-					(std::abs(m_deviations[asset] - last_deviation) > m_config.deviation_threshold))
+				if (auto iterator = m_holdings.find(asset); iterator != std::end(m_holdings))
 				{
-					auto current_position = 0.0;
+					current_position = iterator->second;
+				}
 
-					if (auto iterator = m_holdings.find(asset); iterator != std::end(m_holdings))
-					{
-						current_position = iterator->second;
-					}
+				auto has_dividends_flag = has_dividends(asset);
 
-					auto has_dividends_flag = has_dividends(asset);
-
-					auto flag = false;
-
-					if (state == State::C && current_position < 0.0)
+				if (state == State::C && current_position < 0.0)
+				{
+					insert_transaction(asset, "B", std::abs(current_position));
+				}
+				else if (state == State::C && current_position > 0.0)
+				{
+					insert_transaction(asset, "S", std::abs(current_position));
+				}
+				else if (state == State::L && current_position <= 0.0)
+				{
+					if (current_position != 0.0)
 					{
-						flag = insert_transaction(asset, "B", std::abs(current_position));
-					}
-					else if (state == State::C && current_position > 0.0)
-					{
-						flag = insert_transaction(asset, "S", std::abs(current_position));
-					}
-					else if (state == State::L && current_position <= 0.0)
-					{
-						if (current_position != 0.0)
-						{
-							flag = insert_transaction(asset, "B", std::abs(current_position));
-						}
-
-						flag = insert_transaction(asset, "B", m_config.transaction_base_value);
-					}
-					else if (state == State::S && current_position >= 0.0 && !has_dividends_flag)
-					{
-						if (current_position != 0.0)
-						{
-							flag = insert_transaction(asset, "S", std::abs(current_position));
-						}
-						
-						flag = insert_transaction(asset, "S", m_config.transaction_base_value);
-					}
-					else if (has_dividends_flag && current_position < 0.0)
-					{
-						flag = insert_transaction(asset, "B", std::abs(current_position));
+						insert_transaction(asset, "B", std::abs(current_position));
 					}
 
-					if (flag)
+					insert_transaction(asset, "B", m_config.transaction_base_value);
+				}
+				else if (state == State::S && current_position >= 0.0 && !has_dividends_flag)
+				{
+					if (current_position != 0.0)
 					{
-						m_deviations[asset] = last_deviation;
+						insert_transaction(asset, "S", std::abs(current_position));
 					}
+
+					insert_transaction(asset, "S", m_config.transaction_base_value);
+				}
+				else if (has_dividends_flag && current_position < 0.0)
+				{
+					insert_transaction(asset, "B", std::abs(current_position));
 				}
 			}
 			catch (const std::exception & exception)
@@ -632,15 +619,13 @@ namespace solution
 			}
 		}
 
-		bool System::insert_transaction(const std::string & asset, const std::string & operation, double position)
+		void System::insert_transaction(const std::string & asset, const std::string & operation, double position)
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
 				m_transactions.push_back({ asset, operation, position });
-
-				return true;
 			}
 			catch (const std::exception & exception)
 			{

@@ -2214,10 +2214,6 @@ namespace solution
 
 				update_supports_resistances(candles, m_supports_resistances.at(asset));
 
-				// print_last_candle(asset, candles);
-
-				update_last_deviation(asset, candles.back());
-
 				return serialize_candles(candles);
 			}
 			catch (const std::exception & exception)
@@ -2298,20 +2294,6 @@ namespace solution
 					std::setw(4) << std::setfill('0') << candle.resistance.begin.year  << '.' <<
 					std::setw(2) << std::setfill('0') << candle.resistance.begin.month << '.' <<
 					std::setw(2) << std::setfill('0') << candle.resistance.begin.day   << " ";
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		void Market::update_last_deviation(const std::string & asset, const Candle & candle)
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				m_deviations[asset] = 100.0 * (candle.deviation_open + candle.deviation);
 			}
 			catch (const std::exception & exception)
 			{
@@ -2466,20 +2448,6 @@ namespace solution
 				}
 
 				return sout.str();
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		double Market::get_last_deviation(const std::string & asset) const
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				return m_deviations.at(asset);
 			}
 			catch (const std::exception & exception)
 			{
