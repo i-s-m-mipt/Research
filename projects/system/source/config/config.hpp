@@ -147,6 +147,10 @@ namespace solution
             std::time_t days_for_dividends = 5LL;
 
             double deviation_threshold = 1.0;
+
+            bool run_model_sensibility_test = true;
+
+            std::time_t model_stabilization_time = 3600LL;
         };
 
     } // namespace system

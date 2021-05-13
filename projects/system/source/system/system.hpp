@@ -7,6 +7,7 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
+#include <array>
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
@@ -129,6 +130,8 @@ namespace solution
 						static inline const std::string transaction_base_value        = "transaction_base_value";
 						static inline const std::string days_for_dividends            = "days_for_dividends";
 						static inline const std::string deviation_threshold           = "deviation_threshold";
+						static inline const std::string run_model_sensibility_test    = "run_model_sensibility_test";
+						static inline const std::string model_stabilization_time      = "model_stabilization_time";
 					};
 				};
 
@@ -255,6 +258,13 @@ namespace solution
 
 			using deviations_container_t = Market::deviations_container_t;
 
+			using clock_t = std::chrono::steady_clock;
+
+			using time_point_t = clock_t::time_point;
+
+			using states_container_t = std::unordered_map < std::string,
+				std::pair < std::string, time_point_t > > ;
+
 		private:
 
 			struct Dividend
@@ -336,11 +346,15 @@ namespace solution
 
 		private:
 
+			void run_model_sensibility_test(const boost::python::object & function) const;
+
 			bool is_session_open() const;
 
 			void get_plugin_data();
 
 			void handle_data(const boost::python::object & function);
+
+			bool is_state_stable(const std::string & asset, const std::string & state);
 
 			void handle_state(const std::string & asset, const std::string & state);
 
@@ -370,9 +384,7 @@ namespace solution
 
 			deviations_container_t m_deviations;
 
-			int m_global_background_C = 0;
-			int m_global_background_L = 0;
-			int m_global_background_S = 0;
+			states_container_t m_states;
 
 		private:
 

@@ -24,7 +24,9 @@
     "run_julia_test": false,
     "prediction_timeframe": "D",
     "prediction_timesteps": 60,
-    "transaction_base_value": 100000.0,
-    "days_for_dividends": 5,
-    "deviation_threshold": 1.0
+    "transaction_base_value": 500000.0,
+    "days_for_dividends": 10,
+    "deviation_threshold": 0.1,
+    "run_model_sensibility_test": true,
+    "model_stabilization_time": 3600
 }

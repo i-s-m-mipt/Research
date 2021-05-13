@@ -2226,6 +2226,45 @@ namespace solution
 			}
 		}
 
+		std::vector < std::string > Market::get_current_data_variation(
+			const std::string & asset, const std::string & scale, std::size_t size)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::istringstream sin(m_sources.at(asset).at(scale)->get(size));
+
+				candles_container_t candles;
+
+				std::string line;
+
+				while (std::getline(sin, line))
+				{
+					candles.push_back(parse(line));
+				}
+
+				std::vector < std::string > results;
+
+				for (auto deviation = -0.050; deviation <= +0.050; deviation += 0.001)
+				{
+					candles.back().price_close = candles.back().price_open * (1.0 + deviation);
+
+					update_deviations(candles);
+
+					update_supports_resistances(candles, m_supports_resistances.at(asset));
+
+					results.push_back(serialize_candles(candles));
+				}
+
+				return results;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::print_last_candle(const std::string & asset, const candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);

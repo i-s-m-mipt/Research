@@ -527,6 +527,9 @@ namespace solution
 
 			std::string get_current_data(const std::string & asset, const std::string & scale, std::size_t size);
 
+			std::vector < std::string > get_current_data_variation(
+				const std::string & asset, const std::string & scale, std::size_t size);
+
 		private:
 
 			void print_last_candle(const std::string & asset, const candles_container_t & candles) const;

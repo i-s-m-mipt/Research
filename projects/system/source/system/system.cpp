@@ -44,6 +44,8 @@ namespace solution
 				config.transaction_base_value        = raw_config[Key::Config::transaction_base_value       ].get < double > ();
 				config.days_for_dividends            = raw_config[Key::Config::days_for_dividends           ].get < std::time_t > ();
 				config.deviation_threshold           = raw_config[Key::Config::deviation_threshold          ].get < double > ();
+				config.run_model_sensibility_test    = raw_config[Key::Config::run_model_sensibility_test   ].get < bool > ();
+				config.model_stabilization_time      = raw_config[Key::Config::model_stabilization_time     ].get < std::time_t > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -340,6 +342,11 @@ namespace solution
 
 				if (m_config.required_quik)
 				{
+					if (m_config.run_model_sensibility_test)
+					{
+						run_model_sensibility_test(function);
+					}
+
 					while (!is_session_open())
 					{
 						std::this_thread::yield();
@@ -350,6 +357,8 @@ namespace solution
 						{
 							boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
 
+							m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
+
 							get_plugin_data();
 						}
 
@@ -359,11 +368,61 @@ namespace solution
 							boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
 							set_server_data();
+
+							m_server_condition->notify_one();
 						}
 
-						std::this_thread::sleep_for(std::chrono::milliseconds(1));
+						std::this_thread::sleep_for(std::chrono::seconds(1));
 					}
 				}
+			}
+			catch (const boost::python::error_already_set &)
+			{
+				logger.write(Severity::error, shared::Python::exception());
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::run_model_sensibility_test(const boost::python::object & function) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto scale = m_config.prediction_timeframe;
+
+				std::cout << "Model sensibility test: " << std::endl << std::endl;
+
+				std::array < std::size_t, 12U > delimeters = 
+					{ 0U, 10U, 20U, 30U, 40U, 50U, 51U, 61U, 71U, 81U, 91U, 101U };
+
+				for (const auto & asset : m_market->assets())
+				{
+					auto data = m_market->get_current_data_variation(
+						asset, scale, m_config.prediction_timesteps);
+
+					std::cout << std::setw(5) << std::left << std::setfill(' ') << asset << " : ";
+
+					auto i = 0U;
+
+					for (const auto & variant : data)
+					{
+						if (std::find(std::begin(delimeters), std::end(delimeters), i++) != std::end(delimeters))
+						{
+							std::cout << ' ';
+						}
+
+						std::cout << boost::python::extract < std::string > (
+							function(asset.c_str(), scale.c_str(), variant.c_str()))();
+					}
+
+					std::cout << std::endl;
+				}
+
+				std::cout << std::endl;
 			}
 			catch (const boost::python::error_already_set &)
 			{
@@ -385,7 +444,7 @@ namespace solution
 
 				auto tm = *std::localtime(&time);
 
-				return ((tm.tm_hour >= 10) && ((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 50)));
+				return ((tm.tm_hour > 10 || (tm.tm_hour == 10 && tm.tm_min > 10)) && ((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 50)));
 			}
 			catch (const std::exception & exception)
 			{
@@ -403,28 +462,10 @@ namespace solution
 
 				m_holdings.clear();
 
-				// std::cout << "Current positions: " << std::endl << std::endl;
-
-				if (m_plugin_data->holdings.empty())
+				for (const auto & [asset, position] : m_plugin_data->holdings)
 				{
-					// std::cout << "-" << std::endl;
+					m_holdings.emplace(asset.c_str(), position);
 				}
-				else
-				{
-					for (const auto & [asset, position] : m_plugin_data->holdings)
-					{
-						m_holdings.emplace(asset.c_str(), position);
-
-						/*
-						std::cout <<
-							std::setw(5) << std::left << std::setfill(' ') << asset << " " <<
-							std::setw(10) << std::right << std::setprecision(2) << std::fixed << std::showpos <<
-							position << std::endl;
-						*/
-					}
-				}				
-
-				// std::cout << std::endl;
 
 				m_plugin_data->is_updated = false;
 			}
@@ -442,10 +483,6 @@ namespace solution
 			{
 				const auto scale = m_config.prediction_timeframe;
 
-				m_global_background_C = 0;
-				m_global_background_L = 0;
-				m_global_background_S = 0;
-
 				m_transactions.clear();
 
 				for (const auto & asset : m_market->assets())
@@ -453,15 +490,51 @@ namespace solution
 					auto data = m_market->get_current_data(
 						asset, scale, m_config.prediction_timesteps);
 
-					// std::cout << std::endl << data << std::endl;
+					auto state = boost::python::extract < std::string > (
+						function(asset.c_str(), scale.c_str(), data.c_str()))();
 
-					handle_state(asset, boost::python::extract < std::string > (
-						function(asset.c_str(), scale.c_str(), data.c_str())));
+					if (is_state_stable(asset, state))
+					{
+						handle_state(asset, state);
+					}
 				}
 			}
 			catch (const boost::python::error_already_set &)
 			{
 				logger.write(Severity::error, shared::Python::exception());
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		bool System::is_state_stable(const std::string & asset, const std::string & state)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto current_state = std::make_pair(state, clock_t::now());
+
+				if (m_states.find(asset) == std::end(m_states) || m_states[asset].first != state)
+				{
+					m_states[asset] = std::move(current_state);
+
+					return false;
+				}
+				else
+				{
+					auto delta = std::chrono::duration_cast < std::chrono::seconds > (
+						current_state.second - m_states[asset].second).count();
+
+					if (delta >= m_config.model_stabilization_time)
+					{
+						return true;
+					}
+				}
+
+				return false;
 			}
 			catch (const std::exception & exception)
 			{
@@ -475,21 +548,6 @@ namespace solution
 
 			try
 			{
-				if (state == State::C)
-				{
-					++m_global_background_C;
-				}
-
-				if (state == State::L)
-				{
-					++m_global_background_L;
-				}
-
-				if (state == State::S)
-				{
-					++m_global_background_S;
-				}
-
 				const auto last_deviation = m_market->get_last_deviation(asset);
 
 				if ((m_deviations.find(asset) == std::end(m_deviations)) ||
@@ -562,13 +620,9 @@ namespace solution
 
 					if (time > 0LL && time < seconds_in_day * m_config.days_for_dividends)
 					{
-						// std::cout << "has dividends soon" << std::endl;
-
 						return true;
 					}
 				}
-
-				// std::cout << std::endl;
 					
 				return false;
 			}
@@ -602,12 +656,6 @@ namespace solution
 			{
 				m_server_data->transactions.clear();
 
-				// std::cout << std::endl << "Global background: " << std::endl << std::endl;
-
-				// std::cout << "C: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_C << std::endl;
-				// std::cout << "L: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_L << std::endl;
-				// std::cout << "S: " << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << m_global_background_S << std::endl;
-
 				for (const auto & transaction : m_transactions)
 				{
 					auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -625,8 +673,6 @@ namespace solution
 						Server_Data::string_t(std::to_string(transaction.position).c_str(),
 							Server_Data::char_allocator_t(m_shared_memory.get_segment_manager())) });
 				}
-
-				// std::cout << std::endl;
 				
 				m_server_data->is_updated = true;
 			}
