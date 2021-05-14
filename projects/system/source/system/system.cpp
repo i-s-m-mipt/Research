@@ -444,7 +444,7 @@ namespace solution
 
 				auto tm = *std::localtime(&time);
 
-				return ((tm.tm_hour > 10 || (tm.tm_hour == 10 && tm.tm_min > 10)) && ((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 50)));
+				return ((tm.tm_hour > 10) && ((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 50)));
 			}
 			catch (const std::exception & exception)
 			{
