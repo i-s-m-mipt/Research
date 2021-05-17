@@ -398,7 +398,12 @@ namespace solution
 						transaction["OPERATION"  ] = operation;
 						transaction["QUANTITY"   ] = std::to_string(compute_lot_quantity(asset_code, position));
 
-						send_message(send_transaction(transaction));
+						auto message = send_transaction(transaction);
+
+						if (!message.empty())
+						{
+							send_message(message);
+						}
 
 						std::this_thread::sleep_for(std::chrono::milliseconds(1));
 					}
