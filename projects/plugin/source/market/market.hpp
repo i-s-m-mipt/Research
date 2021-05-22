@@ -20,7 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <boost/asio.hpp>
+#include <windows.h>
+
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/map.hpp>
 #include <boost/interprocess/containers/string.hpp>
@@ -64,6 +65,8 @@ namespace solution
 				std::string id;
 				std::string code;
 				std::string account;
+				std::string login;
+				std::string password;
 			};
 
 		private:
@@ -113,9 +116,11 @@ namespace solution
 
 					struct Config
 					{
-						static inline const std::string id      = "id";
-						static inline const std::string code    = "code";
-						static inline const std::string account = "account";
+						static inline const std::string id       = "id";
+						static inline const std::string code     = "code";
+						static inline const std::string account  = "account";
+						static inline const std::string login    = "login";
+						static inline const std::string password = "password";
 					};
 				};
 
@@ -229,14 +234,11 @@ namespace solution
 
 			using mutex_t = boost::interprocess::interprocess_mutex;
 
-			using thread_pool_t = boost::asio::thread_pool;
-
 		public:
 
 			explicit Market(detail::lua::State state) : 
 				m_state(state), m_engine(static_cast < unsigned int > (
-					std::chrono::system_clock::now().time_since_epoch().count())),
-				m_thread_pool(std::thread::hardware_concurrency())
+					std::chrono::system_clock::now().time_since_epoch().count()))
 			{
 				initialize();
 			}
@@ -270,6 +272,10 @@ namespace solution
 			void load_assets();
 
 			void load_scales();
+
+		private:
+
+			void login() const;
 
 		private:
 
@@ -331,6 +337,10 @@ namespace solution
 
 		private:
 
+			static inline const std::time_t login_delay = 300LL;
+
+		private:
+
 			const detail::lua::State m_state;
 
 		private:
@@ -355,8 +365,6 @@ namespace solution
 
 			condition_t * m_plugin_condition;
 			condition_t * m_server_condition;
-
-			thread_pool_t m_thread_pool;
 
 		private:
 

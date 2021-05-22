@@ -16,9 +16,11 @@ namespace solution
 
 				load(File::config_json, raw_config);
 
-				config.id      = raw_config[Key::Config::id     ].get < std::string > ();
-				config.code    = raw_config[Key::Config::code   ].get < std::string > ();
-				config.account = raw_config[Key::Config::account].get < std::string > ();
+				config.id       = raw_config[Key::Config::id      ].get < std::string > ();
+				config.code     = raw_config[Key::Config::code    ].get < std::string > ();
+				config.account  = raw_config[Key::Config::account ].get < std::string > ();
+				config.login    = raw_config[Key::Config::login   ].get < std::string > ();
+				config.password = raw_config[Key::Config::password].get < std::string > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -107,6 +109,8 @@ namespace solution
 			{
 				load();
 
+				login();
+
 				m_status.store(Status::stopped);
 
 				initialize_sources();
@@ -139,8 +143,6 @@ namespace solution
 				const auto shared_memory_name = make_shared_memory_name();
 
 				boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
-
-				m_thread_pool.join();
 			}
 			catch (const std::exception & exception)
 			{
@@ -199,6 +201,34 @@ namespace solution
 			try
 			{
 				Data::load_scales(m_scales);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::login() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::this_thread::sleep_for(std::chrono::seconds(login_delay));
+
+				// TODO\
+
+				//local hWnd=w32.FindWindow("", "Идентификация пользователя")
+				//	if hWnd == 0 then hWnd=w32.FindWindow("", "User identification") end
+				//		if hWnd~=0 then
+				//			local hServe=w32.FindWindowEx(hWnd, 0, "", "")
+				//			local hLogin=w32.FindWindowEx(hWnd, hServe, "", "")
+				//			local nPassw=w32.FindWindowEx(hWnd, hLogin, "", "")
+				//			local nBtnOk=w32.FindWindowEx(hWnd, nPassw, "", "")
+				//			w32.SetWindowText(hLogin, QUIK_LOGIN)
+				//			w32.SetWindowText(nPassw, QUIK_PASSW)
+				//			w32.SetFocus(nBtnOk)
+				//			w32.PostMessage(nBtnOk, w32.BM_CLICK, 0, 0)
 			}
 			catch (const std::exception & exception)
 			{
