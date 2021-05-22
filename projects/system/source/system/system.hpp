@@ -366,6 +366,8 @@ namespace solution
 
 			static inline const std::time_t seconds_in_day = 86400LL;
 
+			static inline const std::time_t initialization_delay = 10LL;
+
 		private:
 
 			Config m_config;

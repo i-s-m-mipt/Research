@@ -101,6 +101,8 @@ namespace solution
 
 			try
 			{
+				std::this_thread::sleep_for(std::chrono::seconds(initialization_delay));
+
 				load();
 
 				m_market = std::make_unique < Market > (m_config);
@@ -444,7 +446,7 @@ namespace solution
 
 				auto tm = *std::localtime(&time);
 
-				return ((tm.tm_hour > 10) && ((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 50)));
+				return ((tm.tm_hour >= 10) && ((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 50)));
 			}
 			catch (const std::exception & exception)
 			{
