@@ -13,19 +13,11 @@
     },
     {
         "class_code": "TQBR",
-        "asset_code": "TATN"
-    },
-    {
-        "class_code": "TQBR",
         "asset_code": "SBER"
     },
     {
         "class_code": "TQBR",
         "asset_code": "GAZP"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "ROSN"
     },
     {
         "class_code": "TQBR",
@@ -37,146 +29,6 @@
     },
     {
         "class_code": "TQBR",
-        "asset_code": "NVTK"
-    },
-    {
-        "class_code": "TQBR",
         "asset_code": "MTSS"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "ALRS"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "SNGS"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "VTBR"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "YNDX"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "POLY"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "PLZL"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "NLMK"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "SNGSP"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "SBERP"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "IRAO"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "PHOR"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "AFKS"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "RUAL"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "RTKM"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "MAGN"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "PIKK"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "TRNFP"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "TATNP"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "AFLT"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "HYDR"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "FEES"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "CBOM"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "RSTI"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "LSRG"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "UPRO"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "QIWI"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "TCSG"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "FIVE"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "MAIL"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "OZON"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "DSKY"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "POGR"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "HHRU"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "GLTR"
     }
 ]
