@@ -208,27 +208,66 @@ namespace solution
 			}
 		}
 
+		std::wstring convert_string_to_wstring(
+			const std::string & string,
+			const std::locale & locale = std::locale())
+		{
+			std::vector < wchar_t > buffer(string.size());
+
+			std::use_facet < std::ctype < wchar_t > > (locale).widen(
+				string.data(),
+				string.data() + string.size(),
+				buffer.data());
+
+			return std::wstring(buffer.data(), buffer.size());
+		}
+ 
 		void Market::login() const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				std::this_thread::sleep_for(std::chrono::seconds(login_delay));
+				std::this_thread::sleep_for(std::chrono::seconds(1));
 
-				// TODO\
+				auto handler_main_window = FindWindow(L"InfoClass", 0);
 
-				//local hWnd=w32.FindWindow("", "Идентификация пользователя")
-				//	if hWnd == 0 then hWnd=w32.FindWindow("", "User identification") end
-				//		if hWnd~=0 then
-				//			local hServe=w32.FindWindowEx(hWnd, 0, "", "")
-				//			local hLogin=w32.FindWindowEx(hWnd, hServe, "", "")
-				//			local nPassw=w32.FindWindowEx(hWnd, hLogin, "", "")
-				//			local nBtnOk=w32.FindWindowEx(hWnd, nPassw, "", "")
-				//			w32.SetWindowText(hLogin, QUIK_LOGIN)
-				//			w32.SetWindowText(nPassw, QUIK_PASSW)
-				//			w32.SetFocus(nBtnOk)
-				//			w32.PostMessage(nBtnOk, w32.BM_CLICK, 0, 0)
+				if (handler_main_window)
+				{
+					PostMessage(handler_main_window, WM_COMMAND, 100, 0);
+				}
+				else
+				{
+					send_message("main window not found");
+				}
+
+				std::this_thread::sleep_for(std::chrono::seconds(1));
+
+				auto handler_window = FindWindow(L"#32770", L"User identification");
+
+				if (handler_window)
+				{
+					auto handler_server   = FindWindowEx(handler_window, 0,              L"ComboBox", L"");
+					auto handler_login    = FindWindowEx(handler_window, handler_server, L"Edit",     L"");
+					auto handler_password = FindWindowEx(handler_window, handler_login,  L"Edit",     L"");
+
+					auto handler_button   = FindWindowEx(handler_window, handler_password, L"Button", L"Enter");
+
+					SendMessage(handler_password, WM_SETTEXT, 0, (LPARAM)
+						(convert_string_to_wstring(m_config.password).c_str()));
+
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+
+					SetFocus(handler_button);
+
+					PostMessage(handler_button, BM_CLICK, 0, 0);
+				}
+				else
+				{
+					send_message("window not found");
+				}
+
+				std::this_thread::sleep_for(std::chrono::seconds(10));
 			}
 			catch (const std::exception & exception)
 			{
@@ -310,11 +349,18 @@ namespace solution
 
 			try
 			{
+				while (!is_session_open())
+				{
+					std::this_thread::yield();
+				}
+
+				run_server();
+
 				m_status.store(Status::running);
 
 				std::scoped_lock market_lock(m_market_mutex);
 
-				while (m_status.load() == Status::running)
+				while (is_session_open())
 				{
 					{
 						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
@@ -340,6 +386,13 @@ namespace solution
 						get_server_data();
 					}
 				}
+
+				// TODO
+
+				while (m_status.load() == Status::running)
+				{
+					std::this_thread::yield();
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -359,6 +412,40 @@ namespace solution
 				m_server_condition->notify_all();
 
 				std::scoped_lock market_lock(m_market_mutex);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::run_server() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				// TODO
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		bool Market::is_session_open() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto time = std::time(nullptr);
+
+				auto tm = *std::localtime(&time);
+
+				return (
+					((tm.tm_hour > 10) || (tm.tm_hour == 10 && tm.tm_min > 0)) && 
+					((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 55)));
 			}
 			catch (const std::exception & exception)
 			{

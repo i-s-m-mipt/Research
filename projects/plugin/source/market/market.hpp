@@ -9,9 +9,11 @@
 
 #include <algorithm>
 #include <chrono>
+#include <ctime>
 #include <exception>
 #include <filesystem>
 #include <future>
+#include <locale>
 #include <memory>
 #include <random>
 #include <stdexcept>
@@ -307,6 +309,12 @@ namespace solution
 
 		private:
 
+			void run_server() const;
+
+			bool is_session_open() const;
+
+		private:
+
 			void set_plugin_data() const;
 
 			void get_server_data() const;
@@ -334,10 +342,6 @@ namespace solution
 			void send_message(const std::string & message) const;
 
 			std::string send_transaction(const transaction_t & transaction) const;
-
-		private:
-
-			static inline const std::time_t login_delay = 300LL;
 
 		private:
 
