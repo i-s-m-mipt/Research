@@ -113,6 +113,11 @@ namespace solution
 
 				m_status.store(Status::stopped);
 
+				while (!is_session_open())
+				{
+					std::this_thread::yield();
+				}
+
 				initialize_sources();
 
 				initialize_shared_memory();
@@ -349,11 +354,6 @@ namespace solution
 
 			try
 			{
-				while (!is_session_open())
-				{
-					std::this_thread::yield();
-				}
-
 				run_server();
 
 				m_status.store(Status::running);

@@ -349,11 +349,6 @@ namespace solution
 						run_model_sensibility_test(function);
 					}
 
-					while (!is_session_open())
-					{
-						std::this_thread::yield();
-					}
-
 					while (is_session_open())
 					{
 						{
