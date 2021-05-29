@@ -4,7 +4,7 @@
     <Filter Include="source">
       <UniqueIdentifier>{70a02d9e-475d-4997-b0d7-52c70db0c1ac}</UniqueIdentifier>
     </Filter>
-    <Filter Include="logger">
+    <Filter Include="source\logger">
       <UniqueIdentifier>{7474cf7a-1dee-4036-abe2-d65759a3cfb7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -13,12 +13,12 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\shared\source\logger\logger.cpp">
-      <Filter>logger</Filter>
+      <Filter>source\logger</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\source\logger\logger.hpp">
-      <Filter>logger</Filter>
+      <Filter>source\logger</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
