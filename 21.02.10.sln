@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "timer", "timer", "{5C19BD06
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin", "projects\plugin\project\plugin.vcxproj", "{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "loader", "projects\loader\project\loader.vcxproj", "{83F73BDA-881F-4578-804A-0637AB655268}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -53,6 +55,14 @@ Global
 		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Release|x64.Build.0 = Release|x64
 		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Release|x86.ActiveCfg = Release|Win32
 		{B014FEB1-F65B-4B26-B6E5-1AD61B67C628}.Release|x86.Build.0 = Release|Win32
+		{83F73BDA-881F-4578-804A-0637AB655268}.Debug|x64.ActiveCfg = Debug|x64
+		{83F73BDA-881F-4578-804A-0637AB655268}.Debug|x64.Build.0 = Debug|x64
+		{83F73BDA-881F-4578-804A-0637AB655268}.Debug|x86.ActiveCfg = Debug|Win32
+		{83F73BDA-881F-4578-804A-0637AB655268}.Debug|x86.Build.0 = Debug|Win32
+		{83F73BDA-881F-4578-804A-0637AB655268}.Release|x64.ActiveCfg = Release|x64
+		{83F73BDA-881F-4578-804A-0637AB655268}.Release|x64.Build.0 = Release|x64
+		{83F73BDA-881F-4578-804A-0637AB655268}.Release|x86.ActiveCfg = Release|Win32
+		{83F73BDA-881F-4578-804A-0637AB655268}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
