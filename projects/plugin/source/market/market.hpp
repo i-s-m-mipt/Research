@@ -22,6 +22,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/process.hpp>
+
 #include <windows.h>
 
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -101,9 +103,9 @@ namespace solution
 				{
 					using path_t = std::filesystem::path;
 
-					static inline const path_t config_json = "market/config.json";
-					static inline const path_t assets_data = "market/assets.data";
-					static inline const path_t scales_data = "market/scales.data";
+					static inline const path_t config_json = "plugin/config.json";
+					static inline const path_t assets_data = "plugin/assets.data";
+					static inline const path_t scales_data = "plugin/scales.data";
 				};
 
 			private:
@@ -309,7 +311,7 @@ namespace solution
 
 		private:
 
-			void run_server() const;
+			void run_server();
 
 			bool is_session_open() const;
 
@@ -369,6 +371,8 @@ namespace solution
 
 			condition_t * m_plugin_condition;
 			condition_t * m_server_condition;
+
+			boost::process::child m_server;
 
 		private:
 

@@ -387,8 +387,6 @@ namespace solution
 					}
 				}
 
-				// TODO
-
 				while (m_status.load() == Status::running)
 				{
 					std::this_thread::yield();
@@ -419,13 +417,13 @@ namespace solution
 			}
 		}
 
-		void Market::run_server() const
+		void Market::run_server()
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				// TODO
+				m_server = boost::process::child("system.exe");
 			}
 			catch (const std::exception & exception)
 			{
