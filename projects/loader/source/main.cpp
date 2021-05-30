@@ -6,6 +6,8 @@
 
 #include <boost/process.hpp>
 
+#include <windows.h>
+
 #include "../../shared/source/logger/logger.hpp"
 
 using Logger = solution::shared::Logger;
@@ -63,7 +65,18 @@ int main(int argc, char ** argv)
 			std::this_thread::yield();
 		}
 
-		//system("pause");
+		auto handler_main_window = FindWindow(L"InfoClass", 0);
+
+		if (handler_main_window)
+		{
+			PostMessage(handler_main_window, WM_CLOSE, 0, 0);
+		}
+		else
+		{
+			throw std::runtime_error("main window not found");
+		}
+
+		// system("pause");
 
 		return EXIT_SUCCESS;
 	}
