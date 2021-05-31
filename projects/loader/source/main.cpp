@@ -38,7 +38,7 @@ bool is_session_open()
 		auto tm = *std::localtime(&time);
 
 		return (
-			((tm.tm_hour > 9)  || (tm.tm_hour == 9  && tm.tm_min > 50)) &&
+			((tm.tm_hour >  9) || (tm.tm_hour ==  9 && tm.tm_min > 50)) &&
 			((tm.tm_hour < 23) || (tm.tm_hour == 23 && tm.tm_min < 59)));
 	}
 	catch (const std::exception & exception)
@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 			throw std::runtime_error("main window not found");
 		}
 
-		// system("pause");
+		system("pause");
 
 		return EXIT_SUCCESS;
 	}
