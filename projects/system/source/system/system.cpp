@@ -34,6 +34,7 @@ namespace solution
 				config.level_max_strength            = raw_config[Key::Config::level_max_strength           ].get < double > ();
 				config.level_resolution              = raw_config[Key::Config::level_resolution             ].get < std::string > ();
 				config.level_frame                   = raw_config[Key::Config::level_frame                  ].get < std::size_t > ();
+				config.critical_deviation            = raw_config[Key::Config::critical_deviation           ].get < double > ();
 				config.required_level_reduction      = raw_config[Key::Config::required_level_reduction     ].get < bool > ();
 				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
 				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();

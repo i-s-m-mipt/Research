@@ -129,6 +129,8 @@ namespace solution
 
             std::size_t level_frame = 5U;
 
+            double critical_deviation = 0.75;
+
             bool required_level_reduction = false;
 
             bool required_quik = false;

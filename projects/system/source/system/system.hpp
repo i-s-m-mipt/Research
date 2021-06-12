@@ -120,6 +120,7 @@ namespace solution
 						static inline const std::string level_max_strength            = "level_max_strength";
 						static inline const std::string level_resolution              = "level_resolution";
 						static inline const std::string level_frame                   = "level_frame";
+						static inline const std::string critical_deviation            = "critical_deviation";
 						static inline const std::string required_level_reduction      = "required_level_reduction";
 						static inline const std::string required_quik                 = "required_quik";
 						static inline const std::string required_supports_resistances = "required_supports_resistances";
