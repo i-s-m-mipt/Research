@@ -569,15 +569,23 @@ namespace solution
 									0.0 << delimeter;
 							}
 
-							for (auto j = 0U; j < config.prediction_timesteps; ++j)
+							for (auto j = 0U; j < delta; ++j)
 							{
 								auto deviation_1 = candles[i - delta + j].deviation_open * deviation_multiplier;
 								auto deviation_2 = candles[i - delta + j].deviation      * deviation_multiplier;
 
+								auto deviation = deviation_1 + deviation_2;
+
 								sout <<
-									std::setprecision(6) << std::fixed << std::showpos << (deviation_1 > 1.0 ? 1.0 : deviation_1) << delimeter <<
-									std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2) << delimeter;
+									std::setprecision(6) << std::fixed << std::showpos << (deviation > 1.0 ? 1.0 : deviation) << delimeter;
 							}
+
+							auto deviation_1 = candles[i].deviation_open * deviation_multiplier;
+							auto deviation_2 = candles[i].deviation      * deviation_multiplier;
+
+							sout <<
+								std::setprecision(6) << std::fixed << std::showpos << (deviation_1 > 1.0 ? 1.0 : deviation_1) << delimeter <<
+								std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2) << delimeter;
 
 							for (auto regression_tag : candle.regression_tags)
 							{
@@ -822,13 +830,20 @@ namespace solution
 							continue;
 						}
 						
-						std::packaged_task < void() > task([this, path, &mutex, asset, scale]()
+						std::packaged_task < void() > task([this, path, &mutex, asset, scale, &logger]()
 							{
-								auto candles = load_candles(path);
+								auto candles = load_candles(asset, scale, path);
 
 								std::scoped_lock lock(mutex);
 
-								m_charts[asset][scale] = std::move(candles);
+								if (std::size(candles) >= m_config.prediction_timesteps * 2U)
+								{
+									m_charts[asset][scale] = std::move(candles);
+								}
+								else
+								{
+									logger.write(Severity::empty, "candles size exception: " + asset + " " + scale);
+								}
 							});
 
 						futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
@@ -916,7 +931,8 @@ namespace solution
 			}
 		}
 
-		Market::candles_container_t Market::load_candles(const path_t & path) const
+		Market::candles_container_t Market::load_candles(const std::string & asset,
+			const std::string & scale, const path_t & path) const
 		{
 			RUN_LOGGER(logger);
 
@@ -940,7 +956,7 @@ namespace solution
 
 				std::reverse(std::begin(candles), std::end(candles));
 
-				update_deviations(candles);
+				update_deviations(asset, scale, candles);
 
 				return candles;
 			}
@@ -983,12 +999,15 @@ namespace solution
 			}
 		}
 
-		void Market::update_deviations(candles_container_t & candles) const
+		void Market::update_deviations(const std::string & asset,
+			const std::string & scale, candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
+				bool flag = false;
+
 				for (auto i = 0U; i < std::size(candles); ++i)
 				{
 					if (std::abs(candles[i].price_open) <= std::numeric_limits < double > ::epsilon())
@@ -997,6 +1016,22 @@ namespace solution
 					}
 
 					candles[i].deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
+
+					if ((candles[i].deviation >  m_config.critical_deviation || 
+						 candles[i].deviation < -m_config.critical_deviation) && !flag)
+					{
+						std::ostringstream sout;
+
+						sout << "deviation exception: " << 
+							std::setw(5) << std::left  << std::setfill(' ') << asset << " " << scale  << " " <<
+							std::setw(4) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.year  << "." <<
+							std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.month << "." <<
+							std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.day;
+
+						logger.write(Severity::empty, sout.str());
+
+						flag = true;
+					}
 
 					if (i == 0U)
 					{
@@ -1010,6 +1045,22 @@ namespace solution
 						}
 
 						candles[i].deviation_open = (candles[i].price_open - candles[i - 1].price_close) / candles[i - 1].price_close;
+
+						if ((candles[i].deviation_open >  m_config.critical_deviation || 
+							 candles[i].deviation_open < -m_config.critical_deviation) && !flag)
+						{
+							std::ostringstream sout;
+
+							sout << "deviation exception: " << 
+								std::setw(5) << std::left  << std::setfill(' ') << asset << " " << scale << " " <<
+								std::setw(4) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.year  << "." <<
+								std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.month << "." <<
+								std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.day;
+
+							logger.write(Severity::empty, sout.str());
+
+							flag = true;
+						}
 					}
 
 					candles[i].deviation_max = (candles[i].price_high - candles[i].price_open) / candles[i].price_open;
@@ -2138,13 +2189,20 @@ namespace solution
 						throw std::runtime_error("file " + path.string() + " doesn't exist");
 					}
 
-					std::packaged_task < void() > task([this, path, &mutex, asset, scale]()
+					std::packaged_task < void() > task([this, path, &mutex, asset, scale, &logger]()
 						{
-							auto candles = load_candles(path);
+							auto candles = load_candles(asset, scale, path);
 
 							std::scoped_lock lock(mutex);
 
-							m_charts[asset][scale] = std::move(candles);
+							if (std::size(candles) >= m_config.prediction_timesteps * 2U)
+							{
+								m_charts[asset][scale] = std::move(candles);
+							}
+							else
+							{
+								logger.write(Severity::empty, "candles size exception: " + asset + " " + scale);
+							}
 						});
 
 					futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
@@ -2210,7 +2268,7 @@ namespace solution
 					candles.push_back(parse(line));
 				}
 
-				update_deviations(candles);
+				update_deviations(asset, scale, candles);
 
 				update_supports_resistances(candles, m_supports_resistances.at(asset));
 
@@ -2246,7 +2304,7 @@ namespace solution
 				{
 					candles.back().price_close = candles.back().price_open * (1.0 + deviation);
 
-					update_deviations(candles);
+					update_deviations(asset, scale, candles);
 
 					update_supports_resistances(candles, m_supports_resistances.at(asset));
 
@@ -2432,20 +2490,23 @@ namespace solution
 						0.0 << delimeter;
 				}
 
-				for (auto j = 0U; j < m_config.prediction_timesteps; ++j)
+				for (auto j = 0U; j < m_config.prediction_timesteps - 1; ++j)
 				{
 					auto deviation_1 = candles[j].deviation_open * deviation_multiplier;
-					auto deviation_2 = candles[j].deviation      * deviation_multiplier;
+					auto deviation_2 = candles[j].deviation * deviation_multiplier;
+
+					auto deviation = deviation_1 + deviation_2;
 
 					sout <<
-						std::setprecision(6) << std::fixed << std::showpos << (deviation_1 > 1.0 ? 1.0 : deviation_1) << delimeter <<
-						std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2);
-
-					if (j != m_config.prediction_timesteps - 1U)
-					{
-						sout << delimeter;
-					}
+						std::setprecision(6) << std::fixed << std::showpos << (deviation > 1.0 ? 1.0 : deviation) << delimeter;
 				}
+
+				auto deviation_1 = candle.deviation_open * deviation_multiplier;
+				auto deviation_2 = candle.deviation      * deviation_multiplier;
+
+				sout <<
+					std::setprecision(6) << std::fixed << std::showpos << (deviation_1 > 1.0 ? 1.0 : deviation_1) << delimeter <<
+					std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2);
 
 				return sout.str();
 			}

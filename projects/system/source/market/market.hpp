@@ -394,11 +394,13 @@ namespace solution
 
 		private:
 
-			candles_container_t load_candles(const path_t & path) const;
+			candles_container_t load_candles(const std::string & asset,
+				const std::string & scale, const path_t & path) const;
 
 			Candle parse(const std::string & line) const;
 
-			void update_deviations(candles_container_t & candles) const;
+			void update_deviations(const std::string & asset, 
+				const std::string & scale, candles_container_t & candles) const;
 
 		private:
 
