@@ -60,21 +60,38 @@ import tensorflow as tf
 
 from tensorflow import keras
 
-model = keras.models.load_model("model.h5", compile = False)
+model_1 = keras.models.load_model("model_21.06.13_5(Dx2d(0.5))Dx2_1.h5", compile = False)
+model_2 = keras.models.load_model("model_21.06.13_5(Dx2d(0.5))Dx2_2.h5", compile = False)
+model_3 = keras.models.load_model("model_21.06.13_6(Dx2d(0.5))Dx2_1.h5", compile = False)
+model_4 = keras.models.load_model("model_21.06.13_7(Dx2d(0.5))Dx2_1.h5", compile = False)
+
+n_models = 4
 
 def predict(asset, scale, data) :
 
     try:
         
-        batch = []
+        sample = []
         
-        batch.append([float(x) for x in data.split(",")])
+        sample.append([float(x) for x in data.split(",")])
         
-        batch = np.array(batch).astype(np.float32)
+        sample = np.array(sample).astype(np.float32)
 
-        states = ["C", "L", "S"]
+        states = ["L", "S"]
+
+        action = 0
+
+        action += np.argmax(model_1(sample)[0].numpy())
+        action += np.argmax(model_2(sample)[0].numpy())
+        action += np.argmax(model_3(sample)[0].numpy())
+        action += np.argmax(model_4(sample)[0].numpy())
+
+        if (action > n_models / 2):
+            action = 1
+        else:
+            action = 0
         
-        return states[np.argmax(model(batch)[0].numpy())]
+        return states[action]
 
     except:
 
