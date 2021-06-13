@@ -2369,78 +2369,6 @@ namespace solution
 
 				static const char delimeter = ',';
 
-				/*
-				std::for_each(std::begin(candles), std::end(candles), [this, &sout](const auto & candle)
-					{
-						sout <<
-							std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.month / months_in_year << delimeter <<
-							std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.day   / days_in_month  << delimeter;
-
-						sout <<
-							std::setprecision(6) << std::fixed << std::showpos   << candle.deviation      << delimeter <<
-							std::setprecision(6) << std::fixed << std::showpos   << candle.deviation_open << delimeter <<
-							std::setprecision(6) << std::fixed << std::noshowpos << candle.deviation_max  << delimeter <<
-							std::setprecision(6) << std::fixed << std::noshowpos << candle.deviation_min  << delimeter;
-
-						if (std::abs(candle.price_close) <= std::numeric_limits < double > ::epsilon())
-						{
-							throw std::domain_error("division by zero");
-						}
-
-						if (candle.support.strength == 0U)
-						{
-							sout <<
-								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-								std::setprecision(3) << std::fixed << std::noshowpos << 0.0 << delimeter;
-						}
-						else
-						{
-							auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
-
-							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								(support_deviation > 1.0 ? 1.0 : support_deviation) << delimeter;
-
-							auto support_alive = (candle.date_time.to_time_t() - candle.support.begin.to_time_t()) /
-								seconds_in_day / m_config.level_max_lifetime;
-
-							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								(support_alive > 1.0 ? 1.0 : support_alive) << delimeter;
-
-							auto support_strength = candle.support.strength / m_config.level_max_strength;
-
-							sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-								(support_strength > 1.0 ? 1.0 : support_strength) << delimeter;
-						}
-
-						if (candle.resistance.strength == 0U)
-						{
-							sout <<
-								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-								std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-								std::setprecision(3) << std::fixed << std::noshowpos << 0.0 << delimeter;
-						}
-						else
-						{
-							auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
-
-							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								(resistance_deviation > 1.0 ? 1.0 : resistance_deviation) << delimeter;
-
-							auto resistance_alive = (candle.date_time.to_time_t() - candle.resistance.begin.to_time_t()) /
-								seconds_in_day / m_config.level_max_lifetime;
-
-							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								(resistance_alive > 1.0 ? 1.0 : resistance_alive) << delimeter;
-
-							auto resistance_strength = candle.resistance.strength / m_config.level_max_strength;
-
-							sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-								(resistance_strength > 1.0 ? 1.0 : resistance_strength) << delimeter;
-						}
-					});
-				*/
-
 				const auto & candle = candles.back();
 
 				for (auto j = 1U; j < 13U; ++j)
@@ -2493,12 +2421,12 @@ namespace solution
 				for (auto j = 0U; j < m_config.prediction_timesteps - 1; ++j)
 				{
 					auto deviation_1 = candles[j].deviation_open * deviation_multiplier;
-					auto deviation_2 = candles[j].deviation * deviation_multiplier;
+					auto deviation_2 = candles[j].deviation      * deviation_multiplier;
 
 					auto deviation = deviation_1 + deviation_2;
 
-					sout <<
-						std::setprecision(6) << std::fixed << std::showpos << (deviation > 1.0 ? 1.0 : deviation) << delimeter;
+					sout << std::setprecision(6) << std::fixed << std::showpos << 
+						(deviation > 1.0 ? 1.0 : deviation) << delimeter;
 				}
 
 				auto deviation_1 = candle.deviation_open * deviation_multiplier;
