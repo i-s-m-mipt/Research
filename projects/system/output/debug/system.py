@@ -60,12 +60,18 @@ import tensorflow as tf
 
 from tensorflow import keras
 
-model_1 = keras.models.load_model("model_21.06.13_5(Dx2d(0.5))Dx2_1.h5", compile = False)
-model_2 = keras.models.load_model("model_21.06.13_5(Dx2d(0.5))Dx2_2.h5", compile = False)
-model_3 = keras.models.load_model("model_21.06.13_6(Dx2d(0.5))Dx2_1.h5", compile = False)
-model_4 = keras.models.load_model("model_21.06.13_7(Dx2d(0.5))Dx2_1.h5", compile = False)
+model_01 = keras.models.load_model("models/model_01.h5", compile = False)
+model_02 = keras.models.load_model("models/model_02.h5", compile = False)
+model_03 = keras.models.load_model("models/model_03.h5", compile = False)
+model_04 = keras.models.load_model("models/model_04.h5", compile = False)
+model_05 = keras.models.load_model("models/model_05.h5", compile = False)
+model_06 = keras.models.load_model("models/model_06.h5", compile = False)
+model_07 = keras.models.load_model("models/model_07.h5", compile = False)
+model_08 = keras.models.load_model("models/model_08.h5", compile = False)
+model_09 = keras.models.load_model("models/model_09.h5", compile = False)
+model_10 = keras.models.load_model("models/model_10.h5", compile = False)
 
-n_models = 4
+n_models = 10
 
 def predict(asset, scale, data) :
 
@@ -81,10 +87,16 @@ def predict(asset, scale, data) :
 
         action = 0
 
-        action += np.argmax(model_1(sample)[0].numpy())
-        action += np.argmax(model_2(sample)[0].numpy())
-        action += np.argmax(model_3(sample)[0].numpy())
-        action += np.argmax(model_4(sample)[0].numpy())
+        action += np.argmax(model_01(sample)[0].numpy())
+        action += np.argmax(model_02(sample)[0].numpy())
+        action += np.argmax(model_03(sample)[0].numpy())
+        action += np.argmax(model_04(sample)[0].numpy())
+        action += np.argmax(model_05(sample)[0].numpy())
+        action += np.argmax(model_06(sample)[0].numpy())
+        action += np.argmax(model_07(sample)[0].numpy())
+        action += np.argmax(model_08(sample)[0].numpy())
+        action += np.argmax(model_09(sample)[0].numpy())
+        action += np.argmax(model_10(sample)[0].numpy())
 
         if (action > n_models / 2):
             action = 1
