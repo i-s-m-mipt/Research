@@ -5,30 +5,6 @@
     },
     {
         "class_code": "TQBR",
-        "asset_code": "GMKN"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "MGNT"
-    },
-    {
-        "class_code": "TQBR",
         "asset_code": "SBER"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "GAZP"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "MOEX"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "CHMF"
-    },
-    {
-        "class_code": "TQBR",
-        "asset_code": "MTSS"
     }
 ]
