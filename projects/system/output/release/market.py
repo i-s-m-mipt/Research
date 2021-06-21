@@ -454,7 +454,7 @@ def get(asset, timeframe, path) :
         fout.close()
 
         total = 365 * 20
-        batch = 365 * 10
+        batch = 365 * 1
 
         first = datetime.now().date() - timedelta(days = 1)
         last  = first                 - timedelta(days = batch)
