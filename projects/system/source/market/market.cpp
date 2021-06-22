@@ -489,27 +489,6 @@ namespace solution
 			}
 		}
 
-		unsigned int day_of_week(const Market::Candle & candle)
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				std::tm tm = { 0, 0, 0, 
-					static_cast < int > (candle.date_time.day), 
-					static_cast < int > (candle.date_time.month) - 1,
-					static_cast < int > (candle.date_time.year)  - 1900 };
-
-				auto time = std::mktime(&tm);
-
-				return static_cast < unsigned int > (std::localtime(&time)->tm_wday) - 1U;
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
 		void Market::Data::save_environment(const charts_container_t & charts, const Config & config)
 		{
 			RUN_LOGGER(logger);
@@ -543,11 +522,9 @@ namespace solution
 						{
 							const auto & candle = candles[i];
 
-							const auto day = day_of_week(candle);
-
-							for (auto j = 0U; j < 5U; ++j)
+							for (auto j = 1U; j < 13U; ++j)
 							{
-								if (j == day)
+								if (j == candle.date_time.month)
 								{
 									sout << "1" << delimeter;
 								}
@@ -557,19 +534,9 @@ namespace solution
 								}
 							}
 
-							for (auto j = 0U; j < 9U; ++j)
-							{
-								if (j == candle.date_time.hour - 10U)
-								{
-									sout << "1" << delimeter;
-								}
-								else
-								{
-									sout << "0" << delimeter;
-								}
-							}
+							sout << std::setprecision(3) << std::fixed << std::noshowpos << 
+								candle.date_time.day / days_in_month << delimeter;
 
-							/*
 							Level level;
 
 							auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
@@ -601,9 +568,6 @@ namespace solution
 								sout << "0" << delimeter << std::setprecision(6) << std::fixed << std::noshowpos <<
 									0.0 << delimeter;
 							}
-							*/
-
-							const auto deviation_multiplier = Market::get_deviation_multiplier(scale);
 
 							for (auto j = 0U; j < delta; ++j)
 							{
@@ -612,25 +576,17 @@ namespace solution
 
 								auto deviation = deviation_1 + deviation_2;
 
-								sout << std::setprecision(6) << std::fixed << std::showpos << 
-									(deviation > 1.0 ? 1.0 : deviation) << delimeter;
+								sout <<
+									std::setprecision(6) << std::fixed << std::showpos << (deviation > 1.0 ? 1.0 : deviation) << delimeter;
 							}
 
 							auto deviation_1 = candles[i].deviation_open * deviation_multiplier;
 							auto deviation_2 = candles[i].deviation      * deviation_multiplier;
-							auto deviation_3 = candles[i].deviation_max  * deviation_multiplier;
-							auto deviation_4 = candles[i].deviation_min  * deviation_multiplier;
 
-							sout << std::setprecision(6) << std::fixed << std::showpos <<
-								(deviation_1 > 1.0 ? 1.0 : deviation_1) << delimeter;
-							sout << std::setprecision(6) << std::fixed << std::showpos <<
-								(deviation_2 > 1.0 ? 1.0 : deviation_2) << delimeter;
-							sout << std::setprecision(6) << std::fixed << std::showpos <<
-								(deviation_3 > 1.0 ? 1.0 : deviation_3) << delimeter;
-							sout << std::setprecision(6) << std::fixed << std::showpos <<
-								(deviation_4 > 1.0 ? 1.0 : deviation_4);
+							sout <<
+								std::setprecision(6) << std::fixed << std::showpos << (deviation_1 > 1.0 ? 1.0 : deviation_1) << delimeter <<
+								std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2) << delimeter;
 
-							/*
 							for (auto regression_tag : candle.regression_tags)
 							{
 								sout << std::setprecision(6) << std::fixed << std::showpos <<
@@ -638,9 +594,6 @@ namespace solution
 							}
 
 							sout << candle.classification_tag << "\n";
-							*/
-
-							sout << "\n";
 						}
 					}
 				}
@@ -998,19 +951,7 @@ namespace solution
 
 				while (std::getline(fin, line))
 				{
-					if (scale == Scale::H)
-					{
-						auto candle = parse(line);
-
-						if (candle.date_time.hour < 19U)
-						{
-							candles.push_back(std::move(candle));
-						}
-					}
-					else
-					{ 
-						candles.push_back(parse(line));
-					}
+					candles.push_back(parse(line));
 				}
 
 				std::reverse(std::begin(candles), std::end(candles));
@@ -1460,11 +1401,15 @@ namespace solution
 
 				distances_matrix_t distances(boost::extents[size_1][size_2]);
 
+				const auto multiplier_1 = get_deviation_multiplier(scale_1);
+				const auto multiplier_2 = get_deviation_multiplier(scale_2);
+
 				for (auto i = 0U; i < size_1; ++i)
 				{
 					for (auto j = 0U; j < size_2; ++j)
 					{
-						distances[i][j] = std::abs(candles_1[i].deviation - candles_2[j].deviation);
+						distances[i][j] = std::abs(
+							candles_1[i].deviation * multiplier_1 - candles_2[j].deviation * multiplier_2);
 					}
 				}
 
@@ -1578,6 +1523,40 @@ namespace solution
 
 				return 1.0 - 6.0 * (std::transform_reduce(std::begin(deviations_1), std::end(deviations_1), std::begin(deviations_2),
 					0.0, std::plus(), [](const auto lhs, const auto rhs) { return std::pow(lhs.second - rhs.second, 2); }) / (size * (size * size - 1)));
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		double Market::get_deviation_multiplier(const std::string & scale) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				if (scale == "MN")
+				{
+					return 1.0;
+				}
+
+				if (scale == "W")
+				{
+					return 4.0;
+				}
+
+				if (scale == "D")
+				{
+					return 4.0 * 5.0;
+				}
+
+				if (scale == "H")
+				{
+					return 4.0 * 5.0 * 9.0;
+				}
+
+				return 1.0;
 			}
 			catch (const std::exception & exception)
 			{
@@ -2439,8 +2418,6 @@ namespace solution
 						0.0 << delimeter;
 				}
 
-				const auto deviation_multiplier = get_deviation_multiplier(m_config.prediction_timeframe);
-
 				for (auto j = 0U; j < m_config.prediction_timesteps - 1; ++j)
 				{
 					auto deviation_1 = candles[j].deviation_open * deviation_multiplier;
@@ -2460,30 +2437,6 @@ namespace solution
 					std::setprecision(6) << std::fixed << std::showpos << (deviation_2 > 1.0 ? 1.0 : deviation_2);
 
 				return sout.str();
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		double Market::get_deviation_multiplier(const std::string & scale)
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				if (scale == Scale::H)
-				{
-					return 40.0;
-				}
-
-				if (scale == Scale::D)
-				{
-					return 10.0;
-				}
-
-				return 1.0;
 			}
 			catch (const std::exception & exception)
 			{

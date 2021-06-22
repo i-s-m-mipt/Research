@@ -345,16 +345,6 @@ namespace solution
 				static inline const std::string S = "S";
 			};
 
-		private:
-
-			struct Scale
-			{
-				static inline const std::string H = "M60";
-				static inline const std::string D = "D";
-				static inline const std::string W = "W";
-				static inline const std::string M = "MN";
-			};
-
 		public:
 
 			Market(const Config & config) : m_config(config), m_thread_pool(2U * std::thread::hardware_concurrency())
@@ -446,6 +436,10 @@ namespace solution
 
 			double compute_pair_correlation(const std::string & scale,
 				const std::string & asset_1, const std::string & asset_2) const;
+
+		private:
+
+			double get_deviation_multiplier(const std::string & scale) const;
 
 		private:
 
@@ -544,10 +538,6 @@ namespace solution
 
 		private:
 
-			static double get_deviation_multiplier(const std::string & scale);
-
-		private:
-
 			static inline const path_t charts_directory = "market/charts";
 			static inline const path_t levels_directory = "market/levels";
 			static inline const path_t output_directory = "market/output";
@@ -558,6 +548,8 @@ namespace solution
 
 			static inline const double months_in_year = 12.0; // normalization
 			static inline const double days_in_month  = 31.0; // normalization
+
+			static inline const double deviation_multiplier = 10.0; // normalization
 
 		private:
 
