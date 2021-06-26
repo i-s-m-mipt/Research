@@ -12,7 +12,7 @@
     "required_environment": false,
     "min_price_change": 0.020,
     "max_price_rollback": 0.333,
-    "level_max_deviation": 0.005,
+    "level_max_deviation": 0.0025,
     "level_max_lifetime": 1825.0,
     "level_max_strength": 25.0,
     "level_resolution": "D",
@@ -25,9 +25,9 @@
     "run_julia_test": false,
     "prediction_timeframe": "D",
     "prediction_timesteps": 60,
-    "transaction_base_value": 4000000.0,
+    "transaction_base_value": 1000000.0,
     "days_for_dividends": 10,
     "deviation_threshold": 0.1,
     "run_model_sensibility_test": false,
-    "model_stabilization_time": 7200
+    "model_stabilization_time": 3600
 }
