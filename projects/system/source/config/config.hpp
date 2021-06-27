@@ -137,6 +137,8 @@ namespace solution
 
             bool required_supports_resistances = false;
 
+            bool required_consultation_mode = true;
+
             double classification_max_deviation = 0.005;
 
             bool run_julia_test = false;

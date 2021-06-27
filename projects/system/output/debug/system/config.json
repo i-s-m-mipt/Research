@@ -21,6 +21,7 @@
     "required_level_reduction": false,
     "required_quik": true,
     "required_supports_resistances": true,
+    "required_consultation_mode": true,
     "classification_max_deviation": 0.005,
     "run_julia_test": false,
     "prediction_timeframe": "D",

@@ -124,6 +124,7 @@ namespace solution
 						static inline const std::string required_level_reduction      = "required_level_reduction";
 						static inline const std::string required_quik                 = "required_quik";
 						static inline const std::string required_supports_resistances = "required_supports_resistances";
+						static inline const std::string required_consultation_mode    = "required_consultation_mode";
 						static inline const std::string classification_max_deviation  = "classification_max_deviation";
 						static inline const std::string run_julia_test                = "run_julia_test";
 						static inline const std::string prediction_timeframe          = "prediction_timeframe";
@@ -342,6 +343,12 @@ namespace solution
 		public:
 
 			void run();
+
+		private:
+
+			void run_autonomous();
+
+			void run_consulting();
 
 		private:
 

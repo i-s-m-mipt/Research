@@ -38,6 +38,7 @@ namespace solution
 				config.required_level_reduction      = raw_config[Key::Config::required_level_reduction     ].get < bool > ();
 				config.required_quik                 = raw_config[Key::Config::required_quik                ].get < bool > ();
 				config.required_supports_resistances = raw_config[Key::Config::required_supports_resistances].get < bool > ();
+				config.required_consultation_mode    = raw_config[Key::Config::required_consultation_mode   ].get < bool > ();
 				config.classification_max_deviation  = raw_config[Key::Config::classification_max_deviation ].get < double > ();
 				config.run_julia_test                = raw_config[Key::Config::run_julia_test               ].get < bool > ();
 				config.prediction_timeframe          = raw_config[Key::Config::prediction_timeframe         ].get < std::string > ();
@@ -337,40 +338,121 @@ namespace solution
 
 			try
 			{
+				if (m_config.required_quik)
+				{
+					if (m_config.required_consultation_mode)
+					{
+						run_consulting();
+					}
+					else
+					{
+						run_autonomous();
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::run_autonomous()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
 				shared::Python python;
 
 				boost::python::exec("from system import predict", python.global(), python.global());
 
 				boost::python::object function = python.global()["predict"];
 
-				if (m_config.required_quik)
+				if (m_config.run_model_sensibility_test)
 				{
-					if (m_config.run_model_sensibility_test)
+					run_model_sensibility_test(function);
+				}
+
+				while (is_session_open())
+				{
 					{
-						run_model_sensibility_test(function);
+						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
+
+						m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
+
+						get_plugin_data();
 					}
 
-					while (is_session_open())
+					handle_data(function);
+
 					{
-						{
-							boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
+						boost::interprocess::scoped_lock server_lock(*m_server_mutex);
 
-							m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
+						set_server_data();
 
-							get_plugin_data();
-						}
+						m_server_condition->notify_one();
+					}
 
-						handle_data(function);
+					std::this_thread::sleep_for(std::chrono::seconds(60));
+				}
+			}
+			catch (const boost::python::error_already_set &)
+			{
+				logger.write(Severity::error, shared::Python::exception());
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
 
-						{
-							boost::interprocess::scoped_lock server_lock(*m_server_mutex);
+		void System::run_consulting()
+		{
+			RUN_LOGGER(logger);
 
-							set_server_data();
+			try
+			{
+				shared::Python python;
 
-							m_server_condition->notify_one();
-						}
+				boost::python::exec("from system import predict", python.global(), python.global());
 
-						std::this_thread::sleep_for(std::chrono::seconds(60));
+				boost::python::object function = python.global()["predict"];
+
+				if (m_config.run_model_sensibility_test)
+				{
+					run_model_sensibility_test(function);
+				}
+
+				const auto scale = m_config.prediction_timeframe;
+
+				while (true)
+				{
+					{
+						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
+
+						m_plugin_condition->wait(plugin_lock, [this]() { return m_plugin_data->is_updated; });
+
+						get_plugin_data();
+					}
+
+					for (const auto & asset : m_market->assets())
+					{
+						auto data = m_market->get_current_data(
+							asset, scale, m_config.prediction_timesteps);
+
+						auto state = boost::python::extract < std::string > (
+							function(asset.c_str(), scale.c_str(), data.c_str()))();
+
+						std::cout << std::setw(5) << std::left << std::setfill(' ') << asset << " " << state << std::endl;
+					}
+
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+
+					std::cout << "Continue? (y/n) " << std::endl;
+
+					if (getchar() == 'n')
+					{
+						break;
 					}
 				}
 			}
