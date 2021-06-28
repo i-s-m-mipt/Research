@@ -425,7 +425,9 @@ namespace solution
 
 				const auto scale = m_config.prediction_timeframe;
 
-				while (true)
+				char c = 'y';
+
+				while (c == 'y')
 				{
 					{
 						boost::interprocess::scoped_lock plugin_lock(*m_plugin_mutex);
@@ -448,12 +450,9 @@ namespace solution
 
 					std::this_thread::sleep_for(std::chrono::seconds(1));
 
-					std::cout << "Continue? (y/n) " << std::endl;
+					std::cout << "Continue? (y/n) ";
 
-					if (getchar() == 'n')
-					{
-						break;
-					}
+					std::cin >> c;
 				}
 			}
 			catch (const boost::python::error_already_set &)
