@@ -70,10 +70,8 @@ model_07 = keras.models.load_model("models/model_07.h5", compile = False)
 model_08 = keras.models.load_model("models/model_08.h5", compile = False)
 model_09 = keras.models.load_model("models/model_09.h5", compile = False)
 model_10 = keras.models.load_model("models/model_10.h5", compile = False)
-model_11 = keras.models.load_model("models/model_11.h5", compile = False)
-model_12 = keras.models.load_model("models/model_12.h5", compile = False)
 
-n_models = 12
+n_models = 10
 
 def predict(asset, scale, data) :
 
@@ -99,8 +97,6 @@ def predict(asset, scale, data) :
         action += np.argmax(model_08(sample)[0].numpy())
         action += np.argmax(model_09(sample)[0].numpy())
         action += np.argmax(model_10(sample)[0].numpy())
-        action += np.argmax(model_11(sample)[0].numpy())
-        action += np.argmax(model_12(sample)[0].numpy())
 
         if (action > n_models / 2):
             action = 1
