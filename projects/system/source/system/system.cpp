@@ -445,7 +445,12 @@ namespace solution
 						auto state = boost::python::extract < std::string > (
 							function(asset.c_str(), scale.c_str(), data.c_str()))();
 
-						std::cout << std::setw(5) << std::left << std::setfill(' ') << asset << " " << state << std::endl;
+						auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+						std::cout << std::put_time(std::localtime(&time), "%y.%m.%d %H:%M:%S") << " : ";
+
+						std::cout << std::setw(4) << std::left << std::setfill(' ') << 
+							asset << " recommendation " << state << std::endl;
 					}
 
 					std::this_thread::sleep_for(std::chrono::seconds(1));
