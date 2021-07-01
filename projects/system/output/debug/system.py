@@ -80,13 +80,23 @@ model_17 = keras.models.load_model("models/model_17.h5", compile = False)
 model_18 = keras.models.load_model("models/model_18.h5", compile = False)
 model_19 = keras.models.load_model("models/model_19.h5", compile = False)
 model_20 = keras.models.load_model("models/model_20.h5", compile = False)
-
-n_models = 20
+model_21 = keras.models.load_model("models/model_21.h5", compile = False)
+model_22 = keras.models.load_model("models/model_22.h5", compile = False)
+model_23 = keras.models.load_model("models/model_23.h5", compile = False)
+model_24 = keras.models.load_model("models/model_24.h5", compile = False)
+model_25 = keras.models.load_model("models/model_25.h5", compile = False)
+model_26 = keras.models.load_model("models/model_26.h5", compile = False)
+model_27 = keras.models.load_model("models/model_27.h5", compile = False)
+model_28 = keras.models.load_model("models/model_28.h5", compile = False)
+model_29 = keras.models.load_model("models/model_29.h5", compile = False)
+model_30 = keras.models.load_model("models/model_30.h5", compile = False)
 
 def predict(asset, scale, data) :
 
     try:
-        
+
+        n_models = 30
+
         sample = []
         
         sample.append([float(x) for x in data.split(",")])
@@ -97,26 +107,57 @@ def predict(asset, scale, data) :
 
         action = 0
 
-        action += np.argmax(model_01(sample)[0].numpy())
-        action += np.argmax(model_02(sample)[0].numpy())
-        action += np.argmax(model_03(sample)[0].numpy())
-        action += np.argmax(model_04(sample)[0].numpy())
-        action += np.argmax(model_05(sample)[0].numpy())
-        action += np.argmax(model_06(sample)[0].numpy())
-        action += np.argmax(model_07(sample)[0].numpy())
-        action += np.argmax(model_08(sample)[0].numpy())
-        action += np.argmax(model_09(sample)[0].numpy())
-        action += np.argmax(model_10(sample)[0].numpy())
-        action += np.argmax(model_11(sample)[0].numpy())
-        action += np.argmax(model_12(sample)[0].numpy())
-        action += np.argmax(model_13(sample)[0].numpy())
-        action += np.argmax(model_14(sample)[0].numpy())
-        action += np.argmax(model_15(sample)[0].numpy())
-        action += np.argmax(model_16(sample)[0].numpy())
-        action += np.argmax(model_17(sample)[0].numpy())
-        action += np.argmax(model_18(sample)[0].numpy())
-        action += np.argmax(model_19(sample)[0].numpy())
-        action += np.argmax(model_20(sample)[0].numpy())
+        if (asset == "LKOH"):
+            
+            action += np.argmax(model_02(state_tensor)[0].numpy())
+            action += np.argmax(model_03(state_tensor)[0].numpy())
+            action += np.argmax(model_05(state_tensor)[0].numpy())
+            action += np.argmax(model_07(state_tensor)[0].numpy())
+            action += np.argmax(model_09(state_tensor)[0].numpy())
+            action += np.argmax(model_10(state_tensor)[0].numpy())
+            action += np.argmax(model_14(state_tensor)[0].numpy())
+            action += np.argmax(model_16(state_tensor)[0].numpy())
+            action += np.argmax(model_17(state_tensor)[0].numpy())
+            action += np.argmax(model_18(state_tensor)[0].numpy())
+            action += np.argmax(model_19(state_tensor)[0].numpy())
+            action += np.argmax(model_20(state_tensor)[0].numpy())
+            action += np.argmax(model_21(state_tensor)[0].numpy())
+            action += np.argmax(model_22(state_tensor)[0].numpy())
+            action += np.argmax(model_24(state_tensor)[0].numpy())
+            action += np.argmax(model_26(state_tensor)[0].numpy())
+            action += np.argmax(model_27(state_tensor)[0].numpy())
+            action += np.argmax(model_28(state_tensor)[0].numpy())
+            action += np.argmax(model_29(state_tensor)[0].numpy())
+            action += np.argmax(model_30(state_tensor)[0].numpy())
+
+            n_models = 20
+
+        if (asset == "SBER"):
+
+            action += np.argmax(model_03(state_tensor)[0].numpy())
+            action += np.argmax(model_04(state_tensor)[0].numpy())
+            action += np.argmax(model_06(state_tensor)[0].numpy())
+            action += np.argmax(model_08(state_tensor)[0].numpy())
+            action += np.argmax(model_10(state_tensor)[0].numpy())
+            action += np.argmax(model_11(state_tensor)[0].numpy())
+            action += np.argmax(model_12(state_tensor)[0].numpy())
+            action += np.argmax(model_14(state_tensor)[0].numpy())
+            action += np.argmax(model_15(state_tensor)[0].numpy())
+            action += np.argmax(model_16(state_tensor)[0].numpy())
+            action += np.argmax(model_17(state_tensor)[0].numpy())
+            action += np.argmax(model_18(state_tensor)[0].numpy())
+            action += np.argmax(model_19(state_tensor)[0].numpy())
+            action += np.argmax(model_21(state_tensor)[0].numpy())
+            action += np.argmax(model_22(state_tensor)[0].numpy())
+            action += np.argmax(model_23(state_tensor)[0].numpy())
+            action += np.argmax(model_24(state_tensor)[0].numpy())
+            action += np.argmax(model_25(state_tensor)[0].numpy())
+            action += np.argmax(model_26(state_tensor)[0].numpy())
+            action += np.argmax(model_27(state_tensor)[0].numpy())
+            action += np.argmax(model_28(state_tensor)[0].numpy())
+            action += np.argmax(model_29(state_tensor)[0].numpy())
+            
+            n_models = 22
 
         if (action > n_models / 2):
             action = 1
