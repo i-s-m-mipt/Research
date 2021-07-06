@@ -376,6 +376,27 @@ namespace solution
 			}
 		}
 
+		unsigned int day_of_week(const Market::Candle & candle)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				std::tm tm = { 0, 0, 0,
+					static_cast < int > (candle.date_time.day),
+					static_cast < int > (candle.date_time.month) - 1,
+					static_cast < int > (candle.date_time.year)  - 1900 };
+
+				auto time = std::mktime(&tm);
+
+				return static_cast < unsigned int > (std::localtime(&time)->tm_wday) - 1U;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::Data::save_tagged_charts(const charts_container_t & charts, const Config & config)
 		{
 			RUN_LOGGER(logger);
@@ -401,75 +422,91 @@ namespace solution
 					{
 						sout << asset << " " << scale << " " << std::size(candles) << "\n";
 
-						std::for_each(std::begin(candles), std::end(candles), [&sout, &config](const auto & candle)
-							{ 
-								sout <<
-									std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.month / months_in_year << delimeter <<
-									std::setprecision(3) << std::fixed << std::noshowpos << candle.date_time.day   / days_in_month  << delimeter;
-																
-								sout <<
-									std::setprecision(6) << std::fixed << std::showpos   << candle.deviation      << delimeter <<
-									std::setprecision(6) << std::fixed << std::showpos   << candle.deviation_open << delimeter <<
-									std::setprecision(6) << std::fixed << std::noshowpos << candle.deviation_max  << delimeter <<
-									std::setprecision(6) << std::fixed << std::noshowpos << candle.deviation_min  << delimeter;
+						const auto deviation_multiplier = Market::get_deviation_multiplier(scale);
 
-								if (std::abs(candle.price_close) <= std::numeric_limits < double > ::epsilon())
+						std::for_each(std::begin(candles), std::end(candles), 
+							[&sout, &config, deviation_multiplier](const auto & candle)
+							{ 
+								for (auto j = 1U; j < 13U; ++j)
+								{
+									if (j == candle.date_time.month)
+									{
+										sout << "1" << delimeter;
+									}
+									else
+									{
+										sout << "0" << delimeter;
+									}
+								}
+
+								sout << std::setprecision(3) << std::fixed << std::noshowpos <<
+									candle.date_time.day / days_in_month << delimeter;
+
+								const auto day = day_of_week(candle);
+
+								for (auto j = 0U; j < 5U; ++j)
+								{
+									if (j == day)
+									{
+										sout << "1" << delimeter;
+									}
+									else
+									{
+										sout << "0" << delimeter;
+									}
+								}
+
+
+								if (candle.price_close < std::numeric_limits < double > ::epsilon())
 								{
 									throw std::domain_error("division by zero");
 								}
+						
+								Level level;
 
-								if (candle.support.strength == 0U)
+								auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
+
+								if (support_deviation < config.level_max_deviation)
 								{
-									sout <<
-										std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-										std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-										std::setprecision(3) << std::fixed << std::noshowpos << 0.0 << delimeter;
-								}
-								else
-								{
-									auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
-
-									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-										(support_deviation > 1.0 ? 1.0 : support_deviation) << delimeter;
-
-									auto support_alive = (candle.date_time.to_time_t() - candle.support.begin.to_time_t()) / 
-										seconds_in_day / config.level_max_lifetime;
-
-									sout << std::setprecision(6) << std::fixed << std::noshowpos << 
-										(support_alive > 1.0 ? 1.0 : support_alive) << delimeter;
-
-									auto support_strength = candle.support.strength / config.level_max_strength;
-
-									sout << std::setprecision(3) << std::fixed << std::noshowpos <<  
-										(support_strength > 1.0 ? 1.0 : support_strength)  << delimeter;
+									level = candle.support;
 								}
 
-								if (candle.resistance.strength == 0U)
+								auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
+
+								if (resistance_deviation < config.level_max_deviation &&
+									resistance_deviation < support_deviation &&
+									candle.support.begin < candle.resistance.begin)
 								{
-									sout <<
-										std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-										std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter <<
-										std::setprecision(3) << std::fixed << std::noshowpos << 0.0 << delimeter;
+									level = candle.resistance;
 								}
-								else
+
+								if (level.strength != 0U)
 								{
-									auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
-
-									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-										(resistance_deviation > 1.0 ? 1.0 : resistance_deviation) << delimeter;
-
-									auto resistance_alive = (candle.date_time.to_time_t() - candle.resistance.begin.to_time_t()) / 
+									auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
 										seconds_in_day / config.level_max_lifetime;
 
 									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-										(resistance_alive > 1.0 ? 1.0 : resistance_alive) << delimeter;
-
-									auto resistance_strength = candle.resistance.strength / config.level_max_strength;
-
-									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-										(resistance_strength > 1.0 ? 1.0 : resistance_strength) << delimeter;
+										(level_alive > 1.0 ? 0.0 : level_alive) << delimeter;
+								}
+								else
+								{
+									sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
 								}
 
+								auto deviation_1 = candle.deviation_open * deviation_multiplier;
+								auto deviation_2 = candle.deviation      * deviation_multiplier;
+								auto deviation_3 = candle.deviation_max  * deviation_multiplier;
+								auto deviation_4 = candle.deviation_min  * deviation_multiplier;
+
+								sout << std::setprecision(6) << std::fixed << std::showpos <<
+									(deviation_1 > 1.0 ? 1.0 : (deviation_1 < -1.0 ? -1.0 : deviation_1)) << delimeter;
+								sout << std::setprecision(6) << std::fixed << std::showpos <<
+									(deviation_2 > 1.0 ? 1.0 : (deviation_2 < -1.0 ? -1.0 : deviation_2)) << delimeter;
+								sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+									(deviation_3 > 1.0 ? 1.0 : deviation_3) << delimeter;
+								sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+									(deviation_4 > 1.0 ? 1.0 : deviation_4) << delimeter;
+								
 								for (auto regression_tag : candle.regression_tags)
 								{
 									sout << std::setprecision(6) << std::fixed << std::showpos <<
@@ -482,27 +519,6 @@ namespace solution
 				}
 
 				fout << sout.str();
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		unsigned int day_of_week(const Market::Candle & candle)
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				std::tm tm = { 0, 0, 0,
-					static_cast < int > (candle.date_time.day),
-					static_cast < int > (candle.date_time.month) - 1,
-					static_cast < int > (candle.date_time.year)  - 1900 };
-
-				auto time = std::mktime(&tm);
-
-				return static_cast < unsigned int > (std::localtime(&time)->tm_wday) - 1U;
 			}
 			catch (const std::exception & exception)
 			{
@@ -539,6 +555,8 @@ namespace solution
 
 						sout << asset << " " << scale << " " << size << "\n";
 
+						const auto deviation_multiplier = Market::get_deviation_multiplier(scale);
+
 						for (auto i = delta; i < std::size(candles); ++i)
 						{
 							const auto & candle = candles[i];
@@ -572,6 +590,11 @@ namespace solution
 								}
 							}
 
+							if (candle.price_close < std::numeric_limits < double > ::epsilon())
+							{
+								throw std::domain_error("division by zero");
+							}
+
 							Level level;
 
 							auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
@@ -602,8 +625,6 @@ namespace solution
 							{
 								sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
 							}
-
-							const auto deviation_multiplier = Market::get_deviation_multiplier(scale);
 
 							for (auto j = 0U; j <= delta; ++j)
 							{
