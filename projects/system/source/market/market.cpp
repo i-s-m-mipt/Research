@@ -2342,6 +2342,9 @@ namespace solution
 				{
 					candles.back().price_close = candles.back().price_open + (step * i);
 
+					candles.back().price_high = std::max(candles.back().price_open, candles.back().price_close);
+					candles.back().price_low  = std::min(candles.back().price_open, candles.back().price_close);
+
 					update_deviations(asset, scale, candles);
 
 					update_supports_resistances(candles, m_supports_resistances.at(asset));
