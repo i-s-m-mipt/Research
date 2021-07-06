@@ -455,9 +455,11 @@ namespace solution
 
 					std::this_thread::sleep_for(std::chrono::seconds(1));
 
-					std::cout << "Continue? (y/n) ";
+					std::cout << std::endl << "Continue? (y/n) ";
 
 					std::cin >> c;
+
+					std::cout << std::endl;
 				}
 			}
 			catch (const boost::python::error_already_set &)
@@ -500,7 +502,7 @@ namespace solution
 						}
 
 						std::cout << boost::python::extract < std::string > (
-							function(asset.c_str(), scale.c_str(), variant.c_str()))();
+							function(asset.c_str(), scale.c_str(), variant.c_str()))()[0];
 					}
 
 					std::cout << std::endl;

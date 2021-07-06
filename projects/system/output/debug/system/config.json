@@ -29,6 +29,6 @@
     "transaction_base_value": 1000000.0,
     "days_for_dividends": 10,
     "deviation_threshold": 0.1,
-    "run_model_sensibility_test": false,
+    "run_model_sensibility_test": true,
     "model_stabilization_time": 3600
 }

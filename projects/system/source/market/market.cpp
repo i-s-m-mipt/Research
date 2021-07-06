@@ -2326,9 +2326,21 @@ namespace solution
 
 				std::vector < std::string > results;
 
-				for (auto deviation = -0.050; deviation <= +0.050; deviation += 0.001)
+				auto step = 0.00;
+
+				if (asset == "SBER")
 				{
-					candles.back().price_close = candles.back().price_open * (1.0 + deviation);
+					step = 0.10;
+				}
+
+				if (asset == "LKOH")
+				{
+					step = 5.00;
+				}
+
+				for (auto i = -50; i <= +50; ++i)
+				{
+					candles.back().price_close = candles.back().price_open + (step * i);
 
 					update_deviations(asset, scale, candles);
 
