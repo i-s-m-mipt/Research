@@ -351,4 +351,3 @@ service/
 *.h5
 !scales.data
 !assets.data
-!config.json
