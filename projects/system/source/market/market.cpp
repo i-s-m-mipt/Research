@@ -561,6 +561,7 @@ namespace solution
 						{
 							const auto & candle = candles[i];
 
+							/*
 							for (auto j = 1U; j < 13U; ++j)
 							{
 								if (j == candle.date_time.month)
@@ -589,6 +590,7 @@ namespace solution
 									sout << "0" << delimeter;
 								}
 							}
+							*/
 
 							if (candle.price_close < std::numeric_limits < double > ::epsilon())
 							{
@@ -794,6 +796,11 @@ namespace solution
 				if (m_config.required_quik)
 				{
 					handle_quik_initialization();
+				}
+
+				if (m_config.run_fridays_test)
+				{
+					run_fridays_test();
 				}
 			}
 			catch (const std::exception & exception)
@@ -1248,6 +1255,47 @@ namespace solution
 				initialize_sources();
 
 				update_supports_resistances();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::run_fridays_test() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const std::string scale = "D";
+
+				for (const auto & asset : m_assets)
+				{
+					const auto & candles = m_charts.at(asset).at(scale);
+
+					std::size_t counter = 0U;
+
+					std::size_t counter_total = 0U;
+
+					for (auto i = 0U; i < std::size(candles) - 1U; ++i)
+					{
+						if (day_of_week(candles[i]) == 3U && day_of_week(candles[i + 1]) == 4U)
+						{
+							if (candles[i].deviation * candles[i + 1].deviation > 0)
+							{
+								++counter;
+							}
+
+							++counter_total;
+						}
+					}
+
+					std::cout <<
+						std::setw(5) << std::setfill(' ') << std::left  << asset << " : " <<
+						std::setw(3) << std::setfill(' ') << std::right << counter << " coincidences of " <<
+						std::setw(3) << std::setfill(' ') << std::right << counter_total << std::endl;
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -2412,6 +2460,7 @@ namespace solution
 
 				const auto & candle = candles.back();
 
+				/*
 				for (auto j = 1U; j < 13U; ++j)
 				{
 					if (j == candle.date_time.month)
@@ -2440,6 +2489,7 @@ namespace solution
 						sout << "0" << delimeter;
 					}
 				}
+				*/
 
 				Level level;
 

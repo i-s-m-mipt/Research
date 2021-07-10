@@ -30,5 +30,6 @@
     "days_for_dividends": 10,
     "deviation_threshold": 0.1,
     "run_model_sensibility_test": true,
-    "model_stabilization_time": 3600
+    "model_stabilization_time": 3600,
+    "run_fridays_test": false
 }

@@ -134,6 +134,7 @@ namespace solution
 						static inline const std::string deviation_threshold           = "deviation_threshold";
 						static inline const std::string run_model_sensibility_test    = "run_model_sensibility_test";
 						static inline const std::string model_stabilization_time      = "model_stabilization_time";
+						static inline const std::string run_fridays_test              = "run_fridays_test";
 					};
 				};
 

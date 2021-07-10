@@ -48,6 +48,7 @@ namespace solution
 				config.deviation_threshold           = raw_config[Key::Config::deviation_threshold          ].get < double > ();
 				config.run_model_sensibility_test    = raw_config[Key::Config::run_model_sensibility_test   ].get < bool > ();
 				config.model_stabilization_time      = raw_config[Key::Config::model_stabilization_time     ].get < std::time_t > ();
+				config.run_fridays_test              = raw_config[Key::Config::run_fridays_test             ].get < bool > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -103,11 +104,11 @@ namespace solution
 
 			try
 			{
-				std::this_thread::sleep_for(std::chrono::seconds(initialization_delay));
-
 				load();
 
 				m_market = std::make_unique < Market > (m_config);
+
+				std::this_thread::sleep_for(std::chrono::seconds(initialization_delay));
 
 				if (m_config.required_quik)
 				{

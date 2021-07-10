@@ -430,6 +430,10 @@ namespace solution
 
 		private:
 
+			void run_fridays_test() const;
+
+		private:
+
 			void compute_self_similarities();
 
 			void compute_pair_similarities();
@@ -500,6 +504,16 @@ namespace solution
 
 			void save_environment() const;
 
+		private:
+
+			void initialize_sources();
+
+			void update_supports_resistances();
+
+		private:
+
+			path_t get_chart_for_levels(const std::string & asset, const std::string & scale) const;
+
 		public:
 
 			const auto & assets() const noexcept
@@ -516,16 +530,6 @@ namespace solution
 			{
 				return m_charts;
 			}
-
-		private:
-
-			void initialize_sources();
-
-			void update_supports_resistances();
-
-		private:
-
-			path_t get_chart_for_levels(const std::string & asset, const std::string & scale) const;
 
 		public:
 

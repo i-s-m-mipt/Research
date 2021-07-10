@@ -155,6 +155,8 @@ namespace solution
             bool run_model_sensibility_test = true;
 
             std::time_t model_stabilization_time = 3600LL;
+
+            bool run_fridays_test = false;
         };
 
     } // namespace system
