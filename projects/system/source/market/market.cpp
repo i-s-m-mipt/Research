@@ -1107,6 +1107,8 @@ namespace solution
 					if (i == 0U)
 					{
 						candles[i].deviation_open = 0.0;
+
+						candles[i].deviation_volume = 0.0;
 					}
 					else
 					{
@@ -1132,6 +1134,16 @@ namespace solution
 
 							flag = true;
 						}
+
+						if (candles[i - 1].volume == 0ULL)
+						{
+							candles[i - 1].volume == 1ULL;
+						}
+
+						const auto a = static_cast < double > (candles[i    ].volume);
+						const auto b = static_cast < double > (candles[i - 1].volume);
+
+						candles[i].deviation_volume = (a - b) / b;
 					}
 
 					candles[i].deviation_max = (candles[i].price_high - candles[i].price_open) / candles[i].price_open;
