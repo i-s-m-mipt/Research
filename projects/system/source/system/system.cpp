@@ -460,7 +460,7 @@ namespace solution
 						std::cout << std::put_time(std::localtime(&time), "%y.%m.%d %H:%M:%S") << " : ";
 
 						std::cout << std::setw(4) << std::left << std::setfill(' ') << 
-							asset << " recommendation " << state << std::endl;
+							asset << " prediction: " << state << std::endl;
 					}
 
 					std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -538,13 +538,13 @@ namespace solution
 			{
 				shared::Python python;
 
-				boost::python::exec("from system import estimate_sentiment", python.global(), python.global());
+				boost::python::exec("from system import estimate_sentiments", python.global(), python.global());
 
-				boost::python::object function = python.global()["estimate_sentiment"];
+				boost::python::object function = python.global()["estimate_sentiments"];
 
 				for (const auto & asset : m_market->assets())
 				{
-					auto sentiment = boost::python::extract < std::string > (function(asset.c_str(), 
+					auto sentiments = boost::python::extract < std::string > (function(asset.c_str(), 
 						m_config.telegram_username.c_str(), m_config.telegram_api_id.c_str(),
 						m_config.telegram_api_hash.c_str()))();
 
@@ -553,7 +553,7 @@ namespace solution
 					std::cout << std::put_time(std::localtime(&time), "%y.%m.%d %H:%M:%S") << " : ";
 
 					std::cout << std::setw(4) << std::left << std::setfill(' ') <<
-						asset << " sentiment " << sentiment << std::endl;
+						asset << " sentiments: " << sentiments << std::endl;
 				}
 			}
 			catch (const boost::python::error_already_set &)

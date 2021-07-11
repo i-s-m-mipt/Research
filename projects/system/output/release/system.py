@@ -1,8 +1,25 @@
-from html.parser import HTMLParser
-from urllib      import request
+import asyncio
 import json
+import nltk
 import numpy as np
+import os
 import sys
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
+import tensorflow
+
+from datetime    import date, datetime, timedelta
+from googletrans import Translator
+from html.parser import HTMLParser
+from telethon    import TelegramClient
+from telethon.tl import types
+from tensorflow  import keras
+from textblob    import TextBlob
+from urllib      import request
+
+
 
 def get_dividends():
     
@@ -51,14 +68,7 @@ def get_dividends():
               for row in parsed[1:] if len(row) == len(parsed[1])]
     return json.dumps(parsed)
 
-import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
-import tensorflow as tf
-
-from tensorflow import keras
 
 model_01 = keras.models.load_model("models/model_01.h5", compile = False)
 model_02 = keras.models.load_model("models/model_02.h5", compile = False)
@@ -106,58 +116,27 @@ def predict(asset, scale, data) :
         states = ["L", "S"]
 
         s = 0
-
-        if (asset == "LKOH"):
             
-            s += np.argmax(model_02(sample)[0].numpy())
-            s += np.argmax(model_03(sample)[0].numpy())
-            s += np.argmax(model_05(sample)[0].numpy())
-            s += np.argmax(model_07(sample)[0].numpy())
-            s += np.argmax(model_09(sample)[0].numpy())
-            s += np.argmax(model_10(sample)[0].numpy())
-            s += np.argmax(model_14(sample)[0].numpy())
-            s += np.argmax(model_16(sample)[0].numpy())
-            s += np.argmax(model_17(sample)[0].numpy())
-            s += np.argmax(model_18(sample)[0].numpy())
-            s += np.argmax(model_19(sample)[0].numpy())
-            s += np.argmax(model_20(sample)[0].numpy())
-            s += np.argmax(model_21(sample)[0].numpy())
-            s += np.argmax(model_22(sample)[0].numpy())
-            s += np.argmax(model_24(sample)[0].numpy())
-            s += np.argmax(model_26(sample)[0].numpy())
-            s += np.argmax(model_27(sample)[0].numpy())
-            s += np.argmax(model_28(sample)[0].numpy())
-            s += np.argmax(model_29(sample)[0].numpy())
-            s += np.argmax(model_30(sample)[0].numpy())
-
-            n_models = 20
-
-        if (asset == "SBER"):
-
-            s += np.argmax(model_03(sample)[0].numpy())
-            s += np.argmax(model_04(sample)[0].numpy())
-            s += np.argmax(model_06(sample)[0].numpy())
-            s += np.argmax(model_08(sample)[0].numpy())
-            s += np.argmax(model_10(sample)[0].numpy())
-            s += np.argmax(model_11(sample)[0].numpy())
-            s += np.argmax(model_12(sample)[0].numpy())
-            s += np.argmax(model_14(sample)[0].numpy())
-            s += np.argmax(model_15(sample)[0].numpy())
-            s += np.argmax(model_16(sample)[0].numpy())
-            s += np.argmax(model_17(sample)[0].numpy())
-            s += np.argmax(model_18(sample)[0].numpy())
-            s += np.argmax(model_19(sample)[0].numpy())
-            s += np.argmax(model_21(sample)[0].numpy())
-            s += np.argmax(model_22(sample)[0].numpy())
-            s += np.argmax(model_23(sample)[0].numpy())
-            s += np.argmax(model_24(sample)[0].numpy())
-            s += np.argmax(model_25(sample)[0].numpy())
-            s += np.argmax(model_26(sample)[0].numpy())
-            s += np.argmax(model_27(sample)[0].numpy())
-            s += np.argmax(model_28(sample)[0].numpy())
-            s += np.argmax(model_29(sample)[0].numpy())
-            
-            n_models = 22
+        s += np.argmax(model_02(sample)[0].numpy())
+        s += np.argmax(model_03(sample)[0].numpy())
+        s += np.argmax(model_05(sample)[0].numpy())
+        s += np.argmax(model_07(sample)[0].numpy())
+        s += np.argmax(model_09(sample)[0].numpy())
+        s += np.argmax(model_10(sample)[0].numpy())
+        s += np.argmax(model_14(sample)[0].numpy())
+        s += np.argmax(model_16(sample)[0].numpy())
+        s += np.argmax(model_17(sample)[0].numpy())
+        s += np.argmax(model_18(sample)[0].numpy())
+        s += np.argmax(model_19(sample)[0].numpy())
+        s += np.argmax(model_20(sample)[0].numpy())
+        s += np.argmax(model_21(sample)[0].numpy())
+        s += np.argmax(model_22(sample)[0].numpy())
+        s += np.argmax(model_24(sample)[0].numpy())
+        s += np.argmax(model_26(sample)[0].numpy())
+        s += np.argmax(model_27(sample)[0].numpy())
+        s += np.argmax(model_28(sample)[0].numpy())
+        s += np.argmax(model_29(sample)[0].numpy())
+        s += np.argmax(model_30(sample)[0].numpy())
 
         action = 0
 
@@ -173,3 +152,76 @@ def predict(asset, scale, data) :
         print("Exception: ", sys.exc_info()[0])
 
         raise
+
+
+
+async def estimate_sentiments_implementation(username, api_id, api_hash):
+    
+    client = TelegramClient(username, api_id, api_hash)
+    
+    await client.start()
+    
+    filename = "market/channels.data"
+    
+    fin = open(filename, "r")
+
+    channels = fin.readlines()
+    
+    fin.close()
+    
+    today = date.today()
+    
+    messages = []
+    
+    for channel in channels:
+        
+        channel_data = channel.split(" ")
+        
+        channel_id   = int(channel_data[0])
+        channel_hash = int(channel_data[1])
+        
+        entity = types.InputPeerChannel(channel_id, channel_hash)
+        
+        async for message in client.iter_messages(entity, offset_date = today + timedelta(days = 1)):
+            if (message.date.year, message.date.month, message.date.day) == (today.year, today.month, today.day):
+                messages.append(message.message)
+            else:
+                break
+    
+    sentences = []
+    
+    for message in messages:
+        try:
+            sentences.extend(nltk.tokenize.sent_tokenize(message, language = "russian"))
+        except:
+            continue
+        
+    keywords = ["lkoh", "лукойл", "lukoil", "brent", "wti", "urals", "oil", "crude", "нефть"]
+    
+    key_sentences = []
+
+    for sentence in sentences:
+        for keyword in keywords:
+            if sentence.lower().find(keyword) != -1:
+                key_sentences.append(sentence)
+                
+    translator = Translator()
+    
+    positive_sentences_counter = 0
+    negative_sentences_counter = 0
+                
+    for key_sentence in key_sentences:
+        
+        polarity = TextBlob(translator.translate(key_sentence, src = "ru", dest = "en").text).sentiment.polarity
+        
+        if polarity > 0.0:
+            positive_sentences_counter += 1
+            
+        if polarity < 0.0:
+            negative_sentences_counter += 1
+        
+    return str(positive_sentences_counter) + "(P), " + str(negative_sentences_counter) + "(N)"
+
+def estimate_sentiments(asset, username, api_id, api_hash):
+
+    return asyncio.run(estimate_sentiments_implementation(username, api_id, api_hash))
