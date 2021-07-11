@@ -349,5 +349,6 @@ service/
 *.data
 *.json
 *.h5
-!scales.data
 !assets.data
+!scales.data
+!channels.data
