@@ -127,9 +127,9 @@ namespace solution
 
             std::string level_resolution = "D";
 
-            std::size_t level_frame = 5U;
+            std::size_t level_frame = 10U;
 
-            double critical_deviation = 0.75;
+            double critical_deviation = 1.00;
 
             bool required_level_reduction = false;
 
@@ -144,11 +144,11 @@ namespace solution
             bool run_julia_test = false;
 
             std::string prediction_timeframe = "D";
-            std::size_t prediction_timesteps = 20U;
+            std::size_t prediction_timesteps = 60U;
 
             double transaction_base_value = 0.0;
 
-            std::time_t days_for_dividends = 5LL;
+            std::time_t days_for_dividends = 10LL;
 
             double deviation_threshold = 1.0;
 
@@ -163,6 +163,8 @@ namespace solution
             std::string telegram_username = "";
             std::string telegram_api_id   = "";
             std::string telegram_api_hash = "";
+
+            std::size_t volume_timesteps = 10U;
         };
 
     } // namespace system

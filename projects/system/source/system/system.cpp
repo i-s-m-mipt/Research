@@ -53,6 +53,7 @@ namespace solution
 				config.telegram_username             = raw_config[Key::Config::telegram_username            ].get < std::string > ();
 				config.telegram_api_id               = raw_config[Key::Config::telegram_api_id              ].get < std::string > ();
 				config.telegram_api_hash             = raw_config[Key::Config::telegram_api_hash            ].get < std::string > ();
+				config.volume_timesteps              = raw_config[Key::Config::volume_timesteps             ].get < std::size_t > ();
 			}
 			catch (const std::exception & exception)
 			{

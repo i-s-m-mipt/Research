@@ -139,6 +139,7 @@ namespace solution
 						static inline const std::string telegram_username             = "telegram_username";
 						static inline const std::string telegram_api_id               = "telegram_api_id";
 						static inline const std::string telegram_api_hash             = "telegram_api_hash";
+						static inline const std::string volume_timesteps              = "volume_timesteps";
 					};
 				};
 
