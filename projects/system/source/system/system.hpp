@@ -110,7 +110,7 @@ namespace solution
 						static inline const std::string cumulative_distances_asset    = "cumulative_distances_asset";
 						static inline const std::string cumulative_distances_scale_1  = "cumulative_distances_scale_1";
 						static inline const std::string cumulative_distances_scale_2  = "cumulative_distances_scale_2";
-						static inline const std::string required_deviations           = "required_deviations";
+						static inline const std::string required_price_deviations     = "required_price_deviations";
 						static inline const std::string required_tagged_charts        = "required_tagged_charts";
 						static inline const std::string required_environment          = "required_environment";
 						static inline const std::string min_price_change              = "min_price_change";

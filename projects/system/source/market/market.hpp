@@ -184,14 +184,14 @@ namespace solution
 
 				volume_t volume = 0ULL;
 
-				double deviation = 0.0;
+				double price_deviation = 0.0;
 
-				double deviation_open = 0.0;
+				double price_deviation_open = 0.0;
 
-				double deviation_max = 0.0;
-				double deviation_min = 0.0;
+				double price_deviation_max = 0.0;
+				double price_deviation_min = 0.0;
 
-				double deviation_volume = 0.0;
+				double volume_deviation = 0.0;
 
 				std::array < double, prediction_range > regression_tags;
 
@@ -293,7 +293,7 @@ namespace solution
 					static inline const path_t pair_similarities_data    = "market/output/pair_similarities.data";
 					static inline const path_t pair_correlations_data    = "market/output/pair_correlations.data";
 					static inline const path_t cumulative_distances_data = "market/output/cumulative_distances.data";
-					static inline const path_t deviations_data           = "market/output/deviations.data";
+					static inline const path_t price_deviations_data     = "market/output/price_deviations.data";
 					static inline const path_t tagged_charts_data        = "market/output/tagged_charts.data";
 					static inline const path_t environment_data          = "market/output/environment.data";
 					static inline const path_t supports_resistances_data = "market/output/supports_resistances.data";
@@ -319,9 +319,9 @@ namespace solution
 
 				static void save_cumulative_distances(const distances_matrix_t & matrix);
 
-				static void save_deviations(const charts_container_t & charts);
+				static void save_price_deviations(const charts_container_t & charts);
 
-				static void save_tagged_charts(const charts_container_t & charts, const Config & config);
+				static void save_tagged_charts(const charts_container_t & charts, const Config & config); // TODO
 
 				static void save_environment(const charts_container_t & charts, const Config & config);
 
@@ -422,7 +422,7 @@ namespace solution
 
 			void handle_pair_correlations();
 
-			void handle_deviations();
+			void handle_price_deviations();
 
 			void handle_tagged_charts();
 
@@ -463,7 +463,7 @@ namespace solution
 
 			void save_cumulative_distances(const distances_matrix_t & matrix) const;
 
-			void save_deviations() const;
+			void save_price_deviations() const;
 
 		private:
 
@@ -550,7 +550,9 @@ namespace solution
 
 		private:
 
-			static double get_deviation_multiplier(const std::string & scale);
+			static double get_price_deviation_multiplier(const std::string & scale);
+
+			static double get_volume_deviation_multiplier(const std::string & scale);
 
 		private:
 

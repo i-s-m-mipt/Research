@@ -24,7 +24,7 @@ namespace solution
 				config.cumulative_distances_asset    = raw_config[Key::Config::cumulative_distances_asset   ].get < std::string > ();
 				config.cumulative_distances_scale_1  = raw_config[Key::Config::cumulative_distances_scale_1 ].get < std::string > ();
 				config.cumulative_distances_scale_2  = raw_config[Key::Config::cumulative_distances_scale_2 ].get < std::string > ();
-				config.required_deviations           = raw_config[Key::Config::required_deviations          ].get < bool > ();
+				config.required_price_deviations     = raw_config[Key::Config::required_price_deviations    ].get < bool > ();
 				config.required_tagged_charts        = raw_config[Key::Config::required_tagged_charts       ].get < bool > ();
 				config.required_environment          = raw_config[Key::Config::required_environment         ].get < bool > ();
 				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();

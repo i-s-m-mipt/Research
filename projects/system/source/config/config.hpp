@@ -111,7 +111,7 @@ namespace solution
             std::string cumulative_distances_scale_1;
             std::string cumulative_distances_scale_2;
 
-            bool required_deviations = false;
+            bool required_price_deviations = false;
 
             bool required_tagged_charts = false;
 

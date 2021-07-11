@@ -328,13 +328,13 @@ namespace solution
 			}
 		}
 
-		void Market::Data::save_deviations(const charts_container_t & charts)
+		void Market::Data::save_price_deviations(const charts_container_t & charts)
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				auto path = File::deviations_data;
+				auto path = File::price_deviations_data;
 
 				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
 
@@ -361,7 +361,7 @@ namespace solution
 									candle.date_time.day    << delimeter;
 
 								sout << std::setprecision(6) << std::fixed << std::showpos <<
-									candle.deviation << "\n";
+									candle.price_deviation << "\n";
 							});
 
 						sout << "\n";
@@ -397,7 +397,7 @@ namespace solution
 			}
 		}
 
-		void Market::Data::save_tagged_charts(const charts_container_t & charts, const Config & config)
+		void Market::Data::save_tagged_charts(const charts_container_t & charts, const Config & config) // TODO
 		{
 			RUN_LOGGER(logger);
 
@@ -422,10 +422,10 @@ namespace solution
 					{
 						sout << asset << " " << scale << " " << std::size(candles) << "\n";
 
-						const auto deviation_multiplier = Market::get_deviation_multiplier(scale);
+						const auto price_deviation_multiplier = Market::get_price_deviation_multiplier(scale);
 
 						std::for_each(std::begin(candles), std::end(candles), 
-							[&sout, &config, deviation_multiplier](const auto & candle)
+							[&sout, &config, price_deviation_multiplier](const auto & candle)
 							{ 
 								for (auto j = 1U; j < 13U; ++j)
 								{
@@ -493,19 +493,19 @@ namespace solution
 									sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
 								}
 
-								auto deviation_1 = candle.deviation_open * deviation_multiplier;
-								auto deviation_2 = candle.deviation      * deviation_multiplier;
-								auto deviation_3 = candle.deviation_max  * deviation_multiplier;
-								auto deviation_4 = candle.deviation_min  * deviation_multiplier;
+								auto price_deviation_1 = candle.price_deviation_open * price_deviation_multiplier;
+								auto price_deviation_2 = candle.price_deviation      * price_deviation_multiplier;
+								auto price_deviation_3 = candle.price_deviation_max  * price_deviation_multiplier;
+								auto price_deviation_4 = candle.price_deviation_min  * price_deviation_multiplier;
 
 								sout << std::setprecision(6) << std::fixed << std::showpos <<
-									(deviation_1 > 1.0 ? 1.0 : (deviation_1 < -1.0 ? -1.0 : deviation_1)) << delimeter;
+									(price_deviation_1 > 1.0 ? 1.0 : (price_deviation_1 < -1.0 ? -1.0 : price_deviation_1)) << delimeter;
 								sout << std::setprecision(6) << std::fixed << std::showpos <<
-									(deviation_2 > 1.0 ? 1.0 : (deviation_2 < -1.0 ? -1.0 : deviation_2)) << delimeter;
+									(price_deviation_2 > 1.0 ? 1.0 : (price_deviation_2 < -1.0 ? -1.0 : price_deviation_2)) << delimeter;
 								sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-									(deviation_3 > 1.0 ? 1.0 : deviation_3) << delimeter;
+									(price_deviation_3 > 1.0 ? 1.0 : price_deviation_3) << delimeter;
 								sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-									(deviation_4 > 1.0 ? 1.0 : deviation_4) << delimeter;
+									(price_deviation_4 > 1.0 ? 1.0 : price_deviation_4) << delimeter;
 								
 								for (auto regression_tag : candle.regression_tags)
 								{
@@ -541,7 +541,16 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
+				const auto delta = config.prediction_timesteps - 1U;
+
 				std::ostringstream sout;
+
+				const auto volume_history_length = config.volume_timesteps;
+
+				if (volume_history_length > config.prediction_timesteps)
+				{
+					throw std::runtime_error("volume history length is too long");
+				}
 
 				static const char delimeter = ',';
 
@@ -549,13 +558,12 @@ namespace solution
 				{
 					for (const auto & [scale, candles] : scales)
 					{
-						const auto delta = config.prediction_timesteps - 1U;
-
 						const auto size = std::size(candles) - delta;
 
 						sout << asset << " " << scale << " " << size << "\n";
 
-						const auto deviation_multiplier = Market::get_deviation_multiplier(scale);
+						const auto price_deviation_multiplier  = Market::get_price_deviation_multiplier (scale);
+						const auto volume_deviation_multiplier = Market::get_volume_deviation_multiplier(scale);
 
 						for (auto i = delta; i < std::size(candles); ++i)
 						{
@@ -628,30 +636,39 @@ namespace solution
 								sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
 							}
 
-							for (auto j = 0U; j <= delta; ++j)
+							for (auto j = 0U; j < volume_history_length; ++j)
 							{
-								auto deviation_1 = candles[i - delta + j].deviation_open * deviation_multiplier;
-								auto deviation_2 = candles[i - delta + j].deviation      * deviation_multiplier;
-
-								auto deviation = deviation_1 + deviation_2;
+								auto volume_deviation = candles[i - volume_history_length + j + 1U].volume_deviation * 
+									volume_deviation_multiplier;
 
 								sout << std::setprecision(6) << std::fixed << std::showpos <<
-									(deviation > 1.0 ? 1.0 : (deviation < -1.0 ? -1.0 : deviation)) << delimeter;
+									(volume_deviation > 1.0 ? 1.0 : (volume_deviation < -1.0 ? -1.0 : volume_deviation)) << delimeter;
 							}
 
-							auto deviation_1 = candle.deviation_open * deviation_multiplier;
-							auto deviation_2 = candle.deviation      * deviation_multiplier;
-							auto deviation_3 = candle.deviation_max  * deviation_multiplier;
-							auto deviation_4 = candle.deviation_min  * deviation_multiplier;
+							for (auto j = 0U; j <= delta; ++j)
+							{
+								auto price_deviation_1 = candles[i - delta + j].price_deviation_open * price_deviation_multiplier;
+								auto price_deviation_2 = candles[i - delta + j].price_deviation      * price_deviation_multiplier;
+
+								auto price_deviation = price_deviation_1 + price_deviation_2;
+
+								sout << std::setprecision(6) << std::fixed << std::showpos <<
+									(price_deviation > 1.0 ? 1.0 : (price_deviation < -1.0 ? -1.0 : price_deviation)) << delimeter;
+							}
+
+							auto price_deviation_1 = candle.price_deviation_open * price_deviation_multiplier;
+							auto price_deviation_2 = candle.price_deviation      * price_deviation_multiplier;
+							auto price_deviation_3 = candle.price_deviation_max  * price_deviation_multiplier;
+							auto price_deviation_4 = candle.price_deviation_min  * price_deviation_multiplier;
 
 							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								(deviation_3 > 1.0 ? 1.0 : deviation_3) << delimeter;
+								(price_deviation_3 > 1.0 ? 1.0 : price_deviation_3) << delimeter;
 							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								(deviation_4 > 1.0 ? 1.0 : deviation_4) << delimeter;
+								(price_deviation_4 > 1.0 ? 1.0 : price_deviation_4) << delimeter;
 							sout << std::setprecision(6) << std::fixed << std::showpos <<
-								(deviation_1 > 1.0 ? 1.0 : (deviation_1 < -1.0 ? -1.0 : deviation_1)) << delimeter;
+								(price_deviation_1 > 1.0 ? 1.0 : (price_deviation_1 < -1.0 ? -1.0 : price_deviation_1)) << delimeter;
 							sout << std::setprecision(6) << std::fixed << std::showpos <<
-								(deviation_2 > 1.0 ? 1.0 : (deviation_2 < -1.0 ? -1.0 : deviation_2)) << delimeter;
+								(price_deviation_2 > 1.0 ? 1.0 : (price_deviation_2 < -1.0 ? -1.0 : price_deviation_2)) << delimeter;
 							
 							for (auto regression_tag : candle.regression_tags)
 							{
@@ -778,9 +795,9 @@ namespace solution
 					handle_pair_correlations();
 				}
 
-				if (m_config.required_deviations)
+				if (m_config.required_price_deviations)
 				{
-					handle_deviations();
+					handle_price_deviations();
 				}
 
 				if (m_config.required_tagged_charts)
@@ -1086,14 +1103,14 @@ namespace solution
 						throw std::domain_error("division by zero");
 					}
 
-					candles[i].deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
+					candles[i].price_deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
 
-					if ((candles[i].deviation >  m_config.critical_deviation || 
-						 candles[i].deviation < -m_config.critical_deviation) && !flag)
+					if ((candles[i].price_deviation >  m_config.critical_deviation ||
+						 candles[i].price_deviation < -m_config.critical_deviation) && !flag)
 					{
 						std::ostringstream sout;
 
-						sout << "deviation exception: " << 
+						sout << "price deviation exception: " << 
 							std::setw(5) << std::left  << std::setfill(' ') << asset << " " << scale  << " " <<
 							std::setw(4) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.year  << "." <<
 							std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.month << "." <<
@@ -1106,9 +1123,9 @@ namespace solution
 
 					if (i == 0U)
 					{
-						candles[i].deviation_open = 0.0;
+						candles[i].price_deviation_open = 0.0;
 
-						candles[i].deviation_volume = 0.0;
+						candles[i].volume_deviation = 0.0;
 					}
 					else
 					{
@@ -1117,14 +1134,14 @@ namespace solution
 							throw std::domain_error("division by zero");
 						}
 
-						candles[i].deviation_open = (candles[i].price_open - candles[i - 1].price_close) / candles[i - 1].price_close;
+						candles[i].price_deviation_open = (candles[i].price_open - candles[i - 1].price_close) / candles[i - 1].price_close;
 
-						if ((candles[i].deviation_open >  m_config.critical_deviation || 
-							 candles[i].deviation_open < -m_config.critical_deviation) && !flag)
+						if ((candles[i].price_deviation_open >  m_config.critical_deviation ||
+							 candles[i].price_deviation_open < -m_config.critical_deviation) && !flag)
 						{
 							std::ostringstream sout;
 
-							sout << "deviation exception: " << 
+							sout << "price deviation exception: " << 
 								std::setw(5) << std::left  << std::setfill(' ') << asset << " " << scale << " " <<
 								std::setw(4) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.year  << "." <<
 								std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.month << "." <<
@@ -1137,17 +1154,17 @@ namespace solution
 
 						if (candles[i - 1].volume == 0ULL)
 						{
-							candles[i - 1].volume == 1ULL;
+							candles[i - 1].volume = 1ULL;
 						}
 
 						const auto a = static_cast < double > (candles[i    ].volume);
 						const auto b = static_cast < double > (candles[i - 1].volume);
 
-						candles[i].deviation_volume = (a - b) / b;
+						candles[i].volume_deviation = (a - b) / b;
 					}
 
-					candles[i].deviation_max = (candles[i].price_high - candles[i].price_open) / candles[i].price_open;
-					candles[i].deviation_min = (candles[i].price_open - candles[i].price_low ) / candles[i].price_open;
+					candles[i].price_deviation_max = (candles[i].price_high - candles[i].price_open) / candles[i].price_open;
+					candles[i].price_deviation_min = (candles[i].price_open - candles[i].price_low ) / candles[i].price_open;
 				}
 			}
 			catch (const std::exception & exception)
@@ -1204,13 +1221,13 @@ namespace solution
 			}
 		}
 
-		void Market::handle_deviations()
+		void Market::handle_price_deviations()
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				save_deviations();
+				save_price_deviations();
 			}
 			catch (const std::exception & exception)
 			{
@@ -1294,7 +1311,7 @@ namespace solution
 					{
 						if (day_of_week(candles[i]) == 3U && day_of_week(candles[i + 1]) == 4U)
 						{
-							if (candles[i].deviation * candles[i + 1].deviation > 0)
+							if (candles[i].price_deviation * candles[i + 1].price_deviation > 0)
 							{
 								++counter;
 							}
@@ -1529,7 +1546,7 @@ namespace solution
 				{
 					for (auto j = 0U; j < size_2; ++j)
 					{
-						distances[i][j] = std::abs(candles_1[i].deviation - candles_2[j].deviation);
+						distances[i][j] = std::abs(candles_1[i].price_deviation - candles_2[j].price_deviation);
 					}
 				}
 
@@ -1590,19 +1607,19 @@ namespace solution
 
 				auto size = std::min(std::size(candles_1), std::size(candles_2));
 
-				std::vector < double > deviations_1(size, 0.0);
-				std::vector < double > deviations_2(size, 0.0);
+				std::vector < double > price_deviations_1(size, 0.0);
+				std::vector < double > price_deviations_2(size, 0.0);
 
 				std::transform(std::crbegin(candles_1), std::next(std::crbegin(candles_1), size),
-					std::begin(deviations_1), [](const auto & candle) { return candle.deviation; });
+					std::begin(price_deviations_1), [](const auto & candle) { return candle.price_deviation; });
 
 				std::transform(std::crbegin(candles_2), std::next(std::crbegin(candles_2), size),
-					std::begin(deviations_2), [](const auto & candle) { return candle.deviation; });
+					std::begin(price_deviations_2), [](const auto & candle) { return candle.price_deviation; });
 
-				std::sort(std::begin(deviations_1), std::end(deviations_1));
-				std::sort(std::begin(deviations_2), std::end(deviations_2));
+				std::sort(std::begin(price_deviations_1), std::end(price_deviations_1));
+				std::sort(std::begin(price_deviations_2), std::end(price_deviations_2));
 
-				return (std::transform_reduce(std::begin(deviations_1), std::end(deviations_1), std::begin(deviations_2),
+				return (std::transform_reduce(std::begin(price_deviations_1), std::end(price_deviations_1), std::begin(price_deviations_2),
 					0.0, std::plus(), [](const auto lhs, const auto rhs) { return std::abs(lhs - rhs); }) / size);
 			}
 			catch (const std::exception & exception)
@@ -1623,25 +1640,25 @@ namespace solution
 
 				auto size = std::min(std::size(candles_1), std::size(candles_2));
 
-				std::vector < std::pair < double, int > > deviations_1(size);
-				std::vector < std::pair < double, int > > deviations_2(size);
+				std::vector < std::pair < double, int > > price_deviations_1(size);
+				std::vector < std::pair < double, int > > price_deviations_2(size);
 
 				auto index = 1;
 
 				std::transform(std::crbegin(candles_1), std::next(std::crbegin(candles_1), size),
-					std::begin(deviations_1), [&index](const auto & candle) { return std::make_pair(candle.deviation, index++); });
+					std::begin(price_deviations_1), [&index](const auto & candle) { return std::make_pair(candle.price_deviation, index++); });
 
 				index = 1;
 
 				std::transform(std::crbegin(candles_2), std::next(std::crbegin(candles_2), size),
-					std::begin(deviations_2), [&index](const auto & candle) { return std::make_pair(candle.deviation, index++); });
+					std::begin(price_deviations_2), [&index](const auto & candle) { return std::make_pair(candle.price_deviation, index++); });
 
-				std::sort(std::begin(deviations_1), std::end(deviations_1), 
+				std::sort(std::begin(price_deviations_1), std::end(price_deviations_1),
 					[](const auto & lhs, const auto & rhs) {return lhs.first < rhs.first; });
-				std::sort(std::begin(deviations_2), std::end(deviations_2),
+				std::sort(std::begin(price_deviations_2), std::end(price_deviations_2),
 					[](const auto & lhs, const auto & rhs) {return lhs.first < rhs.first; });
 
-				return 1.0 - 6.0 * (std::transform_reduce(std::begin(deviations_1), std::end(deviations_1), std::begin(deviations_2),
+				return 1.0 - 6.0 * (std::transform_reduce(std::begin(price_deviations_1), std::end(price_deviations_1), std::begin(price_deviations_2),
 					0.0, std::plus(), [](const auto lhs, const auto rhs) { return std::pow(lhs.second - rhs.second, 2); }) / (size * (size * size - 1)));
 			}
 			catch (const std::exception & exception)
@@ -1706,13 +1723,13 @@ namespace solution
 			}
 		}
 
-		void Market::save_deviations() const
+		void Market::save_price_deviations() const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				Data::save_deviations(m_charts);
+				Data::save_price_deviations(m_charts);
 			}
 			catch (const std::exception & exception)
 			{
@@ -2436,7 +2453,7 @@ namespace solution
 					std::setw(2) << std::right << std::setfill('0') << candle.date_time.day   << " ";
 
 				std::cout << std::setprecision(2) << std::fixed << std::showpos <<
-					100.0 * (candle.deviation_open + candle.deviation) << " ";
+					100.0 * (candle.price_deviation_open + candle.price_deviation) << " ";
 
 				std::cout << std::setw(12) << std::right << std::setfill(' ') << 
 					std::setprecision(6) << std::fixed << std::noshowpos << candle.support.price << " ";
@@ -2534,32 +2551,50 @@ namespace solution
 					sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
 				}
 
-				const auto deviation_multiplier = get_deviation_multiplier(m_config.prediction_timeframe);
+				const auto volume_history_length = m_config.volume_timesteps;
+
+				if (volume_history_length > m_config.prediction_timesteps)
+				{
+					throw std::runtime_error("volume history length is too long");
+				}
+
+				const auto volume_deviation_multiplier = get_volume_deviation_multiplier(m_config.prediction_timeframe);
+
+				for (auto j = 0U; j < volume_history_length; ++j)
+				{
+					auto volume_deviation = candles[std::size(candles) - volume_history_length + j].volume_deviation *
+						volume_deviation_multiplier;
+
+					sout << std::setprecision(6) << std::fixed << std::showpos <<
+						(volume_deviation > 1.0 ? 1.0 : (volume_deviation < -1.0 ? -1.0 : volume_deviation)) << delimeter;
+				}
+
+				const auto price_deviation_multiplier = get_price_deviation_multiplier(m_config.prediction_timeframe);
 
 				for (auto j = 0U; j < m_config.prediction_timesteps; ++j)
 				{
-					auto deviation_1 = candles[j].deviation_open * deviation_multiplier;
-					auto deviation_2 = candles[j].deviation      * deviation_multiplier;
+					auto price_deviation_1 = candles[j].price_deviation_open * price_deviation_multiplier;
+					auto price_deviation_2 = candles[j].price_deviation      * price_deviation_multiplier;
 
-					auto deviation = deviation_1 + deviation_2;
+					auto price_deviation = price_deviation_1 + price_deviation_2;
 
 					sout << std::setprecision(6) << std::fixed << std::showpos <<
-						(deviation > 1.0 ? 1.0 : (deviation < -1.0 ? -1.0 : deviation)) << delimeter;
+						(price_deviation > 1.0 ? 1.0 : (price_deviation < -1.0 ? -1.0 : price_deviation)) << delimeter;
 				}
 
-				auto deviation_1 = candle.deviation_open * deviation_multiplier;
-				auto deviation_2 = candle.deviation      * deviation_multiplier;
-				auto deviation_3 = candle.deviation_max  * deviation_multiplier;
-				auto deviation_4 = candle.deviation_min  * deviation_multiplier;
+				auto price_deviation_1 = candle.price_deviation_open * price_deviation_multiplier;
+				auto price_deviation_2 = candle.price_deviation      * price_deviation_multiplier;
+				auto price_deviation_3 = candle.price_deviation_max  * price_deviation_multiplier;
+				auto price_deviation_4 = candle.price_deviation_min  * price_deviation_multiplier;
 
 				sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-					(deviation_3 > 1.0 ? 1.0 : deviation_3) << delimeter;
+					(price_deviation_3 > 1.0 ? 1.0 : price_deviation_3) << delimeter;
 				sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-					(deviation_4 > 1.0 ? 1.0 : deviation_4) << delimeter;
+					(price_deviation_4 > 1.0 ? 1.0 : price_deviation_4) << delimeter;
 				sout << std::setprecision(6) << std::fixed << std::showpos <<
-					(deviation_1 > 1.0 ? 1.0 : (deviation_1 < -1.0 ? -1.0 : deviation_1)) << delimeter;
+					(price_deviation_1 > 1.0 ? 1.0 : (price_deviation_1 < -1.0 ? -1.0 : price_deviation_1)) << delimeter;
 				sout << std::setprecision(6) << std::fixed << std::showpos <<
-					(deviation_2 > 1.0 ? 1.0 : (deviation_2 < -1.0 ? -1.0 : deviation_2));
+					(price_deviation_2 > 1.0 ? 1.0 : (price_deviation_2 < -1.0 ? -1.0 : price_deviation_2));
 
 				return sout.str();
 			}
@@ -2569,7 +2604,7 @@ namespace solution
 			}
 		}
 
-		double Market::get_deviation_multiplier(const std::string & scale)
+		double Market::get_price_deviation_multiplier(const std::string & scale)
 		{
 			RUN_LOGGER(logger);
 
@@ -2585,6 +2620,20 @@ namespace solution
 					return 10.0;
 				}
 
+				return 1.0;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		double Market::get_volume_deviation_multiplier(const std::string & scale)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
 				return 1.0;
 			}
 			catch (const std::exception & exception)
