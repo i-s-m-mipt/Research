@@ -576,6 +576,7 @@ namespace solution
 
 							sout << std::setprecision(3) << std::fixed << std::noshowpos << 
 								candle.date_time.day / days_in_month << delimeter;
+							*/
 
 							const auto day = day_of_week(candle);
 
@@ -590,7 +591,6 @@ namespace solution
 									sout << "0" << delimeter;
 								}
 							}
-							*/
 
 							if (candle.price_close < std::numeric_limits < double > ::epsilon())
 							{
@@ -2475,6 +2475,7 @@ namespace solution
 
 				sout << std::setprecision(3) << std::fixed << std::noshowpos <<
 					candle.date_time.day / days_in_month << delimeter;
+				*/
 
 				const auto day = day_of_week(candle);
 
@@ -2489,7 +2490,6 @@ namespace solution
 						sout << "0" << delimeter;
 					}
 				}
-				*/
 
 				Level level;
 
