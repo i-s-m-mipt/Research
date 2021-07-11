@@ -349,6 +349,8 @@ service/
 *.data
 *.json
 *.h5
+*.session
+*.session-journal
 !assets.data
 !scales.data
 !channels.data
