@@ -49,6 +49,10 @@ namespace solution
 				config.run_model_sensibility_test    = raw_config[Key::Config::run_model_sensibility_test   ].get < bool > ();
 				config.model_stabilization_time      = raw_config[Key::Config::model_stabilization_time     ].get < std::time_t > ();
 				config.run_fridays_test              = raw_config[Key::Config::run_fridays_test             ].get < bool > ();
+				config.required_sentiment_service    = raw_config[Key::Config::required_sentiment_service   ].get < bool > ();
+				config.telegram_username             = raw_config[Key::Config::telegram_username            ].get < std::string > ();
+				config.telegram_api_id               = raw_config[Key::Config::telegram_api_id              ].get < std::string > ();
+				config.telegram_api_hash             = raw_config[Key::Config::telegram_api_hash            ].get < std::string > ();
 			}
 			catch (const std::exception & exception)
 			{
@@ -413,6 +417,11 @@ namespace solution
 
 			try
 			{
+				if (m_config.required_sentiment_service)
+				{
+					run_sentiment_service();
+				}
+
 				shared::Python python;
 
 				boost::python::exec("from system import predict", python.global(), python.global());
@@ -510,6 +519,42 @@ namespace solution
 				}
 
 				std::cout << std::endl;
+			}
+			catch (const boost::python::error_already_set &)
+			{
+				logger.write(Severity::error, shared::Python::exception());
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < system_exception > (logger, exception);
+			}
+		}
+
+		void System::run_sentiment_service() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				shared::Python python;
+
+				boost::python::exec("from system import estimate_sentiment", python.global(), python.global());
+
+				boost::python::object function = python.global()["estimate_sentiment"];
+
+				for (const auto & asset : m_market->assets())
+				{
+					auto sentiment = boost::python::extract < std::string > (function(asset.c_str(), 
+						m_config.telegram_username.c_str(), m_config.telegram_api_id.c_str(),
+						m_config.telegram_api_hash.c_str()))();
+
+					auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+					std::cout << std::put_time(std::localtime(&time), "%y.%m.%d %H:%M:%S") << " : ";
+
+					std::cout << std::setw(4) << std::left << std::setfill(' ') <<
+						asset << " sentiment " << sentiment << std::endl;
+				}
 			}
 			catch (const boost::python::error_already_set &)
 			{

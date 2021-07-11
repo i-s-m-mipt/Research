@@ -135,6 +135,10 @@ namespace solution
 						static inline const std::string run_model_sensibility_test    = "run_model_sensibility_test";
 						static inline const std::string model_stabilization_time      = "model_stabilization_time";
 						static inline const std::string run_fridays_test              = "run_fridays_test";
+						static inline const std::string required_sentiment_service    = "required_sentiment_service";
+						static inline const std::string telegram_username             = "telegram_username";
+						static inline const std::string telegram_api_id               = "telegram_api_id";
+						static inline const std::string telegram_api_hash             = "telegram_api_hash";
 					};
 				};
 
@@ -354,6 +358,8 @@ namespace solution
 		private:
 
 			void run_model_sensibility_test(const boost::python::object & function) const;
+
+			void run_sentiment_service() const;
 
 			bool is_session_open() const;
 

@@ -157,6 +157,12 @@ namespace solution
             std::time_t model_stabilization_time = 3600LL;
 
             bool run_fridays_test = false;
+
+            bool required_sentiment_service = false;
+
+            std::string telegram_username = "";
+            std::string telegram_api_id   = "";
+            std::string telegram_api_hash = "";
         };
 
     } // namespace system
