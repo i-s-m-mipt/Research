@@ -556,6 +556,8 @@ namespace solution
 					std::cout << std::setw(4) << std::left << std::setfill(' ') <<
 						asset << " sentiments: " << sentiments << std::endl;
 				}
+
+				std::cout << std::endl;
 			}
 			catch (const boost::python::error_already_set &)
 			{
