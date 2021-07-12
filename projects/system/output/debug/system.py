@@ -96,8 +96,14 @@ model_50 = keras.models.load_model("models/model_50.h5", compile = False)
 model_53 = keras.models.load_model("models/model_53.h5", compile = False)
 model_54 = keras.models.load_model("models/model_54.h5", compile = False)
 model_60 = keras.models.load_model("models/model_60.h5", compile = False)
+model_61 = keras.models.load_model("models/model_61.h5", compile = False)
+model_62 = keras.models.load_model("models/model_62.h5", compile = False)
+model_63 = keras.models.load_model("models/model_63.h5", compile = False)
+model_64 = keras.models.load_model("models/model_64.h5", compile = False)
+model_65 = keras.models.load_model("models/model_65.h5", compile = False)
+model_66 = keras.models.load_model("models/model_66.h5", compile = False)
 
-n_models = 26
+n_models = 32
 
 def predict(asset, scale, data) :
 
@@ -139,6 +145,12 @@ def predict(asset, scale, data) :
         s += np.argmax(model_53(sample)[0].numpy())
         s += np.argmax(model_54(sample)[0].numpy())
         s += np.argmax(model_60(sample)[0].numpy())
+        s += np.argmax(model_61(sample)[0].numpy())
+        s += np.argmax(model_62(sample)[0].numpy())
+        s += np.argmax(model_63(sample)[0].numpy())
+        s += np.argmax(model_64(sample)[0].numpy())
+        s += np.argmax(model_65(sample)[0].numpy())
+        s += np.argmax(model_66(sample)[0].numpy())
 
         action = 0
 
