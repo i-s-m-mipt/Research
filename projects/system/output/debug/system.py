@@ -227,7 +227,12 @@ async def estimate_sentiments_implementation(username, api_id, api_hash):
                 
     for key_sentence in key_sentences:
         
-        polarity = TextBlob(translator.translate(key_sentence, src = "ru", dest = "en").text).sentiment.polarity
+        try:
+            translated_sentence = translator.translate(key_sentence, src = "ru", dest = "en").text
+        except:
+            continue
+            
+        polarity = TextBlob(translated_sentence).sentiment.polarity
         
         if polarity > 0.0:
             positive_sentences_counter += 1
