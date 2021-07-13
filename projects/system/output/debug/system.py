@@ -218,6 +218,7 @@ async def estimate_sentiments_implementation(username, api_id, api_hash):
         for keyword in keywords:
             if sentence.lower().find(keyword) != -1:
                 key_sentences.append(sentence)
+                break
                 
     translator = Translator()
     
