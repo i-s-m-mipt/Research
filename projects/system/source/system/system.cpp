@@ -559,7 +559,7 @@ namespace solution
 
 						std::cout << std::put_time(std::localtime(&time), "%y.%m.%d %H:%M:%S") << " : ";
 
-						std::cout << std::setw(4) << std::left << std::setfill(' ') <<
+						std::cout << std::setw(4) << std::right << std::setfill(' ') <<
 							asset << " sentiments: " << sentiments << std::endl;
 					}
 
