@@ -1,5 +1,6 @@
 #include <ctime>
 #include <exception>
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -75,6 +76,10 @@ int main(int argc, char ** argv)
 		{
 			throw std::runtime_error("main window not found");
 		}
+
+		const std::filesystem::path path = "C:/Libraries/quik/info.log";
+
+		std::filesystem::remove(path);
 
 		system("pause");
 
