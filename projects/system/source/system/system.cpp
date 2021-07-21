@@ -543,21 +543,28 @@ namespace solution
 
 				boost::python::object function = python.global()["estimate_sentiments"];
 
-				for (const auto & asset : m_market->assets())
+				const std::vector < std::vector < std::string > > asset_classes = { 
+					{ "BR", "NG", "GC" }, 
+					{ "LKOH", "SIBN", "ROSN", "TATN", "SNGS" } };
+
+				for (const auto & asset_class : asset_classes)
 				{
-					auto sentiments = boost::python::extract < std::string > (function(asset.c_str(), 
-						m_config.telegram_username.c_str(), m_config.telegram_api_id.c_str(),
-						m_config.telegram_api_hash.c_str()))();
+					for (const auto & asset : asset_class)
+					{
+						auto sentiments = boost::python::extract < std::string > (function(asset.c_str(),
+							m_config.telegram_username.c_str(), m_config.telegram_api_id.c_str(),
+							m_config.telegram_api_hash.c_str()))();
 
-					auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+						auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-					std::cout << std::put_time(std::localtime(&time), "%y.%m.%d %H:%M:%S") << " : ";
+						std::cout << std::put_time(std::localtime(&time), "%y.%m.%d %H:%M:%S") << " : ";
 
-					std::cout << std::setw(4) << std::left << std::setfill(' ') <<
-						asset << " sentiments: " << sentiments << std::endl;
+						std::cout << std::setw(4) << std::left << std::setfill(' ') <<
+							asset << " sentiments: " << sentiments << std::endl;
+					}
+
+					std::cout << std::endl;
 				}
-
-				std::cout << std::endl;
 			}
 			catch (const boost::python::error_already_set &)
 			{

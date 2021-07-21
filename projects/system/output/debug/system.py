@@ -233,11 +233,7 @@ def predict(asset, scale, data) :
 
 
 
-async def estimate_sentiments_implementation(username, api_id, api_hash):
-    
-    client = TelegramClient(username, api_id, api_hash)
-    
-    await client.start()
+async def estimate_sentiments_implementation(asset, client):
     
     filename = "market/channels.data"
     
@@ -274,12 +270,21 @@ async def estimate_sentiments_implementation(username, api_id, api_hash):
         except:
             continue
         
-    keywords = ["lkoh", "лукойл", "lukoil", "brent", "wti", "urals", "oil", "crude", "нефть"]
+    keywords = {
+        "BR"  : ["oil", "нефт", "brent"],
+        "NG"  : ["gaz", "газ"],
+        "GC"  : ["gold", "золот"],
+        "LKOH": ["lkoh", "лукойл", "lukoil"],
+        "SIBN": ["sibn", "газпромнефт", "gazpromneft"],
+        "ROSN": ["rosn", "роснефт", "rosneft"],
+        "TATN": ["tatn", "татнефт", "tatneft"],
+        "SNGS": ["sngs", "сургутнефтегаз", "surgutneftegas"]
+        }
     
     key_sentences = []
 
     for sentence in sentences:
-        for keyword in keywords:
+        for keyword in keywords[asset]:
             if sentence.lower().find(keyword) != -1:
                 key_sentences.append(sentence)
                 break
@@ -303,9 +308,19 @@ async def estimate_sentiments_implementation(username, api_id, api_hash):
             
         if polarity < 0.0:
             negative_sentences_counter += 1
+
+    s1 = "%2d" % positive_sentences_counter
+    s2 = "%2d" % negative_sentences_counter
         
-    return str(positive_sentences_counter) + "(P), " + str(negative_sentences_counter) + "(N)"
+    return s1 + "(P), " + s2 + "(N)"
 
 def estimate_sentiments(asset, username, api_id, api_hash):
 
-    return asyncio.run(estimate_sentiments_implementation(username, api_id, api_hash))
+    client = TelegramClient(username, api_id, api_hash)
+    
+    client.start()
+
+    with client:
+        result = client.loop.run_until_complete(estimate_sentiments_implementation(asset, client))
+
+    return result
