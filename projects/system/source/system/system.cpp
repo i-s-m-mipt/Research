@@ -545,7 +545,7 @@ namespace solution
 
 				const std::vector < std::vector < std::string > > asset_classes = { 
 					{ "BR", "NG", "GC" }, 
-					{ "LKOH", "SIBN", "ROSN", "TATN", "SNGS" } };
+					{ "LKOH", "ROSN", "SIBN", "SNGS", "TATN" } };
 
 				for (const auto & asset_class : asset_classes)
 				{
@@ -565,6 +565,10 @@ namespace solution
 
 					std::cout << std::endl;
 				}
+
+				const std::filesystem::path path = "messages.json";
+
+				std::filesystem::remove(path);
 			}
 			catch (const boost::python::error_already_set &)
 			{

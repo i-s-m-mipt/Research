@@ -234,41 +234,50 @@ def predict(asset, scale, data) :
 
 
 async def estimate_sentiments_implementation(asset, client):
-    
-    filename = "market/channels.data"
-    
-    fin = open(filename, "r")
 
-    channels = fin.readlines()
-    
-    fin.close()
-    
-    today = date.today()
-    
-    messages = []
-    
-    for channel in channels:
-        
-        channel_data = channel.split(" ")
-        
-        channel_id   = int(channel_data[0])
-        channel_hash = int(channel_data[1])
-        
-        entity = types.InputPeerChannel(channel_id, channel_hash)
-        
-        async for message in client.iter_messages(entity, offset_date = today + timedelta(days = 1)):
-            if (message.date.year, message.date.month, message.date.day) == (today.year, today.month, today.day):
-                messages.append(message.message)
-            else:
-                break
-    
+    filename = "messages.json"
+
     sentences = []
+
+    if os.path.exists(filename):
+
+        with open(filename, "r", encoding = "utf-8") as fin:
+            sentences = json.load(fin)
+
+    else:
     
-    for message in messages:
-        try:
-            sentences.extend(nltk.tokenize.sent_tokenize(message, language = "russian"))
-        except:
-            continue
+        fin = open("market/channels.data", "r")
+
+        channels = fin.readlines()
+    
+        fin.close()
+    
+        today = date.today()
+    
+        messages = []
+    
+        for channel in channels:
+        
+            channel_data = channel.split(" ")
+        
+            entity = types.InputPeerChannel(int(channel_data[0]), int(channel_data[1]))
+        
+            async for message in client.iter_messages(entity, offset_date = today + timedelta(days = 1)):
+                if (message.date.year, message.date.month, message.date.day) == (today.year, today.month, today.day):
+                    messages.append(message.message)
+                else:
+                    break
+    
+        for message in messages:
+            try:
+                sentences.extend(nltk.tokenize.sent_tokenize(message, language = "russian"))
+            except:
+                continue
+
+        with open(filename, "w", encoding = "utf-8") as fout:
+            json.dump(sentences, fout, ensure_ascii = False, indent = 4)
+
+            
         
     keywords = {
         "BR"  : ["oil", "нефт", "brent"],
