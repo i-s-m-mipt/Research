@@ -819,6 +819,11 @@ namespace solution
 				{
 					run_fridays_test();
 				}
+
+				if (m_config.run_mornings_test)
+				{
+					run_mornings_test();
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -1325,6 +1330,69 @@ namespace solution
 						std::setw(3) << std::setfill(' ') << std::right << counter << " coincidences of " <<
 						std::setw(3) << std::setfill(' ') << std::right << counter_total << std::endl;
 				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::run_mornings_test() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto asset = m_config.mornings_test_asset;
+				const auto scale = m_config.mornings_test_scale;
+				const auto delta = m_config.mornings_test_delta;
+
+				if (scale != "M60")
+				{
+					logger.write(Severity::error, "invalid scale");
+				}
+
+				const auto & candles = m_charts.at(asset).at(scale);
+
+				std::size_t counter            = 0U;
+				std::size_t counter_delta_L    = 0U;
+				std::size_t counter_delta_S    = 0U;
+				std::size_t counter_delta_both = 0U;
+
+				for (auto i = 1U; i < std::size(candles) - 1U; ++i)
+				{
+					if (candles[i].date_time.year != m_config.mornings_test_year || candles[i].date_time.hour != 10U)
+					{
+						continue;
+					}
+
+					++counter;
+
+					auto previous_price = candles[i - 1].price_close;
+
+					auto has_delta_L = (std::max(candles[i].price_high, candles[i + 1].price_high) - previous_price >  delta);
+					auto has_delta_S = (std::min(candles[i].price_low,  candles[i + 1].price_low ) - previous_price < -delta);
+
+					if (has_delta_L)
+					{
+						++counter_delta_L;
+					}
+
+					if (has_delta_S)
+					{
+						++counter_delta_S;
+					}
+
+					if (has_delta_L && has_delta_S)
+					{
+						++counter_delta_both;
+					}
+				}
+
+				std::cout << "days        : " << counter            << std::endl;
+				std::cout << "days (L)    : " << counter_delta_L    << std::endl;
+				std::cout << "days (S)    : " << counter_delta_S    << std::endl;
+				std::cout << "days (both) : " << counter_delta_both << std::endl;
 			}
 			catch (const std::exception & exception)
 			{

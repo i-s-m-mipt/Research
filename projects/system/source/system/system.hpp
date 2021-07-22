@@ -140,6 +140,11 @@ namespace solution
 						static inline const std::string telegram_api_id               = "telegram_api_id";
 						static inline const std::string telegram_api_hash             = "telegram_api_hash";
 						static inline const std::string volume_timesteps              = "volume_timesteps";
+						static inline const std::string run_mornings_test             = "run_mornings_test";
+						static inline const std::string mornings_test_asset           = "mornings_test_asset";
+						static inline const std::string mornings_test_scale           = "mornings_test_scale";
+						static inline const std::string mornings_test_delta           = "mornings_test_delta";
+						static inline const std::string mornings_test_year            = "mornings_test_year";
 					};
 				};
 

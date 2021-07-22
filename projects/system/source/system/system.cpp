@@ -54,6 +54,11 @@ namespace solution
 				config.telegram_api_id               = raw_config[Key::Config::telegram_api_id              ].get < std::string > ();
 				config.telegram_api_hash             = raw_config[Key::Config::telegram_api_hash            ].get < std::string > ();
 				config.volume_timesteps              = raw_config[Key::Config::volume_timesteps             ].get < std::size_t > ();
+				config.run_mornings_test             = raw_config[Key::Config::run_mornings_test            ].get < bool > ();
+				config.mornings_test_asset           = raw_config[Key::Config::mornings_test_asset          ].get < std::string > ();
+				config.mornings_test_scale           = raw_config[Key::Config::mornings_test_scale          ].get < std::string > ();
+				config.mornings_test_delta           = raw_config[Key::Config::mornings_test_delta          ].get < double > ();
+				config.mornings_test_year            = raw_config[Key::Config::mornings_test_year           ].get < unsigned int > ();
 			}
 			catch (const std::exception & exception)
 			{

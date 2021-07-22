@@ -434,6 +434,8 @@ namespace solution
 
 			void run_fridays_test() const;
 
+			void run_mornings_test() const;
+
 		private:
 
 			void compute_self_similarities();

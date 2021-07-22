@@ -165,6 +165,15 @@ namespace solution
             std::string telegram_api_hash = "";
 
             std::size_t volume_timesteps = 10U;
+
+            bool run_mornings_test = false;
+
+            std::string mornings_test_asset;
+            std::string mornings_test_scale;
+
+            double mornings_test_delta = 0.0;
+
+            unsigned int mornings_test_year = 0U;
         };
 
     } // namespace system
