@@ -197,6 +197,8 @@ namespace solution
 
 				std::string classification_tag;
 
+				int movement_tag = 0;
+
 				Level support;
 				Level resistance;
 			};
@@ -495,6 +497,8 @@ namespace solution
 				candles_container_t::iterator position, std::string tag) const;
 
 			void concat_classification_tags(std::string & target, const std::string & tag) const;
+
+			void update_movement_tags(const std::string & asset, candles_container_t & candles) const;
 
 			void update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const;
 

@@ -558,7 +558,9 @@ namespace solution
 				{
 					for (const auto & [scale, candles] : scales)
 					{
-						const auto size = std::size(candles) - delta;
+						const auto size = std::size(candles) - delta - 
+							std::count_if(std::next(std::begin(candles), delta), std::end(candles),
+								[](const auto & candle) { return (candle.movement_tag == 0); });
 
 						sout << asset << " " << scale << " " << size << "\n";
 
@@ -568,6 +570,11 @@ namespace solution
 						for (auto i = delta; i < std::size(candles); ++i)
 						{
 							const auto & candle = candles[i];
+
+							if (candle.movement_tag == 0)
+							{
+								continue;
+							}
 
 							/*
 							for (auto j = 1U; j < 13U; ++j)
@@ -676,7 +683,9 @@ namespace solution
 									regression_tag << delimeter;
 							}
 
-							sout << candle.classification_tag << "\n";
+							sout << candle.classification_tag << delimeter;
+
+							sout << std::showpos << candle.movement_tag << "\n";
 						}
 					}
 				}
@@ -1969,6 +1978,8 @@ namespace solution
 
 								update_classification_tags(candles);
 
+								update_movement_tags(asset, candles);
+
 								auto & levels = m_supports_resistances.at(asset);
 
 								update_supports_resistances(candles, levels);
@@ -2205,6 +2216,56 @@ namespace solution
 			}
 		}
 
+		void Market::update_movement_tags(const std::string & asset, candles_container_t & candles) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto scale = "M60";
+
+				auto path = charts_directory; path /= make_file_name(asset, scale);
+
+				auto movement_candles = load_candles(asset, scale, path);
+
+				for (auto i = 1U; i < std::size(candles); ++i)
+				{
+					const auto & candle = candles[i];
+
+					auto iterator = std::find_if(std::begin(movement_candles), std::end(movement_candles),
+						[candle](const auto & movement_candle)
+						{
+							return (
+								movement_candle.date_time.year  == candle.date_time.year &&
+								movement_candle.date_time.month == candle.date_time.month &&
+								movement_candle.date_time.day   == candle.date_time.day &&
+								movement_candle.date_time.hour  == 10U);
+						});
+
+					if (iterator != std::end(movement_candles) && iterator != std::begin(movement_candles))
+					{
+						auto previous_price_close = std::prev(iterator)->price_close;
+
+						auto delta_L = std::abs(std::max(iterator->price_high, std::next(iterator)->price_high) - previous_price_close);
+						auto delta_S = std::abs(std::min(iterator->price_low,  std::next(iterator)->price_low)  - previous_price_close);
+
+						if (delta_L - delta_S > -1.0 * std::numeric_limits < double > ::epsilon())
+						{
+							candles[i - 1U].movement_tag = +1;
+						}
+						else
+						{
+							candles[i - 1U].movement_tag = -1;
+						}
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const
 		{
 			RUN_LOGGER(logger);
@@ -2277,6 +2338,8 @@ namespace solution
 								update_regression_tags(candles);
 
 								update_classification_tags(candles);
+
+								update_movement_tags(asset, candles);
 
 								auto & levels = m_supports_resistances.at(asset);
 
