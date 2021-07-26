@@ -174,6 +174,8 @@ namespace solution
             double mornings_test_delta = 0.0;
 
             unsigned int mornings_test_year = 0U;
+
+            double mornings_test_confidence = 0.90;
         };
 
     } // namespace system

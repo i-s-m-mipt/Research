@@ -59,6 +59,7 @@ namespace solution
 				config.mornings_test_scale           = raw_config[Key::Config::mornings_test_scale          ].get < std::string > ();
 				config.mornings_test_delta           = raw_config[Key::Config::mornings_test_delta          ].get < double > ();
 				config.mornings_test_year            = raw_config[Key::Config::mornings_test_year           ].get < unsigned int > ();
+				config.mornings_test_confidence      = raw_config[Key::Config::mornings_test_confidence     ].get < double > ();
 			}
 			catch (const std::exception & exception)
 			{

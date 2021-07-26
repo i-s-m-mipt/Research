@@ -145,6 +145,7 @@ namespace solution
 						static inline const std::string mornings_test_scale           = "mornings_test_scale";
 						static inline const std::string mornings_test_delta           = "mornings_test_delta";
 						static inline const std::string mornings_test_year            = "mornings_test_year";
+						static inline const std::string mornings_test_confidence      = "mornings_test_confidence";
 					};
 				};
 

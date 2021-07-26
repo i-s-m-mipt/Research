@@ -2249,6 +2249,15 @@ namespace solution
 						auto delta_L = std::abs(std::max(iterator->price_high, std::next(iterator)->price_high) - previous_price_close);
 						auto delta_S = std::abs(std::min(iterator->price_low,  std::next(iterator)->price_low)  - previous_price_close);
 
+						auto confidence = std::min(delta_L, delta_S) / std::max(delta_L, delta_S);
+
+						if (confidence > m_config.mornings_test_confidence && i >= 2U && candles[i - 2U].movement_tag != 0)
+						{
+							candles[i - 1U].movement_tag = candles[i - 2U].movement_tag;
+
+							continue;
+						}
+
 						if (delta_L - delta_S > -1.0 * std::numeric_limits < double > ::epsilon())
 						{
 							candles[i - 1U].movement_tag = +1;
