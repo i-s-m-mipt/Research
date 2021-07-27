@@ -77,7 +77,7 @@ int main(int argc, char ** argv)
 			throw std::runtime_error("main window not found");
 		}
 
-		const std::filesystem::path path = "C:/Libraries/quik/info.log";
+		const std::filesystem::path path = "info.log";
 
 		std::filesystem::remove(path);
 
