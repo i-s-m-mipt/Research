@@ -438,6 +438,8 @@ namespace solution
 
 			void run_mornings_test() const;
 
+			void run_intraday_test() const;
+
 		private:
 
 			void compute_self_similarities();
@@ -498,7 +500,7 @@ namespace solution
 
 			void concat_classification_tags(std::string & target, const std::string & tag) const;
 
-			void update_movement_tags(const std::string & asset, candles_container_t & candles) const;
+			void update_movement_tags(candles_container_t & candles) const;
 
 			void update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const;
 

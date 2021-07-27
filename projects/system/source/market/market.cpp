@@ -6,6 +6,30 @@ namespace solution
 	{
 		using Severity = shared::Logger::Severity;
 
+		template < typename T >
+		auto max(T lhs, T rhs)
+		{
+			return std::max(lhs, rhs);
+		}
+
+		template < typename T, typename ... Types >
+		auto max(T lhs, Types ... args)
+		{
+			return std::max(lhs, max(args...));
+		}
+
+		template < typename T >
+		auto min(T lhs, T rhs)
+		{
+			return std::min(lhs, rhs);
+		}
+
+		template < typename T, typename ... Types >
+		auto min(T lhs, Types ... args)
+		{
+			return std::min(lhs, min(args...));
+		}
+
 		std::time_t Market::Date_Time::to_time_t() const
 		{
 			RUN_LOGGER(logger);
@@ -833,6 +857,11 @@ namespace solution
 				{
 					run_mornings_test();
 				}
+
+				if (m_config.run_intraday_test)
+				{
+					run_intraday_test();
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -1377,10 +1406,10 @@ namespace solution
 
 					++counter;
 
-					auto previous_price = candles[i - 1].price_close;
+					auto previous_price = candles[i - 1U].price_close;
 
-					auto has_delta_L = (std::max(candles[i].price_high, candles[i + 1].price_high) - previous_price >  delta);
-					auto has_delta_S = (std::min(candles[i].price_low,  candles[i + 1].price_low ) - previous_price < -delta);
+					auto has_delta_L = (std::max(candles[i].price_high, candles[i + 1U].price_high) - previous_price >  delta);
+					auto has_delta_S = (std::min(candles[i].price_low,  candles[i + 1U].price_low ) - previous_price < -delta);
 
 					if (has_delta_L)
 					{
@@ -1402,6 +1431,70 @@ namespace solution
 				std::cout << "days (L)    : " << counter_delta_L    << std::endl;
 				std::cout << "days (S)    : " << counter_delta_S    << std::endl;
 				std::cout << "days (both) : " << counter_delta_both << std::endl;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::run_intraday_test() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto asset = m_config.intraday_test_asset;
+				const auto scale = m_config.intraday_test_scale;
+
+				if (scale != "D")
+				{
+					logger.write(Severity::error, "invalid scale");
+				}
+
+				const auto & candles = m_charts.at(asset).at(scale);
+
+				const auto deviation = m_config.intraday_test_deviation;
+
+				std::size_t counter                = 0U;
+				std::size_t counter_deviation_L    = 0U;
+				std::size_t counter_deviation_S    = 0U;
+				std::size_t counter_deviation_both = 0U;
+
+				for (auto i = 1U; i < std::size(candles); ++i)
+				{
+					if (candles[i].date_time.year != m_config.intraday_test_year)
+					{
+						continue;
+					}
+
+					++counter;
+
+					auto previous_price = candles[i - 1U].price_close;
+
+					auto has_deviation_L = ((candles[i].price_high - previous_price) / previous_price >  deviation);
+					auto has_deviation_S = ((candles[i].price_low  - previous_price) / previous_price < -deviation);
+
+					if (has_deviation_L)
+					{
+						++counter_deviation_L;
+					}
+
+					if (has_deviation_S)
+					{
+						++counter_deviation_S;
+					}
+
+					if (has_deviation_L && has_deviation_S)
+					{
+						++counter_deviation_both;
+					}
+				}
+
+				std::cout << "days        : " << counter                << std::endl;
+				std::cout << "days (L)    : " << counter_deviation_L    << std::endl;
+				std::cout << "days (S)    : " << counter_deviation_S    << std::endl;
+				std::cout << "days (both) : " << counter_deviation_both << std::endl;
 			}
 			catch (const std::exception & exception)
 			{
@@ -1590,18 +1683,6 @@ namespace solution
 			{
 				shared::catch_handler < market_exception > (logger, exception);
 			}
-		}
-
-		template < typename T >
-		auto min(T lhs, T rhs)
-		{
-			return std::min(lhs, rhs);
-		}
-
-		template < typename T, typename ... Types >
-		auto min(T lhs, Types ... args)
-		{
-			return std::min(lhs, min(args...));
 		}
 
 		double Market::compute_self_similarity(const std::string & asset,
@@ -1978,7 +2059,7 @@ namespace solution
 
 								update_classification_tags(candles);
 
-								update_movement_tags(asset, candles);
+								update_movement_tags(candles);
 
 								auto & levels = m_supports_resistances.at(asset);
 
@@ -2216,56 +2297,35 @@ namespace solution
 			}
 		}
 
-		void Market::update_movement_tags(const std::string & asset, candles_container_t & candles) const
+		void Market::update_movement_tags(candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				const auto scale = "M60";
-
-				auto path = charts_directory; path /= make_file_name(asset, scale);
-
-				auto movement_candles = load_candles(asset, scale, path);
-
-				for (auto i = 1U; i < std::size(candles); ++i)
+				for (auto i = 0U; i < std::size(candles) - 1U; ++i)
 				{
-					const auto & candle = candles[i];
+					auto previous_price_close = candles[i].price_close;
 
-					auto iterator = std::find_if(std::begin(movement_candles), std::end(movement_candles),
-						[candle](const auto & movement_candle)
-						{
-							return (
-								movement_candle.date_time.year  == candle.date_time.year &&
-								movement_candle.date_time.month == candle.date_time.month &&
-								movement_candle.date_time.day   == candle.date_time.day &&
-								movement_candle.date_time.hour  == 10U);
-						});
+					auto delta_L = std::abs(candles[i + 1U].price_high - previous_price_close);
+					auto delta_S = std::abs(candles[i + 1U].price_low  - previous_price_close);
 
-					if (iterator != std::end(movement_candles) && iterator != std::begin(movement_candles))
+					auto confidence = std::min(delta_L, delta_S) / std::max(delta_L, delta_S);
+
+					if (delta_L / previous_price_close >= m_config.intraday_test_deviation &&
+						delta_S / previous_price_close >= m_config.intraday_test_deviation ||
+						confidence > m_config.mornings_test_confidence)
 					{
-						auto previous_price_close = std::prev(iterator)->price_close;
+						continue;
+					}
 
-						auto delta_L = std::abs(std::max(iterator->price_high, std::next(iterator)->price_high) - previous_price_close);
-						auto delta_S = std::abs(std::min(iterator->price_low,  std::next(iterator)->price_low)  - previous_price_close);
-
-						auto confidence = std::min(delta_L, delta_S) / std::max(delta_L, delta_S);
-
-						if (confidence > m_config.mornings_test_confidence && i >= 2U && candles[i - 2U].movement_tag != 0)
-						{
-							candles[i - 1U].movement_tag = candles[i - 2U].movement_tag;
-
-							continue;
-						}
-
-						if (delta_L - delta_S > -1.0 * std::numeric_limits < double > ::epsilon())
-						{
-							candles[i - 1U].movement_tag = +1;
-						}
-						else
-						{
-							candles[i - 1U].movement_tag = -1;
-						}
+					if (delta_L >= delta_S)
+					{
+						candles[i].movement_tag = +1;
+					}
+					else
+					{
+						candles[i].movement_tag = -1;
 					}
 				}
 			}
@@ -2348,7 +2408,7 @@ namespace solution
 
 								update_classification_tags(candles);
 
-								update_movement_tags(asset, candles);
+								update_movement_tags(candles);
 
 								auto & levels = m_supports_resistances.at(asset);
 

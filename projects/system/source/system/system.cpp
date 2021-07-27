@@ -60,6 +60,11 @@ namespace solution
 				config.mornings_test_delta           = raw_config[Key::Config::mornings_test_delta          ].get < double > ();
 				config.mornings_test_year            = raw_config[Key::Config::mornings_test_year           ].get < unsigned int > ();
 				config.mornings_test_confidence      = raw_config[Key::Config::mornings_test_confidence     ].get < double > ();
+				config.run_intraday_test             = raw_config[Key::Config::run_intraday_test            ].get < bool > ();
+				config.intraday_test_deviation       = raw_config[Key::Config::intraday_test_deviation      ].get < double > ();
+				config.intraday_test_asset           = raw_config[Key::Config::intraday_test_asset          ].get < std::string > ();
+				config.intraday_test_scale           = raw_config[Key::Config::intraday_test_scale          ].get < std::string > ();
+				config.intraday_test_year            = raw_config[Key::Config::intraday_test_year           ].get < unsigned int > ();
 			}
 			catch (const std::exception & exception)
 			{

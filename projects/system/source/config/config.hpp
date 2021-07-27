@@ -176,6 +176,15 @@ namespace solution
             unsigned int mornings_test_year = 0U;
 
             double mornings_test_confidence = 0.90;
+
+            bool run_intraday_test = false;
+
+            double intraday_test_deviation = 0.005;
+
+            std::string intraday_test_asset;
+            std::string intraday_test_scale;
+
+            unsigned int intraday_test_year = 0U;
         };
 
     } // namespace system

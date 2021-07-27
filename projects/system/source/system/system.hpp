@@ -146,6 +146,11 @@ namespace solution
 						static inline const std::string mornings_test_delta           = "mornings_test_delta";
 						static inline const std::string mornings_test_year            = "mornings_test_year";
 						static inline const std::string mornings_test_confidence      = "mornings_test_confidence";
+						static inline const std::string run_intraday_test             = "run_intraday_test";
+						static inline const std::string intraday_test_deviation       = "intraday_test_deviation";
+						static inline const std::string intraday_test_asset           = "intraday_test_asset";
+						static inline const std::string intraday_test_scale           = "intraday_test_scale";
+						static inline const std::string intraday_test_year            = "intraday_test_year";
 					};
 				};
 
