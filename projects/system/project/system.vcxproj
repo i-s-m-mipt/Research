@@ -164,7 +164,16 @@
     <ClCompile Include="..\..\shared\source\logger\logger.cpp" />
     <ClCompile Include="..\..\shared\source\python\python.cpp" />
     <ClCompile Include="..\source\main.cpp" />
+    <ClCompile Include="..\source\market\candle\candle.cpp" />
+    <ClCompile Include="..\source\market\indicators\ama\ama.cpp" />
+    <ClCompile Include="..\source\market\indicators\dema\dema.cpp" />
+    <ClCompile Include="..\source\market\indicators\ema\ema.cpp" />
+    <ClCompile Include="..\source\market\indicators\sma\sma.cpp" />
+    <ClCompile Include="..\source\market\indicators\tema\tema.cpp" />
+    <ClCompile Include="..\source\market\indicators\vwma\vwma.cpp" />
+    <ClCompile Include="..\source\market\indicators\wma\wma.cpp" />
     <ClCompile Include="..\source\market\market.cpp" />
+    <ClCompile Include="..\source\market\oscillators\macd\macd.cpp" />
     <ClCompile Include="..\source\market\source\source.cpp" />
     <ClCompile Include="..\source\system\system.cpp" />
   </ItemGroup>
@@ -173,7 +182,18 @@
     <ClInclude Include="..\..\shared\source\python\python.hpp" />
     <ClInclude Include="..\source\config\config.hpp" />
     <ClInclude Include="..\source\detail\julia\state.hpp" />
+    <ClInclude Include="..\source\market\candle\candle.hpp" />
+    <ClInclude Include="..\source\market\indicators\ama\ama.hpp" />
+    <ClInclude Include="..\source\market\indicators\dema\dema.hpp" />
+    <ClInclude Include="..\source\market\indicators\ema\ema.hpp" />
+    <ClInclude Include="..\source\market\indicators\indicators.hpp" />
+    <ClInclude Include="..\source\market\indicators\sma\sma.hpp" />
+    <ClInclude Include="..\source\market\indicators\tema\tema.hpp" />
+    <ClInclude Include="..\source\market\indicators\vwma\vwma.hpp" />
+    <ClInclude Include="..\source\market\indicators\wma\wma.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
+    <ClInclude Include="..\source\market\oscillators\macd\macd.hpp" />
+    <ClInclude Include="..\source\market\oscillators\oscillators.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />
     <ClInclude Include="..\source\system\system.hpp" />
   </ItemGroup>

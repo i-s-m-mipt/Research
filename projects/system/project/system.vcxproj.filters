@@ -28,6 +28,39 @@
     <Filter Include="source\market\source">
       <UniqueIdentifier>{0f0e1f29-0775-4c13-948a-775898390580}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\indicators">
+      <UniqueIdentifier>{4837ddbd-2f26-463b-80f9-5961dbb32f5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\candle">
+      <UniqueIdentifier>{95eb5586-9822-4d99-a4ff-831daa2ba3c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\indicators\sma">
+      <UniqueIdentifier>{b5b02967-c2c2-4bf2-898c-135e6329c1b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\indicators\ema">
+      <UniqueIdentifier>{5d5647e7-f7e3-4c56-8bd4-3fb76dedb126}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\indicators\ama">
+      <UniqueIdentifier>{d250ba1b-63a6-464d-a4cc-c9072c748e7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\indicators\dema">
+      <UniqueIdentifier>{d513fb6f-0037-4bc4-856f-5d9ab43a61da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\indicators\tema">
+      <UniqueIdentifier>{6dc7792d-1fa9-4542-8f2b-903a6971a8ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\indicators\wma">
+      <UniqueIdentifier>{45519cab-459c-4b27-a28d-1f17da667273}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\indicators\vwma">
+      <UniqueIdentifier>{743a48f4-5c56-48ab-8b2b-1b820a8cc034}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\oscillators">
+      <UniqueIdentifier>{a34c46a5-cc88-4504-affe-74ee37c95516}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\oscillators\macd">
+      <UniqueIdentifier>{b218b71e-d939-4783-b970-c9efe4abf00c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -47,6 +80,33 @@
     </ClCompile>
     <ClCompile Include="..\source\market\source\source.cpp">
       <Filter>source\market\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\candle\candle.cpp">
+      <Filter>source\market\candle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\sma\sma.cpp">
+      <Filter>source\market\indicators\sma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\ema\ema.cpp">
+      <Filter>source\market\indicators\ema</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\ama\ama.cpp">
+      <Filter>source\market\indicators\ama</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\dema\dema.cpp">
+      <Filter>source\market\indicators\dema</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\tema\tema.cpp">
+      <Filter>source\market\indicators\tema</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\wma\wma.cpp">
+      <Filter>source\market\indicators\wma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\vwma\vwma.cpp">
+      <Filter>source\market\indicators\vwma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\macd\macd.cpp">
+      <Filter>source\market\oscillators\macd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +130,39 @@
     </ClInclude>
     <ClInclude Include="..\source\market\source\source.hpp">
       <Filter>source\market\source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\indicators.hpp">
+      <Filter>source\market\indicators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\candle\candle.hpp">
+      <Filter>source\market\candle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\sma\sma.hpp">
+      <Filter>source\market\indicators\sma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\ema\ema.hpp">
+      <Filter>source\market\indicators\ema</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\ama\ama.hpp">
+      <Filter>source\market\indicators\ama</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\dema\dema.hpp">
+      <Filter>source\market\indicators\dema</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\tema\tema.hpp">
+      <Filter>source\market\indicators\tema</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\wma\wma.hpp">
+      <Filter>source\market\indicators\wma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\vwma\vwma.hpp">
+      <Filter>source\market\indicators\vwma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\oscillators.hpp">
+      <Filter>source\market\oscillators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\macd\macd.hpp">
+      <Filter>source\market\oscillators\macd</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
