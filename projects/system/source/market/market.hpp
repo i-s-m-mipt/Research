@@ -56,6 +56,7 @@
 #include "indicators/ama/ama.hpp"
 
 #include "oscillators/macd/macd.hpp"
+#include "oscillators/aroon/aroon.hpp"
 
 #include "../config/config.hpp"
 

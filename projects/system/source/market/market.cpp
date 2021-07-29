@@ -915,7 +915,7 @@ namespace solution
 				m_indicators.push_back(market::indicators::TEMA( 60U));
 				m_indicators.push_back(market::indicators::TEMA(125U));
 				
-				m_indicators.push_back(market::indicators::AMA(10U, 2U, 30U)); // Perry Kaufman
+				m_indicators.push_back(market::indicators::AMA(10U, 2U, 30U));
 			}
 			catch (const std::exception & exception)
 			{
@@ -929,7 +929,11 @@ namespace solution
 
 			try
 			{
-				m_oscillators.push_back(market::oscillators::MACD(26U, 12U, 9U)); // Gerald Appel
+				m_oscillators.push_back(market::oscillators::MACD(26U, 12U, 9U));
+				m_oscillators.push_back(market::oscillators::MACD(17U,  8U, 9U));
+
+				m_oscillators.push_back(market::oscillators::AROON(14U));
+				m_oscillators.push_back(market::oscillators::AROON(25U));
 			}
 			catch (const std::exception & exception)
 			{
