@@ -173,6 +173,7 @@
     <ClCompile Include="..\source\market\indicators\vwma\vwma.cpp" />
     <ClCompile Include="..\source\market\indicators\wma\wma.cpp" />
     <ClCompile Include="..\source\market\market.cpp" />
+    <ClCompile Include="..\source\market\oscillators\aroon\aroon.cpp" />
     <ClCompile Include="..\source\market\oscillators\macd\macd.cpp" />
     <ClCompile Include="..\source\market\source\source.cpp" />
     <ClCompile Include="..\source\system\system.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="..\source\market\indicators\vwma\vwma.hpp" />
     <ClInclude Include="..\source\market\indicators\wma\wma.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
+    <ClInclude Include="..\source\market\oscillators\aroon\aroon.hpp" />
     <ClInclude Include="..\source\market\oscillators\macd\macd.hpp" />
     <ClInclude Include="..\source\market\oscillators\oscillators.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />

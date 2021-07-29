@@ -524,6 +524,18 @@ namespace solution
 
 						sout << asset << " " << scale << " " << size << "\n";
 
+						std::vector < std::pair < double, double > > min_max_oscillators;
+
+						for (auto k = 0U; k < std::size(candles[days_in_year / 2U].oscillators); ++k)
+						{
+							auto min_max_oscillator = std::minmax_element(std::next(std::begin(candles), days_in_year / 2U), std::end(candles), 
+								[k](const auto & lhs, const auto & rhs) { return (lhs.oscillators[k] < rhs.oscillators[k]); });
+
+							min_max_oscillators.push_back(std::make_pair(
+								min_max_oscillator.first ->oscillators[k],
+								min_max_oscillator.second->oscillators[k]));
+						}
+
 						for (auto i = days_in_year / 2U; i < std::size(candles) - delta + 1U; ++i)
 						{
 							auto min_max_price_close = std::minmax_element(std::next(std::begin(candles), i),
@@ -552,8 +564,15 @@ namespace solution
 
 							for (auto j = i; j < i + delta; ++j)
 							{
-								sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-									(candles[j].price_close - min_price_close) / delta_price_close << delimeter;
+								auto normal_price_close = (candles[j].price_close - min_price_close) / delta_price_close;
+
+								if (normal_price_close < 0.0 || normal_price_close > 1.0)
+								{
+									logger.write(Severity::error, "bad normal price close");
+								}
+
+								sout << std::setprecision(3) << std::fixed << std::noshowpos << 
+									normal_price_close << delimeter;
 							}
 
 							auto min_max_volume = std::minmax_element(std::next(std::begin(candles), i),
@@ -572,17 +591,54 @@ namespace solution
 
 							for (auto j = i; j < i + delta; ++j)
 							{
-								sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-									static_cast < double > (candles[j].volume - min_volume) / 
-									static_cast < double > (delta_volume) << delimeter;
+								auto normal_volume = static_cast < double > (candles[j].volume - 
+									min_volume) / static_cast < double > (delta_volume);
+
+								if (normal_volume < 0.0 || normal_volume > 1.0)
+								{
+									logger.write(Severity::error, "bad normal volume");
+								}
+
+								sout << std::setprecision(3) << std::fixed << std::noshowpos << 
+									normal_volume << delimeter;
 							}
 
 							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
 							{
 								for (auto j = i; j < i + delta; ++j)
 								{
+									auto normal_indicator = (candles[j].indicators[k] -
+										min_price_close) / delta_price_close;
+
+									if (normal_indicator < 0.0 || normal_indicator > 1.0)
+									{
+										logger.write(Severity::error, "bad normal indicator");
+									}
+
 									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-										(candles[j].indicators[k] - min_price_close) / delta_price_close << delimeter;
+										normal_indicator << delimeter;
+								}
+							}
+
+							for (auto k = 0U; k < std::size(candles[i].oscillators); ++k)
+							{
+								auto min_oscillator = min_max_oscillators[k].first;
+								auto max_oscillator = min_max_oscillators[k].second;
+
+								auto delta_oscillator = max_oscillator - min_oscillator;
+
+								for (auto j = i; j < i + delta; ++j)
+								{
+									auto normal_oscillator = (candles[j].oscillators[k] -
+										min_oscillator) / delta_oscillator;
+
+									if (normal_oscillator < 0.0 || normal_oscillator > 1.0)
+									{
+										logger.write(Severity::error, "bad normal oscillator");
+									}
+
+									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
+										normal_oscillator << delimeter;
 								}
 							}
 

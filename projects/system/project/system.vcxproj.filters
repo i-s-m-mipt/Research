@@ -61,6 +61,9 @@
     <Filter Include="source\market\oscillators\macd">
       <UniqueIdentifier>{b218b71e-d939-4783-b970-c9efe4abf00c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\oscillators\aroon">
+      <UniqueIdentifier>{e7c48343-7901-4405-837c-9b4ea8ae6867}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -107,6 +110,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\macd\macd.cpp">
       <Filter>source\market\oscillators\macd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\aroon\aroon.cpp">
+      <Filter>source\market\oscillators\aroon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\macd\macd.hpp">
       <Filter>source\market\oscillators\macd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\aroon\aroon.hpp">
+      <Filter>source\market\oscillators\aroon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
