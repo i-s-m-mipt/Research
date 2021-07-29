@@ -353,4 +353,5 @@ service/
 *.session-journal
 !assets.data
 !scales.data
+!limits.data
 !channels.data
