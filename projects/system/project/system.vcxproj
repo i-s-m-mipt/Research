@@ -166,6 +166,7 @@
     <ClCompile Include="..\source\main.cpp" />
     <ClCompile Include="..\source\market\candle\candle.cpp" />
     <ClCompile Include="..\source\market\indicators\ama\ama.cpp" />
+    <ClCompile Include="..\source\market\indicators\bollinger_bands\bollinger_bands.cpp" />
     <ClCompile Include="..\source\market\indicators\dema\dema.cpp" />
     <ClCompile Include="..\source\market\indicators\ema\ema.cpp" />
     <ClCompile Include="..\source\market\indicators\sma\sma.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="..\source\detail\julia\state.hpp" />
     <ClInclude Include="..\source\market\candle\candle.hpp" />
     <ClInclude Include="..\source\market\indicators\ama\ama.hpp" />
+    <ClInclude Include="..\source\market\indicators\bollinger_bands\bollinger_bands.hpp" />
     <ClInclude Include="..\source\market\indicators\dema\dema.hpp" />
     <ClInclude Include="..\source\market\indicators\ema\ema.hpp" />
     <ClInclude Include="..\source\market\indicators\indicators.hpp" />

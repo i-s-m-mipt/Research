@@ -64,6 +64,9 @@
     <Filter Include="source\market\oscillators\aroon">
       <UniqueIdentifier>{e7c48343-7901-4405-837c-9b4ea8ae6867}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\indicators\bollinger_bands">
+      <UniqueIdentifier>{b6bbf98f-dcf0-433e-b5d7-349f913efe94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -113,6 +116,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\aroon\aroon.cpp">
       <Filter>source\market\oscillators\aroon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\bollinger_bands\bollinger_bands.cpp">
+      <Filter>source\market\indicators\bollinger_bands</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +178,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\aroon\aroon.hpp">
       <Filter>source\market\oscillators\aroon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\bollinger_bands\bollinger_bands.hpp">
+      <Filter>source\market\indicators\bollinger_bands</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
