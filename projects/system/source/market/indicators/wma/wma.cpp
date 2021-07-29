@@ -40,7 +40,7 @@ namespace solution
 								value += candles[j].price_close * k;
 							}
 
-							value /= (m_timesteps * std::ceil(m_timesteps / 2.0));
+							value /= (m_timesteps * (m_timesteps + 1.0) / 2.0);
 
 							candles[i].indicators.push_back(value);
 						}
