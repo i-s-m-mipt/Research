@@ -44,7 +44,18 @@
 
 #include <nlohmann/json.hpp>
 
+#include "candle/candle.hpp"
 #include "source/source.hpp"
+
+#include "indicators/sma/sma.hpp"
+#include "indicators/wma/wma.hpp"
+#include "indicators/vwma/vwma.hpp"
+#include "indicators/ema/ema.hpp"
+#include "indicators/dema/dema.hpp"
+#include "indicators/tema/tema.hpp"
+#include "indicators/ama/ama.hpp"
+
+#include "oscillators/macd/macd.hpp"
 
 #include "../config/config.hpp"
 
@@ -78,130 +89,57 @@ namespace solution
 
 		private:
 
+			using Date_Time = market::Date_Time;
+
+			using Level = market::Level;
+
+			using Candle = market::Candle;
+
+			using Source = market::Source;
+
 			using assets_container_t = std::vector < std::string > ;
 
 			using scales_container_t = std::vector < std::string > ;
 
-			using Source = market::Source;
-
-			using sources_container_t = std::unordered_map < std::string,
-				std::unordered_map < std::string, std::shared_ptr < Source > > > ;
-
-		public:
-
-			struct Date_Time
-			{
-			public:
-
-				std::time_t to_time_t() const;
-
-			public:
-
-				unsigned int year   = 0U;
-				unsigned int month  = 0U;
-				unsigned int day    = 0U;
-
-				unsigned int hour   = 0U;
-				unsigned int minute = 0U;
-				unsigned int second = 0U;
-			};
-
-		public:
-
-			friend bool operator== (const Date_Time & lhs, const Date_Time & rhs);
-			friend bool operator!= (const Date_Time & lhs, const Date_Time & rhs);
-			friend bool operator<  (const Date_Time & lhs, const Date_Time & rhs);
-			friend bool operator<= (const Date_Time & lhs, const Date_Time & rhs);
-			friend bool operator>  (const Date_Time & lhs, const Date_Time & rhs);
-			friend bool operator>= (const Date_Time & lhs, const Date_Time & rhs);
-
-		private:
-
-			struct Level
-			{
-			public:
-
-				using date_time_t = Date_Time;
-
-			public:
-
-				date_time_t begin;
-
-				double price = 0.0;
-
-				std::size_t strength = 0U;
-			};
-
-		private:
-
-			friend std::ostream & operator<< (std::ostream & stream, const Level & level);
-
-		private:
+			using limits_container_t = std::unordered_map < std::string, Candle::raw_date_t > ;
 
 			using levels_container_t = std::vector < Level > ;
 
 			using supports_resistances_container_t = 
 				std::unordered_map < std::string, levels_container_t > ;
 
-		public:
+			using candles_container_t = std::vector < Candle > ;
 
-			struct Candle
-			{
-			public:
+			using sources_container_t = std::unordered_map < std::string,
+				std::unordered_map < std::string, std::shared_ptr < Source > > > ;
 
-				using raw_date_t = unsigned int;
-				using raw_time_t = unsigned int;
+			using charts_container_t = std::unordered_map < std::string,
+				std::unordered_map < std::string, candles_container_t > > ;
 
-			public:
+			using self_similarity_matrix_t = boost::multi_array < double, 2U > ;
 
-				using date_time_t = Date_Time;
+			using self_similarities_container_t = std::unordered_map < std::string,
+				self_similarity_matrix_t > ;
 
-				using price_t = double;
+			using distances_matrix_t = boost::multi_array < double, 2U > ;
 
-				using volume_t = unsigned long long;
+			using pair_similarity_matrix_t = boost::multi_array < double, 2U > ;
 
-			public:
+			using pair_similarities_container_t = std::unordered_map < std::string,
+				pair_similarity_matrix_t > ;
 
-				void update_date_time() noexcept;
+			using pair_correlation_matrix_t = boost::multi_array < double, 2U > ;
 
-			public:
+			using pair_correlations_container_t = std::unordered_map < std::string,
+				pair_correlation_matrix_t > ;
 
-				static inline const std::size_t prediction_range = 5U;
+			using indicators_container_t =
+				std::vector < std::function < void(candles_container_t &) > > ;
 
-			public:
+			using oscillators_container_t =
+				std::vector < std::function < void(candles_container_t &) > > ;
 
-				raw_date_t raw_date = 0U;
-				raw_time_t raw_time = 0U;
-
-			public:
-
-				date_time_t date_time;
-
-				price_t price_open  = 0.0;
-				price_t price_high  = 0.0;
-				price_t price_low   = 0.0;
-				price_t price_close = 0.0;
-
-				volume_t volume = 0ULL;
-
-				double price_deviation = 0.0;
-
-				double price_deviation_open = 0.0;
-
-				double price_deviation_max = 0.0;
-				double price_deviation_min = 0.0;
-
-				double volume_deviation = 0.0;
-
-				std::array < double, prediction_range > regression_tags;
-
-				std::string classification_tag;
-
-				int movement_tag = 0;
-
-				Level support;
-				Level resistance;
-			};
+			using thread_pool_t = boost::asio::thread_pool;
 
 		private:
 
@@ -239,30 +177,6 @@ namespace solution
 
 		private:
 
-			using candles_container_t = std::vector < Candle > ;
-
-			using charts_container_t = std::unordered_map < std::string,
-				std::unordered_map < std::string, candles_container_t > > ;
-
-			using self_similarity_matrix_t = boost::multi_array < double, 2U > ;
-
-			using self_similarities_container_t = std::unordered_map < std::string,
-				self_similarity_matrix_t > ;
-
-			using distances_matrix_t = boost::multi_array < double, 2U > ;
-
-			using pair_similarity_matrix_t = boost::multi_array < double, 2U > ;
-
-			using pair_similarities_container_t = std::unordered_map < std::string,
-				pair_similarity_matrix_t > ;
-
-			using pair_correlation_matrix_t = boost::multi_array < double, 2U > ;
-
-			using pair_correlations_container_t = std::unordered_map < std::string,
-				pair_correlation_matrix_t > ;
-
-		private:
-
 			struct Extension
 			{
 				using extension_t = std::string;
@@ -290,6 +204,7 @@ namespace solution
 
 					static inline const path_t assets_data = "market/assets.data";
 					static inline const path_t scales_data = "market/scales.data";
+					static inline const path_t limits_data = "market/limits.data";
 
 					static inline const path_t self_similarities_data    = "market/output/self_similarities.data";
 					static inline const path_t pair_similarities_data    = "market/output/pair_similarities.data";
@@ -310,6 +225,8 @@ namespace solution
 				static void load_assets(assets_container_t & assets);
 
 				static void load_scales(scales_container_t & scales);
+
+				static void load_limits(limits_container_t & limits);
 
 			public:
 
@@ -338,10 +255,6 @@ namespace solution
 
 		private:
 
-			using thread_pool_t = boost::asio::thread_pool;
-
-		private:
-
 			struct State_Tag
 			{
 				static inline const std::string C = "C";
@@ -361,7 +274,8 @@ namespace solution
 
 		public:
 
-			Market(const Config & config) : m_config(config), m_thread_pool(2U * std::thread::hardware_concurrency())
+			Market(const Config & config) : 
+				m_config(config), m_thread_pool(2U * std::thread::hardware_concurrency())
 			{
 				initialize();
 			}
@@ -393,6 +307,12 @@ namespace solution
 			void load_assets();
 
 			void load_scales();
+
+			void load_limits();
+
+			void load_indicators();
+
+			void load_oscillators();
 
 			void load_charts();
 
@@ -504,6 +424,10 @@ namespace solution
 
 			void update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const;
 
+			void update_indicators(candles_container_t & candles) const;
+
+			void update_oscillators(candles_container_t & candles) const;
+
 		private:
 
 			void save_tagged_charts() const;
@@ -575,6 +499,8 @@ namespace solution
 			static inline const double months_in_year = 12.0; // normalization
 			static inline const double days_in_month  = 31.0; // normalization
 
+			static inline const std::size_t days_in_year = 250U;
+
 		private:
 
 			Config m_config;
@@ -582,6 +508,8 @@ namespace solution
 			assets_container_t m_assets;
 
 			scales_container_t m_scales;
+
+			limits_container_t m_limits;
 
 			sources_container_t m_sources;
 
@@ -595,6 +523,10 @@ namespace solution
 
 			supports_resistances_container_t m_supports_resistances;
 
+			indicators_container_t m_indicators;
+
+			oscillators_container_t m_oscillators;
+
 			thread_pool_t m_thread_pool;
 		};
 
@@ -604,14 +536,14 @@ namespace solution
 
 BOOST_FUSION_ADAPT_STRUCT
 (
-	 solution::system::Market::Candle,
-	(solution::system::Market::Candle::raw_date_t, raw_date)
-	(solution::system::Market::Candle::raw_time_t, raw_time)
-	(solution::system::Market::Candle::price_t,    price_open)
-	(solution::system::Market::Candle::price_t,    price_high)
-	(solution::system::Market::Candle::price_t,    price_low)
-	(solution::system::Market::Candle::price_t,    price_close)
-	(solution::system::Market::Candle::volume_t,   volume)
+	 solution::system::market::Candle,
+	(solution::system::market::Candle::raw_date_t, raw_date)
+	(solution::system::market::Candle::raw_time_t, raw_time)
+	(solution::system::market::Candle::price_t,    price_open)
+	(solution::system::market::Candle::price_t,    price_high)
+	(solution::system::market::Candle::price_t,    price_low)
+	(solution::system::market::Candle::price_t,    price_close)
+	(solution::system::market::Candle::volume_t,   volume)
 )
 
 #endif // #ifndef SOLUTION_SYSTEM_MARKET_HPP

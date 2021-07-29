@@ -30,98 +30,6 @@ namespace solution
 			return std::min(lhs, min(args...));
 		}
 
-		std::time_t Market::Date_Time::to_time_t() const
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				std::tm time = { 
-					static_cast < int > (second), 
-					static_cast < int > (minute), 
-					static_cast < int > (hour), 
-					static_cast < int > (day), 
-					static_cast < int > (month) - 1, 
-					static_cast < int > (year) - 1900 };
-
-				return std::mktime(&time);
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
-		bool operator== (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
-		{
-			return (
-				(lhs.year   == rhs.year  ) &&
-				(lhs.month  == rhs.month ) &&
-				(lhs.day    == rhs.day   ) &&
-				(lhs.hour   == rhs.hour  ) &&
-				(lhs.minute == rhs.minute) &&
-				(lhs.second == rhs.second));
-		}
-
-		bool operator!= (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
-		{
-			return !(lhs == rhs);
-		}
-
-		bool operator< (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
-		{
-			return (lhs.to_time_t() < rhs.to_time_t());
-		}
-
-		bool operator<= (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
-		{
-			return !(lhs > rhs);
-		}
-
-		bool operator> (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
-		{
-			return (lhs.to_time_t() > rhs.to_time_t());
-		}
-
-		bool operator>= (const Market::Date_Time & lhs, const Market::Date_Time & rhs)
-		{
-			return !(lhs < rhs);
-		}
-
-		std::ostream & operator<< (std::ostream & stream, const Market::Level & level)
-		{
-			static const char delimeter = ',';
-
-			stream <<
-				level.begin.year  << delimeter << std::setfill('0') << std::setw(2) <<
-				level.begin.month << delimeter << std::setfill('0') << std::setw(2) <<
-				level.begin.day   << delimeter;
-
-			stream << std::setprecision(6) << std::fixed << level.price << delimeter << level.strength;
-
-			return stream;
-		}
-
-		void Market::Candle::update_date_time() noexcept
-		{
-			RUN_LOGGER(logger);
-
-			try
-			{
-				date_time.year   = (raw_date / 100U) / 100U;
-				date_time.month  = (raw_date / 100U) % 100U;
-				date_time.day    = (raw_date % 100U);
-
-				date_time.hour   = (raw_time / 100U) / 100U;
-				date_time.minute = (raw_time / 100U) % 100U;
-				date_time.second = (raw_time % 100U);
-			}
-			catch (const std::exception & exception)
-			{
-				shared::catch_handler < market_exception > (logger, exception);
-			}
-		}
-
 		void Market::Data::load_assets(assets_container_t & assets)
 		{
 			RUN_LOGGER(logger);
@@ -170,6 +78,41 @@ namespace solution
 				while (std::getline(fin, scale))
 				{
 					scales.push_back(scale);
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::Data::load_limits(limits_container_t & limits)
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				auto path = File::limits_data;
+
+				std::fstream fin(path.string(), std::ios::in);
+
+				if (!fin)
+				{
+					throw market_exception("cannot open file " + path.string());
+				}
+
+				std::string line;
+
+				limits_container_t::key_type asset;
+				limits_container_t::mapped_type date;
+
+				while (std::getline(fin, line))
+				{
+					std::stringstream sin(line, std::ios::in);
+
+					sin >> asset >> date;
+
+					limits[asset] = date;
 				}
 			}
 			catch (const std::exception & exception)
@@ -400,7 +343,7 @@ namespace solution
 			}
 		}
 
-		unsigned int day_of_week(const Market::Candle & candle)
+		unsigned int day_of_week(const market::Candle & candle)
 		{
 			RUN_LOGGER(logger);
 
@@ -565,156 +508,143 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
-				const auto delta = config.prediction_timesteps - 1U;
+				fout.close();
 
-				std::ostringstream sout;
-
-				const auto volume_history_length = config.volume_timesteps;
-
-				if (volume_history_length > config.prediction_timesteps)
-				{
-					throw std::runtime_error("volume history length is too long");
-				}
+				const auto delta = config.prediction_timesteps;
 
 				static const char delimeter = ',';
 
 				for (const auto & [asset, scales] : charts)
 				{
+					std::ostringstream sout;
+
 					for (const auto & [scale, candles] : scales)
 					{
-						const auto size = std::size(candles) - delta - 
-							std::count_if(std::next(std::begin(candles), delta), std::end(candles),
-								[](const auto & candle) { return (candle.movement_tag == 0); });
+						const auto size = std::size(candles) - delta + 1U - days_in_year / 2U;
 
 						sout << asset << " " << scale << " " << size << "\n";
 
-						const auto price_deviation_multiplier  = Market::get_price_deviation_multiplier (scale);
-						const auto volume_deviation_multiplier = Market::get_volume_deviation_multiplier(scale);
-
-						for (auto i = delta; i < std::size(candles); ++i)
+						for (auto i = days_in_year / 2U; i < std::size(candles) - delta + 1U; ++i)
 						{
-							const auto & candle = candles[i];
+							auto min_max_price_close = std::minmax_element(std::next(std::begin(candles), i),
+								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
+									{ return (lhs.price_close < rhs.price_close); });
 
-							if (candle.movement_tag == 0)
+							auto min_price_close = min_max_price_close.first ->price_close;
+							auto max_price_close = min_max_price_close.second->price_close;
+
+							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
 							{
-								continue;
+								auto min_max_indicator = std::minmax_element(std::next(std::begin(candles), i),
+									std::next(std::begin(candles), i + delta), [k](const auto & lhs, const auto & rhs)
+										{ return (lhs.indicators[k] < rhs.indicators[k]); });
+
+								min_price_close = std::min(min_price_close, min_max_indicator.first ->indicators[k]);
+								max_price_close = std::max(max_price_close, min_max_indicator.second->indicators[k]);
 							}
 
-							/*
-							for (auto j = 1U; j < 13U; ++j)
+							auto delta_price_close = max_price_close - min_price_close;
+
+							if (delta_price_close < std::numeric_limits < double > ::epsilon())
 							{
-								if (j == candle.date_time.month)
+								throw std::runtime_error("division by zero for delta price close");
+							}
+
+							for (auto j = i; j < i + delta; ++j)
+							{
+								sout << std::setprecision(3) << std::fixed << std::noshowpos <<
+									(candles[j].price_close - min_price_close) / delta_price_close << delimeter;
+							}
+
+							auto min_max_volume = std::minmax_element(std::next(std::begin(candles), i),
+								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
+									{ return (lhs.volume < rhs.volume); });
+
+							auto min_volume = min_max_volume.first ->volume;
+							auto max_volume = min_max_volume.second->volume;
+
+							auto delta_volume = max_volume - min_volume;
+
+							if (delta_volume == 0ULL)
+							{
+								throw std::runtime_error("division by zero for delta volume");
+							}
+
+							for (auto j = i; j < i + delta; ++j)
+							{
+								sout << std::setprecision(3) << std::fixed << std::noshowpos <<
+									static_cast < double > (candles[j].volume - min_volume) / 
+									static_cast < double > (delta_volume) << delimeter;
+							}
+
+							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
+							{
+								for (auto j = i; j < i + delta; ++j)
 								{
-									sout << "1" << delimeter;
+									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
+										(candles[j].indicators[k] - min_price_close) / delta_price_close << delimeter;
+								}
+							}
+
+							for (auto j = i; j < i + delta; ++j)
+							{
+								const auto & candle = candles[j];
+
+								if (candle.price_close < std::numeric_limits < double > ::epsilon())
+								{
+									throw std::domain_error("division by zero");
+								}
+
+								Level level;
+
+								auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
+
+								if (support_deviation < config.level_max_deviation)
+								{
+									level = candle.support;
+								}
+
+								auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
+
+								if (resistance_deviation < config.level_max_deviation &&
+									resistance_deviation < support_deviation &&
+									candle.support.begin < candle.resistance.begin)
+								{
+									level = candle.resistance;
+								}
+
+								/*
+								if (level.strength != 0U)
+								{
+									auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
+										seconds_in_day / config.level_max_lifetime;
+
+									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
+										(level_alive > 1.0 ? 0.0 : level_alive) << delimeter;
 								}
 								else
 								{
-									sout << "0" << delimeter;
+									sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
 								}
+								*/
 							}
 
-							sout << std::setprecision(3) << std::fixed << std::noshowpos << 
-								candle.date_time.day / days_in_month << delimeter;
-							*/
-
-							const auto day = day_of_week(candle);
-
-							for (auto j = 0U; j < 5U; ++j)
+							for (auto regression_tag : candles[i + delta - 1U].regression_tags)
 							{
-								if (j == day)
-								{
-									sout << "1" << delimeter;
-								}
-								else
-								{
-									sout << "0" << delimeter;
-								}
-							}
-
-							if (candle.price_close < std::numeric_limits < double > ::epsilon())
-							{
-								throw std::domain_error("division by zero");
-							}
-
-							Level level;
-
-							auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
-
-							if (support_deviation < config.level_max_deviation)
-							{
-								level = candle.support;
-							}
-
-							auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
-
-							if (resistance_deviation < config.level_max_deviation && 
-								resistance_deviation < support_deviation && 
-								candle.support.begin < candle.resistance.begin)
-							{
-								level = candle.resistance;
-							}
-
-							if (level.strength != 0U)
-							{
-								auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
-									seconds_in_day / config.level_max_lifetime;
-
-								sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-									(level_alive > 1.0 ? 0.0 : level_alive) << delimeter;
-							}
-							else
-							{
-								sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
-							}
-
-							for (auto j = 0U; j < volume_history_length; ++j)
-							{
-								auto volume_deviation = candles[i - volume_history_length + j + 1U].volume_deviation * 
-									volume_deviation_multiplier;
-
-								sout << std::setprecision(6) << std::fixed << std::showpos <<
-									(volume_deviation > 1.0 ? 1.0 : (volume_deviation < -1.0 ? -1.0 : volume_deviation)) << delimeter;
-							}
-
-							for (auto j = 0U; j <= delta; ++j)
-							{
-								auto price_deviation_1 = candles[i - delta + j].price_deviation_open * price_deviation_multiplier;
-								auto price_deviation_2 = candles[i - delta + j].price_deviation      * price_deviation_multiplier;
-
-								auto price_deviation = price_deviation_1 + price_deviation_2;
-
-								sout << std::setprecision(6) << std::fixed << std::showpos <<
-									(price_deviation > 1.0 ? 1.0 : (price_deviation < -1.0 ? -1.0 : price_deviation)) << delimeter;
-							}
-
-							auto price_deviation_1 = candle.price_deviation_open * price_deviation_multiplier;
-							auto price_deviation_2 = candle.price_deviation      * price_deviation_multiplier;
-							auto price_deviation_3 = candle.price_deviation_max  * price_deviation_multiplier;
-							auto price_deviation_4 = candle.price_deviation_min  * price_deviation_multiplier;
-
-							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								(price_deviation_3 > 1.0 ? 1.0 : price_deviation_3) << delimeter;
-							sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-								(price_deviation_4 > 1.0 ? 1.0 : price_deviation_4) << delimeter;
-							sout << std::setprecision(6) << std::fixed << std::showpos <<
-								(price_deviation_1 > 1.0 ? 1.0 : (price_deviation_1 < -1.0 ? -1.0 : price_deviation_1)) << delimeter;
-							sout << std::setprecision(6) << std::fixed << std::showpos <<
-								(price_deviation_2 > 1.0 ? 1.0 : (price_deviation_2 < -1.0 ? -1.0 : price_deviation_2)) << delimeter;
-							
-							for (auto regression_tag : candle.regression_tags)
-							{
-								sout << std::setprecision(6) << std::fixed << std::showpos <<
+								sout << std::setprecision(3) << std::fixed << std::showpos <<
 									regression_tag << delimeter;
 							}
 
-							sout << candle.classification_tag << delimeter;
+							sout << candles[i + delta - 1U].classification_tag << delimeter;
 
-							sout << std::showpos << candle.movement_tag << "\n";
+							sout << std::showpos << candles[i + delta - 1U].movement_tag << "\n";
 						}
 					}
-				}
 
-				fout << sout.str();
+					std::fstream fout(path.string(), std::ios::out | std::ios::app);
+
+					fout << sout.str();
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -891,6 +821,10 @@ namespace solution
 			{
 				load_assets();
 				load_scales();
+				load_limits();
+
+				load_indicators();
+				load_oscillators();
 
 				if (!m_config.required_quik)
 				{
@@ -924,6 +858,78 @@ namespace solution
 			try
 			{
 				Data::load_scales(m_scales);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::load_limits()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				Data::load_limits(m_limits);
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::load_indicators()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_indicators.push_back(market::indicators::SMA (  5U));
+				m_indicators.push_back(market::indicators::SMA ( 20U));
+				m_indicators.push_back(market::indicators::SMA ( 60U));
+				m_indicators.push_back(market::indicators::SMA (125U));
+
+				m_indicators.push_back(market::indicators::WMA (  5U));
+				m_indicators.push_back(market::indicators::WMA ( 20U));
+				m_indicators.push_back(market::indicators::WMA ( 60U));
+				m_indicators.push_back(market::indicators::WMA (125U));
+
+				m_indicators.push_back(market::indicators::VWMA(  5U));
+				m_indicators.push_back(market::indicators::VWMA( 20U));
+				m_indicators.push_back(market::indicators::VWMA( 60U));
+				m_indicators.push_back(market::indicators::VWMA(125U));
+				
+				m_indicators.push_back(market::indicators::EMA (  5U));
+				m_indicators.push_back(market::indicators::EMA ( 20U));
+				m_indicators.push_back(market::indicators::EMA ( 60U));
+				m_indicators.push_back(market::indicators::EMA (125U));
+				
+				m_indicators.push_back(market::indicators::DEMA(  5U));
+				m_indicators.push_back(market::indicators::DEMA( 20U));
+				m_indicators.push_back(market::indicators::DEMA( 60U));
+				m_indicators.push_back(market::indicators::DEMA(125U));
+
+				m_indicators.push_back(market::indicators::TEMA(  5U));
+				m_indicators.push_back(market::indicators::TEMA( 20U));
+				m_indicators.push_back(market::indicators::TEMA( 60U));
+				m_indicators.push_back(market::indicators::TEMA(125U));
+				
+				m_indicators.push_back(market::indicators::AMA(10U, 2U, 30U)); // Perry Kaufman
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::load_oscillators()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				m_oscillators.push_back(market::oscillators::MACD(26U, 12U, 9U)); // Gerald Appel
 			}
 			catch (const std::exception & exception)
 			{
@@ -967,7 +973,7 @@ namespace solution
 
 								std::scoped_lock lock(mutex);
 
-								if (std::size(candles) >= m_config.prediction_timesteps * 2U)
+								if (std::size(candles) > days_in_year)
 								{
 									m_charts[asset][scale] = std::move(candles);
 								}
@@ -1082,7 +1088,13 @@ namespace solution
 
 				while (std::getline(fin, line))
 				{
-					candles.push_back(parse(line));
+					auto candle = parse(line);
+
+					if (m_limits.find(asset) == std::end(m_limits) || 
+						candle.raw_date >= m_limits.at(asset))
+					{
+						candles.push_back(std::move(candle));
+					}
 				}
 
 				std::reverse(std::begin(candles), std::end(candles));
@@ -1149,14 +1161,14 @@ namespace solution
 					candles[i].price_deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
 
 					if ((candles[i].price_deviation >  m_config.critical_deviation ||
-						 candles[i].price_deviation < -m_config.critical_deviation) && !flag)
+						 candles[i].price_deviation < -m_config.critical_deviation / 2.0) && !flag)
 					{
 						std::ostringstream sout;
 
 						sout << "price deviation exception: " << 
-							std::setw(5) << std::left  << std::setfill(' ') << asset << " " << scale  << " " <<
-							std::setw(4) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.year  << "." <<
-							std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.month << "." <<
+							std::setw(5) << std::left  << std::setfill(' ') << asset << " " << 
+							std::setw(4) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.year  <<
+							std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.month <<
 							std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.day;
 
 						logger.write(Severity::empty, sout.str());
@@ -1180,14 +1192,14 @@ namespace solution
 						candles[i].price_deviation_open = (candles[i].price_open - candles[i - 1].price_close) / candles[i - 1].price_close;
 
 						if ((candles[i].price_deviation_open >  m_config.critical_deviation ||
-							 candles[i].price_deviation_open < -m_config.critical_deviation) && !flag)
+							 candles[i].price_deviation_open < -m_config.critical_deviation / 2.0) && !flag)
 						{
 							std::ostringstream sout;
 
 							sout << "price deviation exception: " << 
-								std::setw(5) << std::left  << std::setfill(' ') << asset << " " << scale << " " <<
-								std::setw(4) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.year  << "." <<
-								std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.month << "." <<
+								std::setw(5) << std::left  << std::setfill(' ') << asset << " " << 
+								std::setw(4) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.year  <<
+								std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.month <<
 								std::setw(2) << std::right << std::setfill('0') << std::noshowpos << candles[i].date_time.day;
 
 							logger.write(Severity::empty, sout.str());
@@ -2061,9 +2073,11 @@ namespace solution
 
 								update_movement_tags(candles);
 
-								auto & levels = m_supports_resistances.at(asset);
+								update_supports_resistances(candles, m_supports_resistances.at(asset));
 
-								update_supports_resistances(candles, levels);
+								update_indicators(candles);
+
+								update_oscillators(candles);
 							});
 
 						futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
@@ -2297,7 +2311,7 @@ namespace solution
 			}
 		}
 
-		void Market::update_movement_tags(candles_container_t & candles) const
+		void Market::update_movement_tags(candles_container_t & candles) const // TODO
 		{
 			RUN_LOGGER(logger);
 
@@ -2372,6 +2386,40 @@ namespace solution
 			}
 		}
 
+		void Market::update_indicators(candles_container_t & candles) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & indicator : m_indicators)
+				{
+					indicator(candles);
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::update_oscillators(candles_container_t & candles) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (const auto & oscillator : m_oscillators)
+				{
+					oscillator(candles);
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
 		void Market::save_tagged_charts() const
 		{
 			RUN_LOGGER(logger);
@@ -2410,9 +2458,11 @@ namespace solution
 
 								update_movement_tags(candles);
 
-								auto & levels = m_supports_resistances.at(asset);
+								update_supports_resistances(candles, m_supports_resistances.at(asset));
 
-								update_supports_resistances(candles, levels);
+								update_indicators(candles);
+
+								update_oscillators(candles);
 							});
 
 						futures.push_back(boost::asio::post(m_thread_pool, std::move(task)));
@@ -2498,7 +2548,7 @@ namespace solution
 
 							std::scoped_lock lock(mutex);
 
-							if (std::size(candles) >= m_config.prediction_timesteps * 2U)
+							if (std::size(candles) > days_in_year)
 							{
 								m_charts[asset][scale] = std::move(candles);
 							}
@@ -2575,6 +2625,10 @@ namespace solution
 
 				update_supports_resistances(candles, m_supports_resistances.at(asset));
 
+				update_indicators(candles);
+
+				update_oscillators(candles);
+
 				return serialize_candles(candles);
 			}
 			catch (const std::exception & exception)
@@ -2625,6 +2679,10 @@ namespace solution
 					update_deviations(asset, scale, candles);
 
 					update_supports_resistances(candles, m_supports_resistances.at(asset));
+
+					update_indicators(candles);
+
+					update_oscillators(candles);
 
 					results.push_back(serialize_candles(candles));
 				}
