@@ -941,37 +941,41 @@ namespace solution
 
 			try
 			{
-				m_indicators.push_back(market::indicators::SMA (  5U));
-				m_indicators.push_back(market::indicators::SMA ( 20U));
-				m_indicators.push_back(market::indicators::SMA ( 60U));
-				m_indicators.push_back(market::indicators::SMA (125U));
+				//m_indicators.push_back(market::indicators::SMA (  5U));
+				//m_indicators.push_back(market::indicators::SMA ( 20U));
+				//m_indicators.push_back(market::indicators::SMA ( 60U));
+				//m_indicators.push_back(market::indicators::SMA (125U));
 
-				m_indicators.push_back(market::indicators::WMA (  5U));
-				m_indicators.push_back(market::indicators::WMA ( 20U));
-				m_indicators.push_back(market::indicators::WMA ( 60U));
-				m_indicators.push_back(market::indicators::WMA (125U));
+				//m_indicators.push_back(market::indicators::WMA (  5U));
+				//m_indicators.push_back(market::indicators::WMA ( 20U));
+				//m_indicators.push_back(market::indicators::WMA ( 60U));
+				//m_indicators.push_back(market::indicators::WMA (125U));
 
-				m_indicators.push_back(market::indicators::VWMA(  5U));
-				m_indicators.push_back(market::indicators::VWMA( 20U));
-				m_indicators.push_back(market::indicators::VWMA( 60U));
-				m_indicators.push_back(market::indicators::VWMA(125U));
+				//m_indicators.push_back(market::indicators::VWMA(  5U));
+				//m_indicators.push_back(market::indicators::VWMA( 20U));
+				//m_indicators.push_back(market::indicators::VWMA( 60U));
+				//m_indicators.push_back(market::indicators::VWMA(125U));
 				
 				m_indicators.push_back(market::indicators::EMA (  5U));
 				m_indicators.push_back(market::indicators::EMA ( 20U));
 				m_indicators.push_back(market::indicators::EMA ( 60U));
 				m_indicators.push_back(market::indicators::EMA (125U));
 				
-				m_indicators.push_back(market::indicators::DEMA(  5U));
-				m_indicators.push_back(market::indicators::DEMA( 20U));
-				m_indicators.push_back(market::indicators::DEMA( 60U));
-				m_indicators.push_back(market::indicators::DEMA(125U));
+				//m_indicators.push_back(market::indicators::DEMA(  5U));
+				//m_indicators.push_back(market::indicators::DEMA( 20U));
+				//m_indicators.push_back(market::indicators::DEMA( 60U));
+				//m_indicators.push_back(market::indicators::DEMA(125U));
 
-				m_indicators.push_back(market::indicators::TEMA(  5U));
-				m_indicators.push_back(market::indicators::TEMA( 20U));
-				m_indicators.push_back(market::indicators::TEMA( 60U));
-				m_indicators.push_back(market::indicators::TEMA(125U));
+				//m_indicators.push_back(market::indicators::TEMA(  5U));
+				//m_indicators.push_back(market::indicators::TEMA( 20U));
+				//m_indicators.push_back(market::indicators::TEMA( 60U));
+				//m_indicators.push_back(market::indicators::TEMA(125U));
 				
 				m_indicators.push_back(market::indicators::AMA(10U, 2U, 30U));
+
+				m_indicators.push_back(market::indicators::BOLLINGER_BANDS(10U, 1.5));
+				m_indicators.push_back(market::indicators::BOLLINGER_BANDS(20U, 2.0));
+				m_indicators.push_back(market::indicators::BOLLINGER_BANDS(50U, 2.5));
 			}
 			catch (const std::exception & exception)
 			{
