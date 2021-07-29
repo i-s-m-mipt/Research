@@ -1,5 +1,5 @@
-#ifndef SOLUTION_SYSTEM_MARKET_INDICATORS_BOLLINGER_BANDS_HPP
-#define SOLUTION_SYSTEM_MARKET_INDICATORS_BOLLINGER_BANDS_HPP
+#ifndef SOLUTION_SYSTEM_MARKET_OSCILLATORS_CMO_HPP
+#define SOLUTION_SYSTEM_MARKET_OSCILLATORS_CMO_HPP
 
 #include <boost/config.hpp>
 
@@ -7,7 +7,7 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
-#include "../indicators.hpp"
+#include "../oscillators.hpp"
 
 namespace solution
 {
@@ -15,14 +15,13 @@ namespace solution
 	{
 		namespace market
 		{
-			namespace indicators
+			namespace oscillators
 			{
-				class BOLLINGER_BANDS
+				class CMO
 				{
 				public:
 
-					explicit BOLLINGER_BANDS(std::size_t timesteps, double deviations) : 
-						m_timesteps(timesteps), m_deviations(deviations)
+					explicit CMO(std::size_t timesteps) : m_timesteps(timesteps)
 					{
 						initialize();
 					}
@@ -38,11 +37,9 @@ namespace solution
 				private:
 
 					std::size_t m_timesteps;
-
-					double m_deviations;
 				};
 
-			} // namespace indicators
+			} // namespace oscillators
 
 		} // namespace market
 
@@ -50,4 +47,4 @@ namespace solution
 
 } // namespace solution
 
-#endif // #ifndef SOLUTION_SYSTEM_MARKET_INDICATORS_BOLLINGER_BANDS_HPP
+#endif // #ifndef SOLUTION_SYSTEM_MARKET_OSCILLATORS_CMO_HPP

@@ -166,7 +166,7 @@
     <ClCompile Include="..\source\main.cpp" />
     <ClCompile Include="..\source\market\candle\candle.cpp" />
     <ClCompile Include="..\source\market\indicators\ama\ama.cpp" />
-    <ClCompile Include="..\source\market\indicators\bollinger_bands\bollinger_bands.cpp" />
+    <ClCompile Include="..\source\market\indicators\bb\bb.cpp" />
     <ClCompile Include="..\source\market\indicators\dema\dema.cpp" />
     <ClCompile Include="..\source\market\indicators\ema\ema.cpp" />
     <ClCompile Include="..\source\market\indicators\sma\sma.cpp" />
@@ -175,6 +175,7 @@
     <ClCompile Include="..\source\market\indicators\wma\wma.cpp" />
     <ClCompile Include="..\source\market\market.cpp" />
     <ClCompile Include="..\source\market\oscillators\aroon\aroon.cpp" />
+    <ClCompile Include="..\source\market\oscillators\cmo\cmo.cpp" />
     <ClCompile Include="..\source\market\oscillators\macd\macd.cpp" />
     <ClCompile Include="..\source\market\source\source.cpp" />
     <ClCompile Include="..\source\system\system.cpp" />
@@ -186,7 +187,7 @@
     <ClInclude Include="..\source\detail\julia\state.hpp" />
     <ClInclude Include="..\source\market\candle\candle.hpp" />
     <ClInclude Include="..\source\market\indicators\ama\ama.hpp" />
-    <ClInclude Include="..\source\market\indicators\bollinger_bands\bollinger_bands.hpp" />
+    <ClInclude Include="..\source\market\indicators\bb\bb.hpp" />
     <ClInclude Include="..\source\market\indicators\dema\dema.hpp" />
     <ClInclude Include="..\source\market\indicators\ema\ema.hpp" />
     <ClInclude Include="..\source\market\indicators\indicators.hpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="..\source\market\indicators\wma\wma.hpp" />
     <ClInclude Include="..\source\market\market.hpp" />
     <ClInclude Include="..\source\market\oscillators\aroon\aroon.hpp" />
+    <ClInclude Include="..\source\market\oscillators\cmo\cmo.hpp" />
     <ClInclude Include="..\source\market\oscillators\macd\macd.hpp" />
     <ClInclude Include="..\source\market\oscillators\oscillators.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />

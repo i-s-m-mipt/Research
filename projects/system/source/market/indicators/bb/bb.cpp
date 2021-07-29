@@ -1,4 +1,4 @@
-#include "bollinger_bands.hpp"
+#include "bb.hpp"
 
 namespace solution
 {
@@ -8,7 +8,7 @@ namespace solution
 		{
 			namespace indicators
 			{
-				void BOLLINGER_BANDS::initialize() const
+				void BB::initialize() const
 				{
 					RUN_LOGGER(logger);
 
@@ -30,7 +30,7 @@ namespace solution
 					}
 				}
 
-				void BOLLINGER_BANDS::operator()(candles_container_t & candles) const
+				void BB::operator()(candles_container_t & candles) const
 				{
 					RUN_LOGGER(logger);
 

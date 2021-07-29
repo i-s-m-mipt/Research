@@ -54,10 +54,11 @@
 #include "indicators/dema/dema.hpp"
 #include "indicators/tema/tema.hpp"
 #include "indicators/ama/ama.hpp"
-#include "indicators/bollinger_bands/bollinger_bands.hpp"
+#include "indicators/bb/bb.hpp"
 
 #include "oscillators/macd/macd.hpp"
 #include "oscillators/aroon/aroon.hpp"
+#include "oscillators/cmo/cmo.hpp"
 
 #include "../config/config.hpp"
 
