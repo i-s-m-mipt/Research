@@ -31,11 +31,11 @@ namespace solution
 
 					try
 					{
-						candles[m_timesteps].indicators.push_back(candles[m_timesteps].price_close);
+						candles[m_timesteps - 1U].indicators.push_back(candles[m_timesteps - 1U].price_close);
 
-						for (auto i = m_timesteps + 1U; i < std::size(candles); ++i)
+						for (auto i = m_timesteps; i < std::size(candles); ++i)
 						{
-							auto direction = std::abs(candles[i].price_close - candles[i - m_timesteps - 1U].price_close);
+							auto direction = std::abs(candles[i].price_close - candles[i - m_timesteps].price_close);
 
 							auto volatility = 0.0;
 
