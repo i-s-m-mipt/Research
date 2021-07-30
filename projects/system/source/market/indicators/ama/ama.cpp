@@ -39,7 +39,7 @@ namespace solution
 
 							auto volatility = 0.0;
 
-							for (auto j = i - m_timesteps - 1U; j < i; ++j)
+							for (auto j = i - m_timesteps; j < i; ++j)
 							{
 								volatility += std::abs(candles[j].price_close - candles[j + 1U].price_close);
 							}
