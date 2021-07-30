@@ -36,28 +36,21 @@ namespace solution
 
 					try
 					{
-						auto value = 0.0;
-
-						for (auto i = 0U; i < m_timesteps; ++i)
-						{
-							value += candles[i].price_close;
-						}
-
-						value /= m_timesteps;
-
 						std::vector < double > sma;
 
-						sma.reserve(std::size(candles));
+						sma.reserve(std::size(candles) - m_timesteps + 1U);
 
-						sma.push_back(value);
+						sma.push_back(std::transform_reduce(std::begin(candles),
+							std::next(std::begin(candles), m_timesteps), 0.0, std::plus <> (),
+								[](const auto & candle) { return candle.price_close; }) / m_timesteps);
 
 						for (auto i = m_timesteps; i < std::size(candles); ++i)
 						{
-							sma.push_back(sma.back() - candles[i - m_timesteps].price_close / 
-								m_timesteps + candles[i].price_close / m_timesteps);
+							sma.push_back(sma.back() + (candles[i].price_close -
+								candles[i - m_timesteps].price_close) / m_timesteps);
 						}
 
-						for (auto i = m_timesteps; i < std::size(candles); ++i)
+						for (auto i = m_timesteps; i <= std::size(candles); ++i)
 						{
 							auto s = 0.0;
 
