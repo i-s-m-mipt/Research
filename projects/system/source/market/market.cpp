@@ -2387,18 +2387,32 @@ namespace solution
 
 			try
 			{
-				for (auto i = 0U; i < std::size(candles) - 1U; ++i)
+				for (auto i = 0U; i < std::size(candles) - market::Candle::prediction_range; ++i)
 				{
 					auto previous_price_close = candles[i].price_close;
 
-					auto delta_L = std::abs(candles[i + 1U].price_high - previous_price_close);
-					auto delta_S = std::abs(candles[i + 1U].price_low  - previous_price_close);
+					auto max_price = max(
+						candles[i + 1U].price_high,
+						candles[i + 2U].price_high,
+						candles[i + 3U].price_high,
+						candles[i + 4U].price_high,
+						candles[i + 5U].price_high
+					);
+
+					auto min_price = min(
+						candles[i + 1U].price_low,
+						candles[i + 2U].price_low,
+						candles[i + 3U].price_low,
+						candles[i + 4U].price_low,
+						candles[i + 5U].price_low
+					);
+
+					auto delta_L = std::abs(max_price - previous_price_close);
+					auto delta_S = std::abs(min_price - previous_price_close);
 
 					auto confidence = std::min(delta_L, delta_S) / std::max(delta_L, delta_S);
 
-					if (delta_L / previous_price_close >= m_config.intraday_test_deviation &&
-						delta_S / previous_price_close >= m_config.intraday_test_deviation ||
-						confidence > m_config.mornings_test_confidence)
+					if (confidence > m_config.mornings_test_confidence)
 					{
 						continue;
 					}
