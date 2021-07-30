@@ -559,7 +559,9 @@ namespace solution
 
 							if (delta_price_close < std::numeric_limits < double > ::epsilon())
 							{
-								throw std::runtime_error("division by zero for delta price close");
+								delta_price_close = 1.0;
+
+								logger.write(Severity::error, "division by zero for delta price close of " + asset);
 							}
 
 							for (auto j = i; j < i + delta; ++j)
@@ -586,7 +588,9 @@ namespace solution
 
 							if (delta_volume == 0ULL)
 							{
-								throw std::runtime_error("division by zero for delta volume");
+								delta_volume = 1ULL;
+
+								logger.write(Severity::error, "division by zero for delta volume of " + asset);
 							}
 
 							for (auto j = i; j < i + delta; ++j)
