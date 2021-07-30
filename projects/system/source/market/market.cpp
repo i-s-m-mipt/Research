@@ -977,9 +977,8 @@ namespace solution
 				
 				m_indicators.push_back(market::indicators::AMA(10U, 2U, 30U)); // 1 indicator
 
-				m_indicators.push_back(market::indicators::BB(10U, 1.5)); // 3 indicators, 1 oscillator
-				m_indicators.push_back(market::indicators::BB(20U, 2.0)); // 3 indicators, 1 oscillator
-				m_indicators.push_back(market::indicators::BB(50U, 2.5)); // 3 indicators, 1 oscillator
+				m_indicators.push_back(market::indicators::BB(10U, 1.5)); // 2 indicators, 1 oscillator
+				m_indicators.push_back(market::indicators::BB(20U, 2.0)); // 2 indicators, 1 oscillator
 			}
 			catch (const std::exception & exception)
 			{

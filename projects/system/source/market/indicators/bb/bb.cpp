@@ -45,12 +45,16 @@ namespace solution
 
 						value /= m_timesteps;
 
-						candles[m_timesteps - 1U].indicators.push_back(value);
+						std::vector < double > sma;
+
+						sma.reserve(std::size(candles));
+
+						sma.push_back(value);
 
 						for (auto i = m_timesteps; i < std::size(candles); ++i)
 						{
-							candles[i].indicators.push_back(candles[i - 1U].indicators.back() -
-								candles[i - m_timesteps].price_close / m_timesteps + candles[i].price_close / m_timesteps);
+							sma.push_back(sma.back() - candles[i - m_timesteps].price_close / 
+								m_timesteps + candles[i].price_close / m_timesteps);
 						}
 
 						for (auto i = m_timesteps; i < std::size(candles); ++i)
@@ -59,15 +63,15 @@ namespace solution
 
 							for (auto j = i - m_timesteps; j < i; ++j)
 							{
-								s += std::pow(candles[j].price_close - candles[i - 1U].indicators.back(), 2.0);
+								s += std::pow(candles[j].price_close - sma[i - m_timesteps], 2.0);
 							}
 
 							auto standard_deviation = std::sqrt(s / m_timesteps);
 
-							auto upper_band = candles[i - 1U].indicators.back() + m_deviations * standard_deviation;
-							auto lower_band = candles[i - 1U].indicators.back() - m_deviations * standard_deviation;
+							auto upper_band = sma[i - m_timesteps] + m_deviations * standard_deviation;
+							auto lower_band = sma[i - m_timesteps] - m_deviations * standard_deviation;
 
-							auto bollinger_bands_width = (4.0 * standard_deviation) / candles[i - 1U].indicators.back();
+							auto bollinger_bands_width = (4.0 * standard_deviation) / sma[i - m_timesteps];
 
 							candles[i - 1U].indicators.push_back(upper_band);
 							candles[i - 1U].indicators.push_back(lower_band);
