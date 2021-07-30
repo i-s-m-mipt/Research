@@ -70,6 +70,9 @@
     <Filter Include="source\market\indicators\bb">
       <UniqueIdentifier>{e0200499-2460-4a32-8d7d-16f660131f65}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\oscillators\cci">
+      <UniqueIdentifier>{3759f0d6-c852-4efa-9ff6-f66060d9f2f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -125,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\cmo\cmo.cpp">
       <Filter>source\market\oscillators\cmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\cci\cci.cpp">
+      <Filter>source\market\oscillators\cci</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +196,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\cmo\cmo.hpp">
       <Filter>source\market\oscillators\cmo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\cci\cci.hpp">
+      <Filter>source\market\oscillators\cci</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

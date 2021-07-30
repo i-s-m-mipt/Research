@@ -59,6 +59,7 @@
 #include "oscillators/macd/macd.hpp"
 #include "oscillators/aroon/aroon.hpp"
 #include "oscillators/cmo/cmo.hpp"
+#include "oscillators/cci/cci.hpp"
 
 #include "../config/config.hpp"
 

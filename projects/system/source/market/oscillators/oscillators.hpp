@@ -7,6 +7,7 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
+#include <algorithm>
 #include <climits>
 #include <cmath>
 #include <exception>
