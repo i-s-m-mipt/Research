@@ -31,65 +31,55 @@ namespace solution
 
 					try
 					{
-						std::vector < double > tr (std::size(candles) - 1U, 0.0);
+						const auto k = 2.0 / (m_timesteps + 1.0);
 
-						std::vector < double > pdm(std::size(candles) - 1U, 0.0);
-						std::vector < double > ndm(std::size(candles) - 1U, 0.0);
-						
 						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
+						auto tr_ema = 0.0, pdm_ema = 0.0, ndm_ema = 0.0;
+
+						std::vector < double > dx(std::size(candles) - 1U, 0.0);
 
 						for (auto i = 1U; i < std::size(candles); ++i)
 						{
-							tr[i - 1U] =
+							auto tr = 
 								std::max(candles[i].price_high, candles[i - 1U].price_close) -
 								std::min(candles[i].price_low,  candles[i - 1U].price_close);
 
 							auto pm = candles[i     ].price_high - candles[i - 1U].price_high;
 							auto nm = candles[i - 1U].price_low  - candles[i     ].price_low;
 
+							auto pdm = 0.0;
+							auto ndm = 0.0;
+
 							if (pm - nm > epsilon && pm > epsilon)
 							{
-								pdm[i - 1U] = pm;
+								pdm = pm;
 							}
 
 							if (nm - pm > epsilon && nm > epsilon)
 							{
-								ndm[i - 1U] = nm;
+								ndm = nm;
 							}
+
+							if (i == 1U)
+							{
+								tr_ema = tr, pdm_ema = pdm, ndm_ema = ndm;
+							}
+							else
+							{
+								tr_ema  = k * tr  + (1.0 - k) * tr_ema;
+
+								pdm_ema = k * pdm + (1.0 - k) * pdm_ema;
+								ndm_ema = k * ndm + (1.0 - k) * ndm_ema;
+							}
+
+							auto pdi = pdm_ema / tr_ema;
+							auto ndi = ndm_ema / tr_ema;
+
+							dx[i - 1U] = 100.0 * std::abs(pdi - ndi) / (pdi + ndi);
 						}
 
-						std::vector < double > pdi(std::size(candles) - 1U, 0.0);
-						std::vector < double > ndi(std::size(candles) - 1U, 0.0);
-
-						auto tr_ema  = tr.front();
-
-						auto pdm_ema = pdm.front();
-						auto ndm_ema = ndm.front();
-
-						pdi.front() = pdm_ema / tr_ema;
-						ndi.front() = ndm_ema / tr_ema;
-
-						const auto k = 2.0 / (m_timesteps + 1.0);
-
-						for (auto i = 1U; i < std::size(candles) - 1U; ++i)
-						{
-							tr_ema  = k * tr [i] + (1.0 - k) * tr_ema;
-
-							pdm_ema = k * pdm[i] + (1.0 - k) * pdm_ema;
-							ndm_ema = k * ndm[i] + (1.0 - k) * ndm_ema;
-
-							pdi[i] = pdm_ema / tr_ema;
-							ndi[i] = ndm_ema / tr_ema;
-						}
-
-						std::vector < double > dx(std::size(candles) - 1U, 0.0);
-
-						for (auto i = 0U; i < std::size(dx); ++i)
-						{
-							dx[i] = 100.0 * std::abs(pdi[i] - ndi[i]) / (pdi[i] + ndi[i]);
-						}
-
-						std::vector < double > adx(std::size(candles) - 1U, 0.0);
+						std::vector < double > adx(std::size(dx), 0.0);
 
 						adx.front() = dx.front();
 
@@ -98,7 +88,7 @@ namespace solution
 							adx[i] = k * dx[i] + (1.0 - k) * adx[i - 1U];
 						}
 
-						std::vector < double > adxr(std::size(candles) - 1U - m_timesteps, 0.0);
+						std::vector < double > adxr(std::size(adx) - m_timesteps, 0.0);
 
 						for (auto i = 0U; i < std::size(adxr); ++i)
 						{
