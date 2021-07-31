@@ -16,17 +16,17 @@ namespace solution
 					{
 						if (m_timesteps_long == 0U)
 						{
-							throw std::domain_error("invalid timesteps long value");
+							throw std::domain_error("required: (timesteps_long > 0)");
 						}
 
 						if (m_timesteps_short == 0U)
 						{
-							throw std::domain_error("invalid timesteps short value");
+							throw std::domain_error("required: (timesteps_short > 0)");
 						}
 
 						if (m_timesteps_signal == 0U)
 						{
-							throw std::domain_error("invalid timesteps signal value");
+							throw std::domain_error("required: (timesteps_signal > 0)");
 						}
 					}
 					catch (const std::exception & exception)
