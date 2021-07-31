@@ -64,6 +64,7 @@
 #include "oscillators/dmi/dmi.hpp"
 #include "oscillators/emv/emv.hpp"
 #include "oscillators/eri/eri.hpp"
+#include "oscillators/efi/efi.hpp"
 
 #include "../config/config.hpp"
 
