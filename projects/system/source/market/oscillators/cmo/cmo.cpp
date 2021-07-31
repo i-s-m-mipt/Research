@@ -16,7 +16,7 @@ namespace solution
 					{
 						if (m_timesteps == 0U)
 						{
-							throw std::domain_error("invalid timesteps value");
+							throw std::domain_error("required: (timesteps > 0)");
 						}
 					}
 					catch (const std::exception & exception)
