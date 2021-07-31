@@ -16,7 +16,7 @@ namespace solution
 					{
 						if (m_timesteps == 0U)
 						{
-							throw std::domain_error("invalid timesteps value");
+							throw std::domain_error("required: (timesteps > 0)");
 						}
 					}
 					catch (const std::exception & exception)
@@ -35,18 +35,16 @@ namespace solution
 						{
 							auto value = 0.0;
 
-							market::Candle::volume_t total_volume = 0ULL;
+							auto volume = 0ULL;
 
 							for (auto j = i + 1U - m_timesteps; j <= i; ++j)
 							{
 								value += candles[j].price_close * candles[j].volume;
 
-								total_volume += candles[j].volume;
+								volume += candles[j].volume;
 							}
 
-							value /= total_volume;
-
-							candles[i].indicators.push_back(value);
+							candles[i].indicators.push_back(value / volume);
 						}
 					}
 					catch (const std::exception & exception)
