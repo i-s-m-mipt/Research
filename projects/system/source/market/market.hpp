@@ -62,6 +62,7 @@
 #include "oscillators/cci/cci.hpp"
 #include "oscillators/cc/cc.hpp"
 #include "oscillators/dmi/dmi.hpp"
+#include "oscillators/emv/emv.hpp"
 
 #include "../config/config.hpp"
 
