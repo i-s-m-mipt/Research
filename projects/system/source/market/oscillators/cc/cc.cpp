@@ -16,22 +16,22 @@ namespace solution
 					{
 						if (m_timesteps == 0U)
 						{
-							throw std::domain_error("invalid timesteps value");
+							throw std::domain_error("required: (timesteps > 0)");
 						}
 
 						if (m_timesteps_long == 0U)
 						{
-							throw std::domain_error("invalid timesteps long value");
+							throw std::domain_error("required: (timesteps_long > 0)");
 						}
 
 						if (m_timesteps_short == 0U)
 						{
-							throw std::domain_error("invalid timesteps short value");
+							throw std::domain_error("required: (timesteps_short > 0)");
 						}
 
-						if (m_timesteps_long < m_timesteps_short)
+						if (m_timesteps_long <= m_timesteps_short)
 						{
-							throw std::domain_error("invalid timesteps long and short values");
+							throw std::domain_error("required: (timesteps_long > timesteps_short)");
 						}
 					}
 					catch (const std::exception & exception)
@@ -66,9 +66,8 @@ namespace solution
 								value += rocs[j] * k;
 							}
 
-							value /= (m_timesteps * (m_timesteps + 1.0) / 2.0);
-
-							candles[m_timesteps_long + i].indicators.push_back(value);
+							candles[m_timesteps_long + i].indicators.push_back(
+								value / (m_timesteps * (m_timesteps + 1.0) / 2.0));
 						}
 					}
 					catch (const std::exception & exception)
