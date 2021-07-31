@@ -31,12 +31,12 @@ namespace solution
 
 					try
 					{
-						for (auto i = m_timesteps - 1U; i < std::size(candles); ++i)
+						for (auto i = m_timesteps; i < std::size(candles); ++i)
 						{
 							auto positive_s = 0.0;
 							auto negative_s = 0.0;
 
-							for (auto j = i + 1U - m_timesteps; j < i; ++j)
+							for (auto j = i - m_timesteps; j < i; ++j)
 							{
 								auto delta = candles[j + 1U].price_close - candles[j].price_close;
 
