@@ -61,6 +61,7 @@
 #include "oscillators/cmo/cmo.hpp"
 #include "oscillators/cci/cci.hpp"
 #include "oscillators/cc/cc.hpp"
+#include "oscillators/dmi/dmi.hpp"
 
 #include "../config/config.hpp"
 
