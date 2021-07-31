@@ -16,7 +16,7 @@ namespace solution
 					{
 						if (m_timesteps == 0U)
 						{
-							throw std::domain_error("invalid timesteps value");
+							throw std::domain_error("required: (timesteps > 0)");
 						}
 					}
 					catch (const std::exception & exception)
@@ -31,21 +31,14 @@ namespace solution
 
 					try
 					{
-						auto value = 0.0;
-
-						for (auto i = 0U; i < m_timesteps; ++i)
-						{
-							value += candles[i].price_close;
-						}
-
-						value /= m_timesteps;
-
-						candles[m_timesteps - 1U].indicators.push_back(value);
+						candles.at(m_timesteps - 1U).indicators.push_back(std::transform_reduce(
+							std::begin(candles), std::next(std::begin(candles), m_timesteps), 0.0, 
+								std::plus <> (), [](const auto & candle) { return candle.price_close; }) / m_timesteps);
 
 						for (auto i = m_timesteps; i < std::size(candles); ++i)
 						{
-							candles[i].indicators.push_back(candles[i - 1U].indicators.back() -
-								candles[i - m_timesteps].price_close / m_timesteps + candles[i].price_close / m_timesteps);
+							candles[i].indicators.push_back(candles[i - 1U].indicators.back() + 
+								(candles[i].price_close - candles[i - m_timesteps].price_close) / m_timesteps);
 						}
 					}
 					catch (const std::exception & exception)
