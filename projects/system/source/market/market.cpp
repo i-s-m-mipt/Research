@@ -1002,6 +1002,8 @@ namespace solution
 				m_oscillators.push_back(market::oscillators::CMO(25U)); // 1 oscillator
 
 				m_oscillators.push_back(market::oscillators::CCI(20U)); // 1 oscillator
+
+				m_oscillators.push_back(market::oscillators::CC(10U, 14U, 11U)); // 1 oscillator
 			}
 			catch (const std::exception & exception)
 			{
