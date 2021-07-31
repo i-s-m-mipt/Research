@@ -73,10 +73,13 @@ namespace solution
 								ndm_ema = k * ndm + (1.0 - k) * ndm_ema;
 							}
 
+							tr_ema = std::max(tr_ema, std::numeric_limits < double > ::epsilon());
+
 							auto pdi = pdm_ema / tr_ema;
 							auto ndi = ndm_ema / tr_ema;
 
-							dx[i - 1U] = 100.0 * std::abs(pdi - ndi) / (pdi + ndi);
+							dx[i - 1U] = 100.0 * std::abs(pdi - ndi) / std::max(
+								(pdi + ndi), std::numeric_limits < double > ::epsilon());
 						}
 
 						std::vector < double > adx(std::size(dx), 0.0);
