@@ -16,12 +16,12 @@ namespace solution
 					{
 						if (m_timesteps == 0U)
 						{
-							throw std::domain_error("invalid timesteps value");
+							throw std::domain_error("required: (timesteps > 0)");
 						}
 
 						if (m_deviations < std::numeric_limits < double > ::epsilon())
 						{
-							throw std::domain_error("invalid deviations value");
+							throw std::domain_error("required: (deviations > 0.0)");
 						}
 					}
 					catch (const std::exception & exception)
@@ -52,24 +52,21 @@ namespace solution
 
 						for (auto i = m_timesteps; i <= std::size(candles); ++i)
 						{
-							auto s = 0.0;
+							auto m = sma[i - m_timesteps];
+
+							auto standard_deviation = 0.0;
 
 							for (auto j = i - m_timesteps; j < i; ++j)
 							{
-								s += std::pow(candles[j].price_close - sma[i - m_timesteps], 2.0);
+								standard_deviation += std::pow(candles[j].price_close - m, 2.0);
 							}
 
-							auto standard_deviation = std::sqrt(s / m_timesteps);
+							standard_deviation = std::sqrt(standard_deviation / m_timesteps);
 
-							auto upper_band = sma[i - m_timesteps] + m_deviations * standard_deviation;
-							auto lower_band = sma[i - m_timesteps] - m_deviations * standard_deviation;
+							candles[i - 1U].indicators.push_back(m + m_deviations * standard_deviation);
+							candles[i - 1U].indicators.push_back(m - m_deviations * standard_deviation);
 
-							auto bollinger_bands_width = (4.0 * standard_deviation) / sma[i - m_timesteps];
-
-							candles[i - 1U].indicators.push_back(upper_band);
-							candles[i - 1U].indicators.push_back(lower_band);
-
-							candles[i - 1U].oscillators.push_back(bollinger_bands_width);
+							candles[i - 1U].oscillators.push_back(4.0 * standard_deviation / m);
 						}
 					}
 					catch (const std::exception & exception)
