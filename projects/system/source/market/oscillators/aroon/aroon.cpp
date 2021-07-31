@@ -16,7 +16,7 @@ namespace solution
 					{
 						if (m_timesteps == 0U)
 						{
-							throw std::domain_error("invalid timesteps value");
+							throw std::domain_error("required: (timesteps > 0)");
 						}
 					}
 					catch (const std::exception & exception)
@@ -36,13 +36,8 @@ namespace solution
 							auto min_max = std::minmax_element(std::prev(candle, m_timesteps), std::next(candle),
 								[](const auto & lhs, const auto & rhs) { return (lhs.price_close < rhs.price_close); });
 
-							auto min_distance = std::distance(min_max.first,  candle);
-							auto max_distance = std::distance(min_max.second, candle);
-
-							auto aroon_down = 100.0 * (m_timesteps - min_distance) / m_timesteps;
-							auto aroon_up   = 100.0 * (m_timesteps - max_distance) / m_timesteps;
-							
-							candle->oscillators.push_back(aroon_up - aroon_down);
+							candle->oscillators.push_back((std::distance(min_max.first, candle) - 
+								std::distance(min_max.second, candle)) * 100.0 / m_timesteps);
 						}
 					}
 					catch (const std::exception & exception)
