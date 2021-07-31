@@ -16,7 +16,17 @@ namespace solution
 					{
 						if (m_timesteps == 0U)
 						{
-							throw std::domain_error("invalid timesteps value");
+							throw std::domain_error("required: (timesteps > 0)");
+						}
+
+						if (m_f == 0U)
+						{
+							throw std::domain_error("required: (f > 0)");
+						}
+
+						if (m_s == 0U)
+						{
+							throw std::domain_error("required: (s > 0)");
 						}
 					}
 					catch (const std::exception & exception)
@@ -31,7 +41,12 @@ namespace solution
 
 					try
 					{
-						candles[m_timesteps - 1U].indicators.push_back(candles[m_timesteps - 1U].price_close);
+						auto fastest = 2.0 / (m_f + 1.0);
+						auto slowest = 2.0 / (m_s + 1.0);
+
+						auto delta = fastest - slowest;
+
+						candles.at(m_timesteps - 1U).indicators.push_back(candles.at(m_timesteps - 1U).price_close);
 
 						for (auto i = m_timesteps; i < std::size(candles); ++i)
 						{
@@ -49,9 +64,7 @@ namespace solution
 								throw std::runtime_error("division by zero volatility");
 							}
 
-							auto efficiency_ratio = direction / volatility;
-
-							auto c = std::pow(efficiency_ratio * (m_fastest - m_slowest) + m_slowest, 2.0);
+							auto c = std::pow(delta * direction / volatility + slowest, 2.0);
 
 							candles[i].indicators.push_back(c * candles[i].price_close +
 								(1.0 - c) * candles[i - 1U].indicators.back());

@@ -21,8 +21,8 @@ namespace solution
 				{
 				public:
 
-					explicit AMA(std::size_t timesteps, std::size_t fastest, std::size_t slowest) : 
-						m_timesteps(timesteps), m_fastest(2.0 / (fastest + 1.0)), m_slowest(2.0 / (slowest + 1.0))
+					explicit AMA(std::size_t timesteps, std::size_t f, std::size_t s) : 
+						m_timesteps(timesteps), m_f(f), m_s(s)
 					{
 						initialize();
 					}
@@ -39,8 +39,8 @@ namespace solution
 
 					std::size_t m_timesteps;
 
-					double m_fastest;
-					double m_slowest;
+					std::size_t m_f;
+					std::size_t m_s;
 				};
 
 			} // namespace indicators
