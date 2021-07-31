@@ -82,6 +82,9 @@
     <Filter Include="source\market\oscillators\emv">
       <UniqueIdentifier>{81b96bbc-e636-4e34-b588-7555d605b7c1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\oscillators\eri">
+      <UniqueIdentifier>{387e65ff-e5b3-417f-8a5e-64c222c6d1a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -149,6 +152,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\emv\emv.cpp">
       <Filter>source\market\oscillators\emv</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\eri\eri.cpp">
+      <Filter>source\market\oscillators\eri</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -226,6 +232,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\emv\emv.hpp">
       <Filter>source\market\oscillators\emv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\eri\eri.hpp">
+      <Filter>source\market\oscillators\eri</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
