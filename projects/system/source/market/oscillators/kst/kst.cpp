@@ -85,14 +85,14 @@ namespace solution
 
 						for (auto i = m_timesteps_roc_4; i < std::size(candles); ++i)
 						{
-							auto roc_1 = 100.0 * candles[i].price_close / 
-								candles[i - m_timesteps_roc_1].price_close;
-							auto roc_2 = 100.0 * candles[i].price_close /
-								candles[i - m_timesteps_roc_2].price_close;
-							auto roc_3 = 100.0 * candles[i].price_close /
-								candles[i - m_timesteps_roc_3].price_close;
-							auto roc_4 = 100.0 * candles[i].price_close /
-								candles[i - m_timesteps_roc_4].price_close;
+							auto roc_1 = 100.0 * (candles[i].price_close / 
+								candles[i - m_timesteps_roc_1].price_close - 1.0);
+							auto roc_2 = 100.0 * (candles[i].price_close /
+								candles[i - m_timesteps_roc_2].price_close - 1.0);
+							auto roc_3 = 100.0 * (candles[i].price_close /
+								candles[i - m_timesteps_roc_3].price_close - 1.0);
+							auto roc_4 = 100.0 * (candles[i].price_close /
+								candles[i - m_timesteps_roc_4].price_close - 1.0);
 
 							if (i == m_timesteps_roc_4)
 							{
