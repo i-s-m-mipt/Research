@@ -68,6 +68,7 @@
 #include "oscillators/kvo/kvo.hpp"
 #include "oscillators/kst/kst.hpp"
 #include "oscillators/plo/plo.hpp"
+#include "oscillators/roc/roc.hpp"
 
 #include "../config/config.hpp"
 

@@ -97,6 +97,9 @@
     <Filter Include="source\market\oscillators\plo">
       <UniqueIdentifier>{c02a4988-a4c2-483c-8018-9f9ca9e1f543}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\oscillators\roc">
+      <UniqueIdentifier>{0e097b46-4725-48a4-935c-5bd28aba7ec0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -179,6 +182,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\plo\plo.cpp">
       <Filter>source\market\oscillators\plo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\roc\roc.cpp">
+      <Filter>source\market\oscillators\roc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +277,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\plo\plo.hpp">
       <Filter>source\market\oscillators\plo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\roc\roc.hpp">
+      <Filter>source\market\oscillators\roc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
