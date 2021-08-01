@@ -36,7 +36,7 @@ namespace solution
 						for (auto i = 1U; i < std::size(candles); ++i)
 						{
 							auto raw_force_index = (candles[i].price_close -
-								candles[i - 1U].price_close) / candles[i].volume;
+								candles[i - 1U].price_close) * candles[i].volume;
 
 							if (i == 1U)
 							{
