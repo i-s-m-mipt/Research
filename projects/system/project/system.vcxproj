@@ -182,6 +182,7 @@
     <ClCompile Include="..\source\market\oscillators\efi\efi.cpp" />
     <ClCompile Include="..\source\market\oscillators\emv\emv.cpp" />
     <ClCompile Include="..\source\market\oscillators\eri\eri.cpp" />
+    <ClCompile Include="..\source\market\oscillators\kst\kst.cpp" />
     <ClCompile Include="..\source\market\oscillators\kvo\kvo.cpp" />
     <ClCompile Include="..\source\market\oscillators\macd\macd.cpp" />
     <ClCompile Include="..\source\market\source\source.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="..\source\market\oscillators\efi\efi.hpp" />
     <ClInclude Include="..\source\market\oscillators\emv\emv.hpp" />
     <ClInclude Include="..\source\market\oscillators\eri\eri.hpp" />
+    <ClInclude Include="..\source\market\oscillators\kst\kst.hpp" />
     <ClInclude Include="..\source\market\oscillators\kvo\kvo.hpp" />
     <ClInclude Include="..\source\market\oscillators\macd\macd.hpp" />
     <ClInclude Include="..\source\market\oscillators\oscillators.hpp" />
