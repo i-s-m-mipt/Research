@@ -94,6 +94,9 @@
     <Filter Include="source\market\oscillators\kst">
       <UniqueIdentifier>{0eb1f1be-9e8c-42e0-bdac-9f634cd46589}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\oscillators\plo">
+      <UniqueIdentifier>{c02a4988-a4c2-483c-8018-9f9ca9e1f543}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -173,6 +176,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\kst\kst.cpp">
       <Filter>source\market\oscillators\kst</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\plo\plo.cpp">
+      <Filter>source\market\oscillators\plo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -262,6 +268,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\kst\kst.hpp">
       <Filter>source\market\oscillators\kst</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\plo\plo.hpp">
+      <Filter>source\market\oscillators\plo</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

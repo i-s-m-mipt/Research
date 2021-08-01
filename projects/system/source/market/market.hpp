@@ -67,6 +67,7 @@
 #include "oscillators/efi/efi.hpp"
 #include "oscillators/kvo/kvo.hpp"
 #include "oscillators/kst/kst.hpp"
+#include "oscillators/plo/plo.hpp"
 
 #include "../config/config.hpp"
 
