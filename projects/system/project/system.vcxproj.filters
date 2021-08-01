@@ -106,6 +106,9 @@
     <Filter Include="source\market\oscillators\lso">
       <UniqueIdentifier>{15b8f96c-4f13-49fc-8f1a-2ea073af6e4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\oscillators\trix">
+      <UniqueIdentifier>{1545f9ad-15fd-4972-bba7-4fddc3a2ff0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -197,6 +200,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\lso\lso.cpp">
       <Filter>source\market\oscillators\lso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\trix\trix.cpp">
+      <Filter>source\market\oscillators\trix</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -298,6 +304,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\lso\lso.hpp">
       <Filter>source\market\oscillators\lso</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\trix\trix.hpp">
+      <Filter>source\market\oscillators\trix</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
