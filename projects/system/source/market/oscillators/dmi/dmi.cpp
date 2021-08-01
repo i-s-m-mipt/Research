@@ -35,18 +35,19 @@ namespace solution
 
 						const auto epsilon = std::numeric_limits < double > ::epsilon();
 
-						auto tr_ema = 0.0, pdm_ema = 0.0, ndm_ema = 0.0;
+						auto pdi = 0.0, ndi = 0.0;
 
 						std::vector < double > dx(std::size(candles) - 1U, 0.0);
 
 						for (auto i = 1U; i < std::size(candles); ++i)
 						{
-							auto tr = 
-								std::max(candles[i].price_high, candles[i - 1U].price_close) -
-								std::min(candles[i].price_low,  candles[i - 1U].price_close);
+							auto tr =
+								std::max(epsilon,
+									std::max(candles[i].price_high, candles[i - 1U].price_close) -
+									std::min(candles[i].price_low,  candles[i - 1U].price_close));
 
-							auto pm = candles[i     ].price_high - candles[i - 1U].price_high;
-							auto nm = candles[i - 1U].price_low  - candles[i     ].price_low;
+							auto pm = candles[i].price_high - candles[i - 1U].price_high;
+							auto nm = candles[i - 1U].price_low - candles[i].price_low;
 
 							auto pdm = 0.0;
 							auto ndm = 0.0;
@@ -61,25 +62,21 @@ namespace solution
 								ndm = nm;
 							}
 
+							auto pdm_div_tr = pdm / tr;
+							auto ndm_div_tr = ndm / tr;
+
 							if (i == 1U)
 							{
-								tr_ema = tr, pdm_ema = pdm, ndm_ema = ndm;
+								pdi = pdm_div_tr;
+								ndi = ndm_div_tr;
 							}
 							else
 							{
-								tr_ema  = k * tr  + (1.0 - k) * tr_ema;
-
-								pdm_ema = k * pdm + (1.0 - k) * pdm_ema;
-								ndm_ema = k * ndm + (1.0 - k) * ndm_ema;
+								pdi = k * pdm_div_tr + (1.0 - k) * pdi;
+								ndi = k * ndm_div_tr + (1.0 - k) * ndi;
 							}
 
-							tr_ema = std::max(tr_ema, std::numeric_limits < double > ::epsilon());
-
-							auto pdi = pdm_ema / tr_ema;
-							auto ndi = ndm_ema / tr_ema;
-
-							dx[i - 1U] = 100.0 * std::abs(pdi - ndi) / std::max(
-								(pdi + ndi), std::numeric_limits < double > ::epsilon());
+							dx[i - 1U] = 100.0 * std::abs(pdi - ndi) / std::max(epsilon, (pdi + ndi));
 						}
 
 						std::vector < double > adx(std::size(dx), 0.0);
