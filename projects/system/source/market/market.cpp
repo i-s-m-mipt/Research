@@ -1008,6 +1008,7 @@ namespace solution
 				m_oscillators.push_back(market::oscillators::RSI   (14U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::LSO   (14U,  3U     )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::TRIX  ( 9U          )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::UOS   ( 7U          )); // 1 oscillator
 			}
 			catch (const std::exception & exception)
 			{

@@ -72,6 +72,7 @@
 #include "oscillators/rsi/rsi.hpp"
 #include "oscillators/lso/lso.hpp"
 #include "oscillators/trix/trix.hpp"
+#include "oscillators/uos/uos.hpp"
 
 #include "../config/config.hpp"
 
