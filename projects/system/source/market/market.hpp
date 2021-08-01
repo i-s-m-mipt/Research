@@ -65,6 +65,7 @@
 #include "oscillators/emv/emv.hpp"
 #include "oscillators/eri/eri.hpp"
 #include "oscillators/efi/efi.hpp"
+#include "oscillators/kvo/kvo.hpp"
 
 #include "../config/config.hpp"
 

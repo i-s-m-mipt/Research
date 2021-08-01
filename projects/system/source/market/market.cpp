@@ -1000,6 +1000,7 @@ namespace solution
 				m_oscillators.push_back(market::oscillators::EMV   (14U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::ERI   (13U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::EFI   (13U          )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::KVO   (55U, 34U, 13U)); // 1 oscillator
 			}
 			catch (const std::exception & exception)
 			{
