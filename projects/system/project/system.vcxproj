@@ -176,8 +176,8 @@
     <ClCompile Include="..\source\market\market.cpp" />
     <ClCompile Include="..\source\market\oscillators\aroon\aroon.cpp" />
     <ClCompile Include="..\source\market\oscillators\cci\cci.cpp" />
-    <ClCompile Include="..\source\market\oscillators\cc\cc.cpp" />
     <ClCompile Include="..\source\market\oscillators\cmo\cmo.cpp" />
+    <ClCompile Include="..\source\market\oscillators\cpc\cpc.cpp" />
     <ClCompile Include="..\source\market\oscillators\dmi\dmi.cpp" />
     <ClCompile Include="..\source\market\oscillators\efi\efi.cpp" />
     <ClCompile Include="..\source\market\oscillators\emv\emv.cpp" />
@@ -204,8 +204,8 @@
     <ClInclude Include="..\source\market\market.hpp" />
     <ClInclude Include="..\source\market\oscillators\aroon\aroon.hpp" />
     <ClInclude Include="..\source\market\oscillators\cci\cci.hpp" />
-    <ClInclude Include="..\source\market\oscillators\cc\cc.hpp" />
     <ClInclude Include="..\source\market\oscillators\cmo\cmo.hpp" />
+    <ClInclude Include="..\source\market\oscillators\cpc\cpc.hpp" />
     <ClInclude Include="..\source\market\oscillators\dmi\dmi.hpp" />
     <ClInclude Include="..\source\market\oscillators\efi\efi.hpp" />
     <ClInclude Include="..\source\market\oscillators\emv\emv.hpp" />

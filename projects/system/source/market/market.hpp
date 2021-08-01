@@ -60,7 +60,7 @@
 #include "oscillators/aroon/aroon.hpp"
 #include "oscillators/cmo/cmo.hpp"
 #include "oscillators/cci/cci.hpp"
-#include "oscillators/cc/cc.hpp"
+#include "oscillators/cpc/cpc.hpp"
 #include "oscillators/dmi/dmi.hpp"
 #include "oscillators/emv/emv.hpp"
 #include "oscillators/eri/eri.hpp"

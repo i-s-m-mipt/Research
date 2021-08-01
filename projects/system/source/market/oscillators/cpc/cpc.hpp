@@ -1,5 +1,5 @@
-#ifndef SOLUTION_SYSTEM_MARKET_OSCILLATORS_CC_HPP
-#define SOLUTION_SYSTEM_MARKET_OSCILLATORS_CC_HPP
+#ifndef SOLUTION_SYSTEM_MARKET_OSCILLATORS_CPC_HPP
+#define SOLUTION_SYSTEM_MARKET_OSCILLATORS_CPC_HPP
 
 #include <boost/config.hpp>
 
@@ -17,11 +17,11 @@ namespace solution
 		{
 			namespace oscillators
 			{
-				class CC
+				class CPC
 				{
 				public:
 
-					explicit CC(std::size_t timesteps, std::size_t timesteps_long, std::size_t timesteps_short) :
+					explicit CPC(std::size_t timesteps, std::size_t timesteps_long, std::size_t timesteps_short) :
 						m_timesteps(timesteps), m_timesteps_long(timesteps_long), m_timesteps_short(timesteps_short)
 					{
 						initialize();
@@ -51,4 +51,4 @@ namespace solution
 
 } // namespace solution
 
-#endif // #ifndef SOLUTION_SYSTEM_MARKET_OSCILLATORS_CC_HPP
+#endif // #ifndef SOLUTION_SYSTEM_MARKET_OSCILLATORS_CPC_HPP

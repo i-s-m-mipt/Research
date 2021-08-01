@@ -73,9 +73,6 @@
     <Filter Include="source\market\oscillators\cci">
       <UniqueIdentifier>{3759f0d6-c852-4efa-9ff6-f66060d9f2f4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\market\oscillators\cc">
-      <UniqueIdentifier>{671f0443-3a34-41fd-ae58-39ce1d7806ef}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\market\oscillators\dmi">
       <UniqueIdentifier>{aa8789b3-3903-47de-857f-8da94601f815}</UniqueIdentifier>
     </Filter>
@@ -87,6 +84,9 @@
     </Filter>
     <Filter Include="source\market\oscillators\efi">
       <UniqueIdentifier>{e994327e-64d1-4dd1-914b-c253418473b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\oscillators\cpc">
+      <UniqueIdentifier>{671f0443-3a34-41fd-ae58-39ce1d7806ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -147,9 +147,6 @@
     <ClCompile Include="..\source\market\oscillators\cci\cci.cpp">
       <Filter>source\market\oscillators\cci</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\market\oscillators\cc\cc.cpp">
-      <Filter>source\market\oscillators\cc</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\market\oscillators\dmi\dmi.cpp">
       <Filter>source\market\oscillators\dmi</Filter>
     </ClCompile>
@@ -161,6 +158,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\efi\efi.cpp">
       <Filter>source\market\oscillators\efi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\cpc\cpc.cpp">
+      <Filter>source\market\oscillators\cpc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -230,9 +230,6 @@
     <ClInclude Include="..\source\market\oscillators\cci\cci.hpp">
       <Filter>source\market\oscillators\cci</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\market\oscillators\cc\cc.hpp">
-      <Filter>source\market\oscillators\cc</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\market\oscillators\dmi\dmi.hpp">
       <Filter>source\market\oscillators\dmi</Filter>
     </ClInclude>
@@ -244,6 +241,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\efi\efi.hpp">
       <Filter>source\market\oscillators\efi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\cpc\cpc.hpp">
+      <Filter>source\market\oscillators\cpc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

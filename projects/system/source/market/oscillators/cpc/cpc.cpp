@@ -1,4 +1,4 @@
-#include "cc.hpp"
+#include "cpc.hpp"
 
 namespace solution
 {
@@ -8,7 +8,7 @@ namespace solution
 		{
 			namespace oscillators
 			{
-				void CC::initialize() const
+				void CPC::initialize() const
 				{
 					RUN_LOGGER(logger);
 
@@ -40,7 +40,7 @@ namespace solution
 					}
 				}
 
-				void CC::operator()(candles_container_t & candles) const
+				void CPC::operator()(candles_container_t & candles) const
 				{
 					RUN_LOGGER(logger);
 

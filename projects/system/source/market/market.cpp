@@ -995,7 +995,7 @@ namespace solution
 				m_oscillators.push_back(market::oscillators::AROON (14U)          ); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::CMO   (14U)          ); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::CCI   (20U)          ); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::CC    (10U, 14U, 11U)); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::CPC   (10U, 14U, 11U)); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::DMI   (14U          )); // 3 oscillators
 				m_oscillators.push_back(market::oscillators::EMV   (14U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::ERI   (13U          )); // 1 oscillator
