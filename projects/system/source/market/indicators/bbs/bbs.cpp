@@ -63,10 +63,15 @@ namespace solution
 
 							standard_deviation = std::sqrt(standard_deviation / m_timesteps);
 
-							candles[i - 1U].indicators.push_back(m + m_deviations * standard_deviation);
-							candles[i - 1U].indicators.push_back(m - m_deviations * standard_deviation);
+							auto upper_band = m + m_deviations * standard_deviation;
+							auto lower_band = m - m_deviations * standard_deviation;
+
+							candles[i - 1U].indicators.push_back(upper_band);
+							candles[i - 1U].indicators.push_back(lower_band);
 
 							candles[i - 1U].oscillators.push_back(4.0 * standard_deviation / m);
+							candles[i - 1U].oscillators.push_back((candles[i - 1U].price_close - 
+								lower_band) / (upper_band - lower_band));
 						}
 					}
 					catch (const std::exception & exception)
