@@ -1,5 +1,5 @@
-#ifndef SOLUTION_SYSTEM_MARKET_INDICATORS_BB_HPP
-#define SOLUTION_SYSTEM_MARKET_INDICATORS_BB_HPP
+#ifndef SOLUTION_SYSTEM_MARKET_INDICATORS_BBS_HPP
+#define SOLUTION_SYSTEM_MARKET_INDICATORS_BBS_HPP
 
 #include <boost/config.hpp>
 
@@ -17,11 +17,11 @@ namespace solution
 		{
 			namespace indicators
 			{
-				class BB
+				class BBS
 				{
 				public:
 
-					explicit BB(std::size_t timesteps, double deviations) : 
+					explicit BBS(std::size_t timesteps, double deviations) : 
 						m_timesteps(timesteps), m_deviations(deviations)
 					{
 						initialize();
@@ -50,4 +50,4 @@ namespace solution
 
 } // namespace solution
 
-#endif // #ifndef SOLUTION_SYSTEM_MARKET_INDICATORS_BB_HPP
+#endif // #ifndef SOLUTION_SYSTEM_MARKET_INDICATORS_BBS_HPP

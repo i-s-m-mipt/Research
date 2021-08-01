@@ -54,7 +54,7 @@
 #include "indicators/dema/dema.hpp"
 #include "indicators/tema/tema.hpp"
 #include "indicators/ama/ama.hpp"
-#include "indicators/bb/bb.hpp"
+#include "indicators/bbs/bbs.hpp"
 
 #include "oscillators/macd/macd.hpp"
 #include "oscillators/aroon/aroon.hpp"

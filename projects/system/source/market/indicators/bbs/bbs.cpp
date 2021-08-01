@@ -1,4 +1,4 @@
-#include "bb.hpp"
+#include "bbs.hpp"
 
 namespace solution
 {
@@ -8,7 +8,7 @@ namespace solution
 		{
 			namespace indicators
 			{
-				void BB::initialize() const
+				void BBS::initialize() const
 				{
 					RUN_LOGGER(logger);
 
@@ -30,7 +30,7 @@ namespace solution
 					}
 				}
 
-				void BB::operator()(candles_container_t & candles) const
+				void BBS::operator()(candles_container_t & candles) const
 				{
 					RUN_LOGGER(logger);
 
