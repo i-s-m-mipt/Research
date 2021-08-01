@@ -60,6 +60,8 @@ namespace solution
 							auto volume = (typical_price > previous_typical_price ? +1.0 : -1.0) *
 								static_cast < double > (candles[i].volume);
 
+							previous_typical_price = typical_price;
+
 							if (i == 1U)
 							{
 								ema_long = ema_short = volume;
