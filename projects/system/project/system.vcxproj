@@ -187,6 +187,7 @@
     <ClCompile Include="..\source\market\oscillators\macd\macd.cpp" />
     <ClCompile Include="..\source\market\oscillators\plo\plo.cpp" />
     <ClCompile Include="..\source\market\oscillators\roc\roc.cpp" />
+    <ClCompile Include="..\source\market\oscillators\rsi\rsi.cpp" />
     <ClCompile Include="..\source\market\source\source.cpp" />
     <ClCompile Include="..\source\system\system.cpp" />
   </ItemGroup>
@@ -220,6 +221,7 @@
     <ClInclude Include="..\source\market\oscillators\oscillators.hpp" />
     <ClInclude Include="..\source\market\oscillators\plo\plo.hpp" />
     <ClInclude Include="..\source\market\oscillators\roc\roc.hpp" />
+    <ClInclude Include="..\source\market\oscillators\rsi\rsi.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />
     <ClInclude Include="..\source\system\system.hpp" />
   </ItemGroup>
