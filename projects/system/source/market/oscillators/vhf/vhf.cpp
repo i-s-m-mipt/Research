@@ -36,7 +36,7 @@ namespace solution
 						for (auto i = m_timesteps + 1U; i <= std::size(candles); ++i)
 						{
 							auto min_max = std::minmax_element(
-								std::next(std::begin(candles), i - m_timesteps),
+								std::next(std::begin(candles), i - m_timesteps - 1U),
 								std::next(std::begin(candles), i),
 								[](const auto & lhs, const auto & rhs)
 									{ return (lhs.price_close < rhs.price_close); });
