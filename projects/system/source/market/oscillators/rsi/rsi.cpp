@@ -64,7 +64,7 @@ namespace solution
 								{
 									ema_U *= (1.0 - k);
 
-									ema_D = k * delta + (1.0 - k) * ema_D;
+									ema_D = k * -delta + (1.0 - k) * ema_D;
 								}
 							}
 
