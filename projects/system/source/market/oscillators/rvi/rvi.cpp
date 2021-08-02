@@ -58,10 +58,6 @@ namespace solution
 							sma.push_back(sma.back() + (rvi[i] - rvi[i - m_timesteps_sma]) / m_timesteps_sma);
 						}
 
-						std::vector < double > wma;
-
-						wma.reserve(std::size(sma) - m_timesteps_wma + 1U);
-
 						for (auto i = m_timesteps_wma; i <= std::size(sma); ++i)
 						{
 							auto value = 0.0;
@@ -71,13 +67,8 @@ namespace solution
 								value += sma[j] * k;
 							}
 
-							wma.push_back(value / (m_timesteps_wma * (m_timesteps_wma + 1.0) / 2.0));
-						}
-
-						for (auto i = m_timesteps_sma + m_timesteps_wma - 2U; i < std::size(candles); ++i)
-						{
-							candles[i].oscillators.push_back(sma[i + 1U - m_timesteps_sma] - 
-								wma[i + 2U - m_timesteps_sma - m_timesteps_wma]);
+							candles[i + m_timesteps_sma - 2U].oscillators.push_back(
+								value / (m_timesteps_wma * (m_timesteps_wma + 1.0) / 2.0));
 						}
 					}
 					catch (const std::exception & exception)
