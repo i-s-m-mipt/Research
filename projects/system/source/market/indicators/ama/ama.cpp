@@ -41,6 +41,8 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						auto fastest = 2.0 / (m_f + 1.0);
 						auto slowest = 2.0 / (m_s + 1.0);
 
@@ -59,12 +61,7 @@ namespace solution
 								volatility += std::abs(candles[j].price_close - candles[j + 1U].price_close);
 							}
 
-							if (volatility < std::numeric_limits < double > ::epsilon())
-							{
-								throw std::runtime_error("division by zero volatility");
-							}
-
-							auto c = std::pow(delta * direction / volatility + slowest, 2.0);
+							auto c = std::pow(delta * direction / std::max(volatility, epsilon) + slowest, 2.0);
 
 							candles[i].indicators.push_back(c * candles[i].price_close +
 								(1.0 - c) * candles[i - 1U].indicators.back());

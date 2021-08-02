@@ -31,20 +31,22 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						for (auto i = m_timesteps - 1U; i < std::size(candles); ++i)
 						{
 							auto value = 0.0;
 
-							auto volume = 0ULL;
+							auto volume = 0.0;
 
 							for (auto j = i + 1U - m_timesteps; j <= i; ++j)
 							{
-								value += candles[j].price_close * candles[j].volume;
+								value  += candles[j].volume * candles[j].price_close;
 
 								volume += candles[j].volume;
 							}
 
-							candles[i].indicators.push_back(value / volume);
+							candles[i].indicators.push_back(value / std::max(volume, epsilon));
 						}
 					}
 					catch (const std::exception & exception)

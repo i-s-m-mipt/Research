@@ -36,6 +36,8 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						std::vector < double > sma;
 
 						sma.reserve(std::size(candles) - m_timesteps + 1U);
@@ -71,7 +73,7 @@ namespace solution
 
 							candles[i - 1U].oscillators.push_back(4.0 * standard_deviation / m);
 							candles[i - 1U].oscillators.push_back((candles[i - 1U].price_close - 
-								lower_band) / (upper_band - lower_band));
+								lower_band) / std::max((upper_band - lower_band), epsilon));
 						}
 					}
 					catch (const std::exception & exception)
