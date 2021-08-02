@@ -46,8 +46,7 @@ namespace solution
 
 						for (auto i = 1U; i < std::size(candles); ++i)
 						{
-							ema[i] = std::max(k * (candles[i].price_high - candles[i].price_low) + 
-								(1.0 - k) * ema[i - 1U], std::numeric_limits < double > ::epsilon());
+							ema[i] = k * (candles[i].price_high - candles[i].price_low) + (1.0 - k) * ema[i - 1U];
 						}
 
 						for (auto i = m_timesteps_roc; i < std::size(candles); ++i)
