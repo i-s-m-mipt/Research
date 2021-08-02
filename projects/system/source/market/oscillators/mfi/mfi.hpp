@@ -7,7 +7,7 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
-#include "../oscillators.hpp"
+#include "../detail.hpp"
 
 namespace solution
 {

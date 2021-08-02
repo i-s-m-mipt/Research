@@ -7,7 +7,7 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
-#include "../indicators.hpp"
+#include "../detail.hpp"
 
 namespace solution
 {

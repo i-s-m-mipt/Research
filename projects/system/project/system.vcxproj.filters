@@ -245,9 +245,6 @@
     <ClInclude Include="..\source\market\source\source.hpp">
       <Filter>source\market\source</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\market\indicators\indicators.hpp">
-      <Filter>source\market\indicators</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\market\candle\candle.hpp">
       <Filter>source\market\candle</Filter>
     </ClInclude>
@@ -271,9 +268,6 @@
     </ClInclude>
     <ClInclude Include="..\source\market\indicators\vwma\vwma.hpp">
       <Filter>source\market\indicators\vwma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\market\oscillators\oscillators.hpp">
-      <Filter>source\market\oscillators</Filter>
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\macd\macd.hpp">
       <Filter>source\market\oscillators\macd</Filter>
@@ -334,6 +328,18 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\vhf\vhf.hpp">
       <Filter>source\market\oscillators\vhf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\detail.hpp">
+      <Filter>source\market\indicators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\detail.hpp">
+      <Filter>source\market\oscillators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\indicators.hpp">
+      <Filter>source\market\indicators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\oscillators.hpp">
+      <Filter>source\market\oscillators</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

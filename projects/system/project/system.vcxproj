@@ -205,6 +205,7 @@
     <ClInclude Include="..\source\market\indicators\ama\ama.hpp" />
     <ClInclude Include="..\source\market\indicators\bbs\bbs.hpp" />
     <ClInclude Include="..\source\market\indicators\dema\dema.hpp" />
+    <ClInclude Include="..\source\market\indicators\detail.hpp" />
     <ClInclude Include="..\source\market\indicators\ema\ema.hpp" />
     <ClInclude Include="..\source\market\indicators\indicators.hpp" />
     <ClInclude Include="..\source\market\indicators\sma\sma.hpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="..\source\market\oscillators\chv\chv.hpp" />
     <ClInclude Include="..\source\market\oscillators\cmo\cmo.hpp" />
     <ClInclude Include="..\source\market\oscillators\cpc\cpc.hpp" />
+    <ClInclude Include="..\source\market\oscillators\detail.hpp" />
     <ClInclude Include="..\source\market\oscillators\dmi\dmi.hpp" />
     <ClInclude Include="..\source\market\oscillators\emv\emv.hpp" />
     <ClInclude Include="..\source\market\oscillators\eri\eri.hpp" />
