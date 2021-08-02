@@ -2388,43 +2388,36 @@ namespace solution
 
 			try
 			{
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
+				const auto base_deviation = m_config.min_price_change;
+
 				for (auto i = 0U; i < std::size(candles) - market::Candle::prediction_range; ++i)
 				{
 					auto previous_price_close = candles[i].price_close;
 
-					auto max_price = max(
+					auto deviation_L = std::abs(max(
 						candles[i + 1U].price_high,
 						candles[i + 2U].price_high,
 						candles[i + 3U].price_high,
 						candles[i + 4U].price_high,
-						candles[i + 5U].price_high
-					);
+						candles[i + 5U].price_high) - previous_price_close) / previous_price_close;
 
-					auto min_price = min(
+					auto deviation_S = std::abs(min(
 						candles[i + 1U].price_low,
 						candles[i + 2U].price_low,
 						candles[i + 3U].price_low,
 						candles[i + 4U].price_low,
-						candles[i + 5U].price_low
-					);
+						candles[i + 5U].price_low) - previous_price_close) / previous_price_close;
 
-					auto delta_L = std::abs(max_price - previous_price_close);
-					auto delta_S = std::abs(min_price - previous_price_close);
-
-					auto confidence = std::min(delta_L, delta_S) / std::max(delta_L, delta_S);
-
-					if (confidence > m_config.mornings_test_confidence)
+					if (deviation_L - base_deviation > epsilon ||
+						deviation_S - base_deviation > epsilon)
 					{
-						continue;
-					}
-
-					if (delta_L >= delta_S)
-					{
-						candles[i].movement_tag = +1;
+						candles[i].movement_tag = 1;
 					}
 					else
 					{
-						candles[i].movement_tag = -1;
+						candles[i].movement_tag = 0;
 					}
 				}
 			}
