@@ -1146,22 +1146,22 @@ namespace solution
 					{
 						if (candle.price_open < epsilon)
 						{
-							throw std::domain_error("required: (price_open > 0.0)");
+							throw std::domain_error("required: (price_open > 0.0) for " + asset);
 						}
 
 						if (candle.price_high < epsilon)
 						{
-							throw std::domain_error("required: (price_high > 0.0)");
+							throw std::domain_error("required: (price_high > 0.0) for " + asset);
 						}
 
 						if (candle.price_low < epsilon)
 						{
-							throw std::domain_error("required: (price_low > 0.0)");
+							throw std::domain_error("required: (price_low > 0.0) for " + asset);
 						}
 
 						if (candle.price_close < epsilon)
 						{
-							throw std::domain_error("required: (price_close > 0.0)");
+							throw std::domain_error("required: (price_close > 0.0) for " + asset);
 						}
 
 						candles.push_back(std::move(candle));
@@ -2709,22 +2709,22 @@ namespace solution
 
 					if (candle.price_open < epsilon)
 					{
-						throw std::domain_error("required: (price_open > 0.0)");
+						throw std::domain_error("required: (price_open > 0.0) for " + asset);
 					}
 
 					if (candle.price_high < epsilon)
 					{
-						throw std::domain_error("required: (price_high > 0.0)");
+						throw std::domain_error("required: (price_high > 0.0) for " + asset);
 					}
 
 					if (candle.price_low < epsilon)
 					{
-						throw std::domain_error("required: (price_low > 0.0)");
+						throw std::domain_error("required: (price_low > 0.0) for " + asset);
 					}
 
 					if (candle.price_close < epsilon)
 					{
-						throw std::domain_error("required: (price_close > 0.0)");
+						throw std::domain_error("required: (price_close > 0.0) for " + asset);
 					}
 
 					candles.push_back(std::move(candle));
