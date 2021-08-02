@@ -31,7 +31,9 @@ namespace solution
 
 					try
 					{
-						auto total_buying_pressure = [&candles](std::size_t first, std::size_t last)
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
+						auto total_buying_pressure = [&candles, epsilon](std::size_t first, std::size_t last)
 						{
 							auto buying_pressure = 0.0;
 
@@ -47,8 +49,7 @@ namespace solution
 									 std::min(candles[j].price_low,  candles[j - 1U].price_close));
 							}
 
-							return (buying_pressure / std::max(true_range, 
-								std::numeric_limits < double > ::epsilon()));
+							return (buying_pressure / std::max(true_range, epsilon));
 						};
 
 						for (auto i = 4U * m_timesteps + 1U; i <= std::size(candles); ++i)

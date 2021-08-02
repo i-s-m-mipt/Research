@@ -31,6 +31,8 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						for (auto i = m_timesteps; i < std::size(candles); ++i)
 						{
 							auto positive_s = 0.0;
@@ -50,7 +52,8 @@ namespace solution
 								}
 							}
 
-							candles[i].oscillators.push_back(100.0 * (positive_s - negative_s) / (positive_s + negative_s));
+							candles[i].oscillators.push_back(100.0 * (positive_s - negative_s) / 
+								std::max((positive_s + negative_s), epsilon));
 						}
 					}
 					catch (const std::exception & exception)

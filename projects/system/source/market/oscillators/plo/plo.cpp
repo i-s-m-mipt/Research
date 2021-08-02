@@ -31,10 +31,10 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						for (auto i = m_timesteps; i < std::size(candles); ++i)
 						{
-							const auto epsilon = std::numeric_limits < double > ::epsilon();
-
 							auto n = 0U;
 
 							for (auto j = i - m_timesteps; j < i; ++j)

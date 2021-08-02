@@ -31,9 +31,9 @@ namespace solution
 
 					try
 					{
-						const auto k = 2.0 / (m_timesteps + 1.0);
-
 						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
+						const auto k = 2.0 / (m_timesteps + 1.0);
 
 						auto pdi = 0.0, ndi = 0.0;
 
@@ -41,13 +41,12 @@ namespace solution
 
 						for (auto i = 1U; i < std::size(candles); ++i)
 						{
-							auto tr =
-								std::max(epsilon,
-									std::max(candles[i].price_high, candles[i - 1U].price_close) -
-									std::min(candles[i].price_low,  candles[i - 1U].price_close));
+							auto tr = std::max(epsilon,
+								std::max(candles[i].price_high, candles[i - 1U].price_close) -
+								std::min(candles[i].price_low,  candles[i - 1U].price_close));
 
-							auto pm = candles[i].price_high - candles[i - 1U].price_high;
-							auto nm = candles[i - 1U].price_low - candles[i].price_low;
+							auto pm = candles[i     ].price_high - candles[i - 1U].price_high;
+							auto nm = candles[i - 1U].price_low  - candles[i     ].price_low;
 
 							auto pdm = 0.0;
 							auto ndm = 0.0;
@@ -76,7 +75,7 @@ namespace solution
 								ndi = k * ndm_div_tr + (1.0 - k) * ndi;
 							}
 
-							dx[i - 1U] = 100.0 * std::abs(pdi - ndi) / std::max(epsilon, (pdi + ndi));
+							dx[i - 1U] = 100.0 * std::abs(pdi - ndi) / std::max((pdi + ndi), epsilon);
 						}
 
 						std::vector < double > adx(std::size(dx), 0.0);
@@ -97,7 +96,7 @@ namespace solution
 
 						for (auto i = 1U + m_timesteps; i < std::size(candles); ++i)
 						{
-							candles[i].oscillators.push_back(dx  [i - 1U]);
+							candles[i].oscillators.push_back( dx [i - 1U]);
 							candles[i].oscillators.push_back(adx [i - 1U]);
 							candles[i].oscillators.push_back(adxr[i - 1U - m_timesteps]);
 						}

@@ -36,6 +36,8 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						const auto k = 2.0 / (m_timesteps_slow + 1.0);
 
 						auto ema_slow = 0.0;
@@ -54,7 +56,7 @@ namespace solution
 								[](const auto & lhs, const auto & rhs)
 									{ return (lhs.price_high < rhs.price_high); })->price_high;
 
-							auto fast = 100.0 * (candles[i].price_close - min) / (max - min);
+							auto fast = 100.0 * (candles[i].price_close - min) / std::max((max - min), epsilon);
 
 							if (i == m_timesteps_fast - 1U)
 							{

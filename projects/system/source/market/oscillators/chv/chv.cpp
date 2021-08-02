@@ -36,6 +36,8 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						const auto k = 2.0 / (m_timesteps_ema + 1.0);
 
 						std::vector < double > ema(std::size(candles), 0.0);
@@ -50,8 +52,8 @@ namespace solution
 
 						for (auto i = m_timesteps_roc; i < std::size(candles); ++i)
 						{
-							candles[i].oscillators.push_back(100.0 *
-								(ema[i] / ema[i - m_timesteps_roc] - 1.0));
+							candles[i].oscillators.push_back(100.0 * (ema[i] / 
+								std::max(ema[i - m_timesteps_roc], epsilon) - 1.0));
 						}
 					}
 					catch (const std::exception & exception)

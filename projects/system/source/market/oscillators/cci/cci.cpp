@@ -31,6 +31,8 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						std::vector < double > typical_prices(std::size(candles), 0.0);
 
 						std::transform(std::begin(candles), std::end(candles), std::begin(typical_prices), 
@@ -60,7 +62,7 @@ namespace solution
 								std::next(std::begin(typical_prices), j + m_timesteps), 0.0, std::plus <> (),
 									[m](auto typical_price) { return (std::abs(typical_price - m)); }) / m_timesteps;
 
-							candles[i].oscillators.push_back((typical_prices[i] - m) / (0.015 * mad));
+							candles[i].oscillators.push_back((typical_prices[i] - m) / (0.015 * std::max(mad, epsilon)));
 						}
 					}
 					catch (const std::exception & exception)

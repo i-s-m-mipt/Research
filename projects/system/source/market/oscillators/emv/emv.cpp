@@ -31,6 +31,8 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						std::vector < double > emv(std::size(candles) - 1U, 0.0);
 
 						for (auto i = 1U; i < std::size(candles); ++i)
@@ -42,7 +44,7 @@ namespace solution
 							auto l_1 = candles[i - 1U].price_low;
 
 							emv[i - 1U] = ((h_0 + l_0) / 2.0 - (h_1 + l_1) / 2.0) / 
-								(candles[i].volume / (h_0 - l_0));
+								std::max((candles[i].volume / std::max((h_0 - l_0), epsilon)), epsilon);
 						}
 
 						candles.at(m_timesteps).oscillators.push_back(std::accumulate(
