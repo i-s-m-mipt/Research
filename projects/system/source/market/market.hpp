@@ -64,7 +64,6 @@
 #include "oscillators/dmi/dmi.hpp"
 #include "oscillators/emv/emv.hpp"
 #include "oscillators/eri/eri.hpp"
-#include "oscillators/efi/efi.hpp"
 #include "oscillators/kvo/kvo.hpp"
 #include "oscillators/kst/kst.hpp"
 #include "oscillators/plo/plo.hpp"

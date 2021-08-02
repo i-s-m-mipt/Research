@@ -79,9 +79,6 @@
     <Filter Include="source\market\oscillators\eri">
       <UniqueIdentifier>{387e65ff-e5b3-417f-8a5e-64c222c6d1a3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\market\oscillators\efi">
-      <UniqueIdentifier>{e994327e-64d1-4dd1-914b-c253418473b9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\market\oscillators\cpc">
       <UniqueIdentifier>{671f0443-3a34-41fd-ae58-39ce1d7806ef}</UniqueIdentifier>
     </Filter>
@@ -179,9 +176,6 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\eri\eri.cpp">
       <Filter>source\market\oscillators\eri</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\market\oscillators\efi\efi.cpp">
-      <Filter>source\market\oscillators\efi</Filter>
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\cpc\cpc.cpp">
       <Filter>source\market\oscillators\cpc</Filter>
@@ -289,9 +283,6 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\eri\eri.hpp">
       <Filter>source\market\oscillators\eri</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\market\oscillators\efi\efi.hpp">
-      <Filter>source\market\oscillators\efi</Filter>
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\cpc\cpc.hpp">
       <Filter>source\market\oscillators\cpc</Filter>
