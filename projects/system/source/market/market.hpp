@@ -72,6 +72,7 @@
 #include "oscillators/trix/trix.hpp"
 #include "oscillators/uos/uos.hpp"
 #include "oscillators/chv/chv.hpp"
+#include "oscillators/rvi/rvi.hpp"
 
 #include "../config/config.hpp"
 
