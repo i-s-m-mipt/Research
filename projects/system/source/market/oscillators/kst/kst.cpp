@@ -78,10 +78,14 @@ namespace solution
 						const auto k_ema_3 = 2.0 / (m_timesteps_ema_3 + 1.0);
 						const auto k_ema_4 = 2.0 / (m_timesteps_ema_4 + 1.0);
 
+						const auto k_signal = 2.0 / (m_timesteps_signal + 1.0);
+
 						auto ema_1 = 0.0;
 						auto ema_2 = 0.0;
 						auto ema_3 = 0.0;
 						auto ema_4 = 0.0;
+
+						auto ema_signal = 0.0;
 
 						for (auto i = m_timesteps_roc_4; i < std::size(candles); ++i)
 						{
@@ -109,8 +113,18 @@ namespace solution
 								ema_4 = k_ema_4 * roc_4 + (1.0 - k_ema_4) * ema_4;
 							}
 
-							candles[i].oscillators.push_back(
-								(1.0 * ema_1 + 2.0 * ema_2 + 3.0 * ema_3 + 4.0 * ema_4) / 10.0);
+							auto basic_kst = (1.0 * ema_1 + 2.0 * ema_2 + 3.0 * ema_3 + 4.0 * ema_4) / 10.0;
+
+							if (i == m_timesteps_roc_4)
+							{
+								ema_signal = basic_kst;
+							}
+							else
+							{
+								ema_signal = k_signal * basic_kst + (1.0 - k_signal) * ema_signal;
+							}
+
+							candles[i].oscillators.push_back(ema_signal);
 						}
 					}
 					catch (const std::exception & exception)

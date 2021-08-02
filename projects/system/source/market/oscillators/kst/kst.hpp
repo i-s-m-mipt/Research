@@ -29,7 +29,8 @@ namespace solution
 						std::size_t timesteps_ema_1,
 						std::size_t timesteps_ema_2,
 						std::size_t timesteps_ema_3,
-						std::size_t timesteps_ema_4) :
+						std::size_t timesteps_ema_4,
+						std::size_t timesteps_signal) :
 							m_timesteps_roc_1(timesteps_roc_1),
 							m_timesteps_roc_2(timesteps_roc_2),
 							m_timesteps_roc_3(timesteps_roc_3),
@@ -37,7 +38,8 @@ namespace solution
 							m_timesteps_ema_1(timesteps_ema_1),
 							m_timesteps_ema_2(timesteps_ema_2),
 							m_timesteps_ema_3(timesteps_ema_3),
-							m_timesteps_ema_4(timesteps_ema_4)
+							m_timesteps_ema_4(timesteps_ema_4),
+							m_timesteps_signal(timesteps_signal)
 					{
 						initialize();
 					}
@@ -61,6 +63,8 @@ namespace solution
 					std::size_t m_timesteps_ema_2;
 					std::size_t m_timesteps_ema_3;
 					std::size_t m_timesteps_ema_4;
+
+					std::size_t m_timesteps_signal;
 				};
 
 			} // namespace oscillators
