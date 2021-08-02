@@ -73,6 +73,7 @@
 #include "oscillators/uos/uos.hpp"
 #include "oscillators/chv/chv.hpp"
 #include "oscillators/rvi/rvi.hpp"
+#include "oscillators/mfi/mfi.hpp"
 
 #include "../config/config.hpp"
 
