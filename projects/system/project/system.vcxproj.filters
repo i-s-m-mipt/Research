@@ -85,9 +85,6 @@
     <Filter Include="source\market\indicators\bbs">
       <UniqueIdentifier>{e0200499-2460-4a32-8d7d-16f660131f65}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\market\oscillators\kvo">
-      <UniqueIdentifier>{468f8ee8-52ec-4993-8204-70b392b74885}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\market\oscillators\kst">
       <UniqueIdentifier>{0eb1f1be-9e8c-42e0-bdac-9f634cd46589}</UniqueIdentifier>
     </Filter>
@@ -182,9 +179,6 @@
     </ClCompile>
     <ClCompile Include="..\source\market\indicators\bbs\bbs.cpp">
       <Filter>source\market\indicators\bbs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source\market\oscillators\kvo\kvo.cpp">
-      <Filter>source\market\oscillators\kvo</Filter>
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\kst\kst.cpp">
       <Filter>source\market\oscillators\kst</Filter>
@@ -289,9 +283,6 @@
     </ClInclude>
     <ClInclude Include="..\source\market\indicators\bbs\bbs.hpp">
       <Filter>source\market\indicators\bbs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source\market\oscillators\kvo\kvo.hpp">
-      <Filter>source\market\oscillators\kvo</Filter>
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\kst\kst.hpp">
       <Filter>source\market\oscillators\kst</Filter>
