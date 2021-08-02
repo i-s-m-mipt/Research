@@ -945,39 +945,12 @@ namespace solution
 
 			try
 			{
-				//m_indicators.push_back(market::indicators::SMA (  5U));
-				//m_indicators.push_back(market::indicators::SMA ( 20U));
-				//m_indicators.push_back(market::indicators::SMA ( 60U));
-				//m_indicators.push_back(market::indicators::SMA (125U));
-
-				//m_indicators.push_back(market::indicators::WMA (  5U));
-				//m_indicators.push_back(market::indicators::WMA ( 20U));
-				//m_indicators.push_back(market::indicators::WMA ( 60U));
-				//m_indicators.push_back(market::indicators::WMA (125U));
-
-				//m_indicators.push_back(market::indicators::VWMA(  5U));
-				//m_indicators.push_back(market::indicators::VWMA( 20U));
-				//m_indicators.push_back(market::indicators::VWMA( 60U));
-				//m_indicators.push_back(market::indicators::VWMA(125U));
-				
-				m_indicators.push_back(market::indicators::EMA (  5U)); // 1 indicator
-				m_indicators.push_back(market::indicators::EMA ( 20U)); // 1 indicator
-				m_indicators.push_back(market::indicators::EMA ( 60U)); // 1 indicator
-				m_indicators.push_back(market::indicators::EMA (125U)); // 1 indicator
-				
-				//m_indicators.push_back(market::indicators::DEMA(  5U));
-				//m_indicators.push_back(market::indicators::DEMA( 20U));
-				//m_indicators.push_back(market::indicators::DEMA( 60U));
-				//m_indicators.push_back(market::indicators::DEMA(125U));
-
-				//m_indicators.push_back(market::indicators::TEMA(  5U));
-				//m_indicators.push_back(market::indicators::TEMA( 20U));
-				//m_indicators.push_back(market::indicators::TEMA( 60U));
-				//m_indicators.push_back(market::indicators::TEMA(125U));
-				
-				m_indicators.push_back(market::indicators::AMA(10U, 2U, 30U)); // 1 indicator
-
-				m_indicators.push_back(market::indicators::BBS(20U, 2.0)); // 2 indicator, 2 oscillator
+				m_indicators.push_back(market::indicators::AMA ( 10U,  2U, 30U)); // 1 indicator
+				m_indicators.push_back(market::indicators::BBS ( 20U, 2.0     )); // 2 indicator
+				m_indicators.push_back(market::indicators::EMA (  5U          )); // 1 indicator
+				m_indicators.push_back(market::indicators::EMA ( 20U          )); // 1 indicator
+				m_indicators.push_back(market::indicators::EMA ( 60U          )); // 1 indicator
+				m_indicators.push_back(market::indicators::EMA (125U          )); // 1 indicator
 			}
 			catch (const std::exception & exception)
 			{
@@ -991,25 +964,20 @@ namespace solution
 
 			try
 			{
-				m_oscillators.push_back(market::oscillators::MACD  (26U, 12U,  9U)); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::AROON (14U)          ); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::CMO   (14U)          ); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::CCI   (20U)          ); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::CPC   (10U, 14U, 11U)); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::AROON (14U          )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::CCI   (20U          )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::CHV   (10U, 10U     )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::CMO   (14U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::DMI   (14U          )); // 3 oscillator
-				m_oscillators.push_back(market::oscillators::EMV   (14U          )); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::ERI   (13U          )); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::KST   
-					(10U, 15U, 20U, 30U, 10U, 10U, 10U, 15U));                       // 1 oscillator
-				m_oscillators.push_back(market::oscillators::PLO   (12U          )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::KST
+					(10U, 15U, 20U, 30U, 10U, 10U, 10U, 15U,  9U));                  // 1 oscillator
+				m_oscillators.push_back(market::oscillators::LSO   (14U,  3U     )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::MFI   (14U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::ROC   (14U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::RSI   (14U          )); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::LSO   (14U,  3U     )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::RVI   (10U,  4U     )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::TRIX  ( 9U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::UOS   ( 7U          )); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::CHV   (10U, 10U     )); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::RVI   (10U,  4U     )); // 1 oscillator
-				m_oscillators.push_back(market::oscillators::MFI   (14U          )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::VHF   (28U          )); // 1 oscillator
 			}
 			catch (const std::exception & exception)
