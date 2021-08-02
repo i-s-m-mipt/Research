@@ -1155,6 +1155,8 @@ namespace solution
 
 			try
 			{
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 				candles_container_t candles;
 
 				std::fstream fin(path.string(), std::ios::in);
@@ -1173,6 +1175,26 @@ namespace solution
 					if (m_limits.find(asset) == std::end(m_limits) || 
 						candle.raw_date >= m_limits.at(asset))
 					{
+						if (candle.price_open < epsilon)
+						{
+							throw std::domain_error("required: (price_open > 0.0)");
+						}
+
+						if (candle.price_high < epsilon)
+						{
+							throw std::domain_error("required: (price_high > 0.0)");
+						}
+
+						if (candle.price_low < epsilon)
+						{
+							throw std::domain_error("required: (price_low > 0.0)");
+						}
+
+						if (candle.price_close < epsilon)
+						{
+							throw std::domain_error("required: (price_close > 0.0)");
+						}
+
 						candles.push_back(std::move(candle));
 					}
 				}
@@ -2704,6 +2726,8 @@ namespace solution
 
 			try
 			{
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 				std::istringstream sin(m_sources.at(asset).at(scale)->get(size));
 
 				candles_container_t candles;
@@ -2712,7 +2736,29 @@ namespace solution
 
 				while (std::getline(sin, line))
 				{
-					candles.push_back(parse(line));
+					auto candle = parse(line);
+
+					if (candle.price_open < epsilon)
+					{
+						throw std::domain_error("required: (price_open > 0.0)");
+					}
+
+					if (candle.price_high < epsilon)
+					{
+						throw std::domain_error("required: (price_high > 0.0)");
+					}
+
+					if (candle.price_low < epsilon)
+					{
+						throw std::domain_error("required: (price_low > 0.0)");
+					}
+
+					if (candle.price_close < epsilon)
+					{
+						throw std::domain_error("required: (price_close > 0.0)");
+					}
+
+					candles.push_back(std::move(candle));
 				}
 
 				update_deviations(asset, scale, candles);
