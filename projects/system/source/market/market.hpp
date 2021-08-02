@@ -74,6 +74,7 @@
 #include "oscillators/chv/chv.hpp"
 #include "oscillators/rvi/rvi.hpp"
 #include "oscillators/mfi/mfi.hpp"
+#include "oscillators/vhf/vhf.hpp"
 
 #include "../config/config.hpp"
 

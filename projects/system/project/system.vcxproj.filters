@@ -115,6 +115,9 @@
     <Filter Include="source\market\oscillators\mfi">
       <UniqueIdentifier>{415935d7-fc7e-4c90-bde8-450628bb9f70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\oscillators\vhf">
+      <UniqueIdentifier>{f1fdae39-b6d8-4c75-ae96-d6190280811e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -215,6 +218,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\mfi\mfi.cpp">
       <Filter>source\market\oscillators\mfi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\oscillators\vhf\vhf.cpp">
+      <Filter>source\market\oscillators\vhf</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -325,6 +331,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\mfi\mfi.hpp">
       <Filter>source\market\oscillators\mfi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\oscillators\vhf\vhf.hpp">
+      <Filter>source\market\oscillators\vhf</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1010,6 +1010,7 @@ namespace solution
 				m_oscillators.push_back(market::oscillators::CHV   (10U, 10U     )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::RVI   (10U,  4U     )); // 1 oscillator
 				m_oscillators.push_back(market::oscillators::MFI   (14U          )); // 1 oscillator
+				m_oscillators.push_back(market::oscillators::VHF   (28U          )); // 1 oscillator
 			}
 			catch (const std::exception & exception)
 			{
