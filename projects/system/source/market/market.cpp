@@ -2394,30 +2394,34 @@ namespace solution
 
 				for (auto i = 0U; i < std::size(candles) - market::Candle::prediction_range; ++i)
 				{
-					auto previous_price_close = candles[i].price_close;
+					auto current_price_close = candles[i].price_close;
 
 					auto deviation_L = std::abs(max(
-						candles[i + 1U].price_high,
-						candles[i + 2U].price_high,
-						candles[i + 3U].price_high,
-						candles[i + 4U].price_high,
-						candles[i + 5U].price_high) - previous_price_close) / previous_price_close;
+						candles[i + 1U].price_close,
+						candles[i + 2U].price_close,
+						candles[i + 3U].price_close,
+						candles[i + 4U].price_close,
+						candles[i + 5U].price_close) - current_price_close) / current_price_close;
 
 					auto deviation_S = std::abs(min(
-						candles[i + 1U].price_low,
-						candles[i + 2U].price_low,
-						candles[i + 3U].price_low,
-						candles[i + 4U].price_low,
-						candles[i + 5U].price_low) - previous_price_close) / previous_price_close;
+						candles[i + 1U].price_close,
+						candles[i + 2U].price_close,
+						candles[i + 3U].price_close,
+						candles[i + 4U].price_close,
+						candles[i + 5U].price_close) - current_price_close) / current_price_close;
 
-					if (deviation_L - base_deviation > epsilon ||
-						deviation_S - base_deviation > epsilon)
+					if (deviation_L - base_deviation > epsilon)
 					{
-						candles[i].movement_tag = 1;
+						candles[i].movement_tag = +1;
+
+						continue;
 					}
-					else
+					
+					if (deviation_S - base_deviation > epsilon)
 					{
-						candles[i].movement_tag = 0;
+						candles[i].movement_tag = -1;
+
+						continue;
 					}
 				}
 			}
