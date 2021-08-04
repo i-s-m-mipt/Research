@@ -118,6 +118,9 @@
     <Filter Include="source\market\oscillators\vhf">
       <UniqueIdentifier>{f1fdae39-b6d8-4c75-ae96-d6190280811e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\indicators\sar">
+      <UniqueIdentifier>{dab1a534-a0e0-4f95-bdef-8a5f887c10ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -221,6 +224,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\oscillators\vhf\vhf.cpp">
       <Filter>source\market\oscillators\vhf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\sar\sar.cpp">
+      <Filter>source\market\indicators\sar</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -340,6 +346,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\oscillators\oscillators.hpp">
       <Filter>source\market\oscillators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\sar\sar.hpp">
+      <Filter>source\market\indicators\sar</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

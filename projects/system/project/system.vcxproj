@@ -169,6 +169,7 @@
     <ClCompile Include="..\source\market\indicators\bbs\bbs.cpp" />
     <ClCompile Include="..\source\market\indicators\dema\dema.cpp" />
     <ClCompile Include="..\source\market\indicators\ema\ema.cpp" />
+    <ClCompile Include="..\source\market\indicators\sar\sar.cpp" />
     <ClCompile Include="..\source\market\indicators\sma\sma.cpp" />
     <ClCompile Include="..\source\market\indicators\tema\tema.cpp" />
     <ClCompile Include="..\source\market\indicators\vwma\vwma.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="..\source\market\indicators\detail.hpp" />
     <ClInclude Include="..\source\market\indicators\ema\ema.hpp" />
     <ClInclude Include="..\source\market\indicators\indicators.hpp" />
+    <ClInclude Include="..\source\market\indicators\sar\sar.hpp" />
     <ClInclude Include="..\source\market\indicators\sma\sma.hpp" />
     <ClInclude Include="..\source\market\indicators\tema\tema.hpp" />
     <ClInclude Include="..\source\market\indicators\vwma\vwma.hpp" />

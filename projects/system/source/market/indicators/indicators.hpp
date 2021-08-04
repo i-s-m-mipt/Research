@@ -2,6 +2,7 @@
 #include "bbs/bbs.hpp"
 #include "dema/dema.hpp"
 #include "ema/ema.hpp"
+#include "sar/sar.hpp"
 #include "sma/sma.hpp"
 #include "tema/tema.hpp"
 #include "vwma/vwma.hpp"
