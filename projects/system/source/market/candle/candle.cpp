@@ -57,7 +57,7 @@ namespace solution
 
 			std::ostream & operator<< (std::ostream & stream, const Date_Time & date_time)
 			{
-				static const char delimeter = '.';
+				static const char delimeter = '/';
 
 				stream <<
 					std::setw(4) << std::right << std::setfill('0') << std::noshowpos << date_time.year  << delimeter <<
