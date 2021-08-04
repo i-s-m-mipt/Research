@@ -55,6 +55,18 @@ namespace solution
 				return !(lhs < rhs);
 			}
 
+			std::ostream & operator<< (std::ostream & stream, const Date_Time & date_time)
+			{
+				static const char delimeter = '.';
+
+				stream <<
+					std::setw(4) << std::right << std::setfill('0') << std::noshowpos << date_time.year  << delimeter <<
+					std::setw(2) << std::right << std::setfill('0') << std::noshowpos << date_time.month << delimeter <<
+					std::setw(2) << std::right << std::setfill('0') << std::noshowpos << date_time.day;
+
+				return stream;
+			}
+
 			std::ostream & operator<< (std::ostream & stream, const Level & level)
 			{
 				static const char delimeter = ',';

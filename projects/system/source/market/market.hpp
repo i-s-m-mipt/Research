@@ -132,9 +132,20 @@ namespace solution
 			using oscillators_container_t =
 				std::vector < std::function < void(candles_container_t &) > > ;
 
-			using environment_record_t = std::vector < double > ;
+		private:
 
-			using environment_t = std::vector < environment_record_t > ;
+			struct Record
+			{
+				std::string asset;
+
+				Date_Time date_time;
+
+				std::vector < double > vector;
+			};
+
+		private:
+
+			using environment_t = std::vector < Record > ;
 
 			using thread_pool_t = boost::asio::thread_pool;
 
@@ -363,9 +374,7 @@ namespace solution
 
 		private:
 
-			double distance(
-				const environment_record_t & record_1,
-				const environment_record_t & record_2) const;
+			double distance(const Record & record_1, const Record & record_2) const;
 
 		private:
 

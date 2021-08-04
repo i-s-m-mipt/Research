@@ -44,6 +44,8 @@ namespace solution
 			bool operator>  (const Date_Time & lhs, const Date_Time & rhs);
 			bool operator>= (const Date_Time & lhs, const Date_Time & rhs);
 
+			std::ostream & operator<< (std::ostream & stream, const Date_Time & date_time);
+
 			struct Level
 			{
 			public:

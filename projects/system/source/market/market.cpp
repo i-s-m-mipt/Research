@@ -1450,11 +1450,20 @@ namespace solution
 			{
 				const auto epsilon = std::numeric_limits < double > ::epsilon();
 
-				const auto size = std::size(m_environment.front()) - Candle::prediction_range;
+				const auto size = std::size(m_environment.front().vector) - Candle::prediction_range;
 
-				const auto transaction = 100.0;
+				const auto min_transaction = 100U;
+				const auto max_transaction = 400U;
+
+				const auto transaction_step = 100U;
+
+				auto transaction = min_transaction;
 
 				auto reward = 0.0;
+
+				std::string asset;
+
+				Date_Time date_time;
 
 				for (const auto & record_test : m_environment_test)
 				{
@@ -1469,16 +1478,39 @@ namespace solution
 						{
 							min_distance = new_distance;
 
-							direction = (record[size] < 0.0 ? -1 : +1);
+							direction = (record.vector[size] < 0.0 ? -1 : +1);
+
+							asset = record.asset;
+
+							date_time = record.date_time;
 						}
 					}
 
-					reward += transaction * direction * record_test[size];
+					auto deviation = direction * record_test.vector[size];
 
-					std::cout << std::setprecision(6) << std::fixed << std::noshowpos << min_distance << " ";
+					reward += deviation * transaction;
 
-					std::cout << std::setw(8) << std::setfill(' ') << std::right <<
-						std::setprecision(2) << std::fixed << std::showpos << reward << std::endl;
+					if (deviation < 0.0)
+					{
+						if (transaction < max_transaction)
+						{
+							transaction += transaction_step;
+						}
+					}
+					else
+					{
+						if (transaction > min_transaction)
+						{
+							transaction -= transaction_step;
+						}
+					}
+
+					std::cout << record_test.asset << " [" << record_test.date_time << "] close to " <<
+						std::setw(5) << std::setfill(' ') << std::right << asset << " [" << date_time << "] with distance = " <<
+						std::setprecision(6) << std::fixed << std::noshowpos << min_distance << " REWARD: " <<
+						std::setw(8) << std::setfill(' ') << std::right <<
+						std::setprecision(3) << std::fixed << std::showpos << reward << " TRANSACTION: " << 
+						std::setprecision(3) << std::fixed << std::noshowpos << transaction << std::endl;
 				}
 			}
 			catch (const std::exception & exception)
@@ -1655,15 +1687,13 @@ namespace solution
 			}
 		}
 
-		double Market::distance(
-			const environment_record_t & record_1,
-			const environment_record_t & record_2) const
+		double Market::distance(const Record & record_1, const Record & record_2) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				const auto size = std::size(record_1) - Candle::prediction_range;
+				const auto size = std::size(record_1.vector) - Candle::prediction_range;
 
 				const auto timesteps = m_config.prediction_timesteps;
 
@@ -1676,7 +1706,8 @@ namespace solution
 					for (auto j = 0U; j < timesteps; ++j)
 					{
 						partial_distance += (j + 1.0) * std::abs(
-							record_1[i * timesteps + j] - record_2[i * timesteps + j]);
+							record_1.vector[i * timesteps + j] - 
+							record_2.vector[i * timesteps + j]);
 					}
 
 					distance += (partial_distance / (timesteps * (timesteps + 1.0) / 2.0));
@@ -2690,9 +2721,13 @@ namespace solution
 
 						for (auto i = days_in_year / 2U; i < std::size(candles) - delta + 1U; ++i)
 						{
-							environment_record_t environment_record;
+							Record record;
 
-							environment_record.reserve(delta *
+							record.asset = asset;
+
+							record.date_time = candles[i + delta - 1U].date_time;
+
+							record.vector.reserve(delta *
 								(std::size(candles[i].indicators ) +
 								 std::size(candles[i].oscillators) + 2U) + Candle::prediction_range);
 
@@ -2731,7 +2766,7 @@ namespace solution
 									logger.write(Severity::error, "bad normal price close");
 								}
 
-								environment_record.push_back(normal_price_close);
+								record.vector.push_back(normal_price_close);
 							}
 
 							auto min_max_volume = std::minmax_element(std::next(std::begin(candles), i),
@@ -2760,7 +2795,7 @@ namespace solution
 									logger.write(Severity::error, "bad normal volume");
 								}
 
-								environment_record.push_back(normal_volume);
+								record.vector.push_back(normal_volume);
 							}
 
 							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
@@ -2775,7 +2810,7 @@ namespace solution
 										logger.write(Severity::error, "bad normal indicator");
 									}
 
-									environment_record.push_back(normal_indicator);
+									record.vector.push_back(normal_indicator);
 								}
 							}
 
@@ -2796,7 +2831,7 @@ namespace solution
 										logger.write(Severity::error, "bad normal oscillator");
 									}
 
-									environment_record.push_back(normal_oscillator);
+									record.vector.push_back(normal_oscillator);
 								}
 							}
 
@@ -2832,30 +2867,34 @@ namespace solution
 									//auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
 									//	seconds_in_day / config.level_max_lifetime;
 
-									environment_record.push_back(1.0);
+									record.vector.push_back(1.0);
 								}
 								else
 								{
-									environment_record.push_back(0.0);
+									record.vector.push_back(0.0);
 								}
 							}
 
 							for (auto regression_tag : candles[i + delta - 1U].regression_tags)
 							{
-								environment_record.push_back(regression_tag);
+								record.vector.push_back(regression_tag);
 							}
 
 							if (asset == m_config.local_environment_test_asset)
 							{
-								m_environment_test.push_back(std::move(environment_record));
+								m_environment_test.push_back(std::move(record));
 							}
 							else
 							{
-								m_environment.push_back(std::move(environment_record));
+								m_environment.push_back(std::move(record));
 							}
 						}
 					}
 				}
+
+				m_environment_test.shrink_to_fit();
+
+				m_environment.shrink_to_fit();
 			}
 			catch (const std::exception & exception)
 			{
