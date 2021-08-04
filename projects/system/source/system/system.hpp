@@ -113,6 +113,7 @@ namespace solution
 						static inline const std::string required_price_deviations     = "required_price_deviations";
 						static inline const std::string required_tagged_charts        = "required_tagged_charts";
 						static inline const std::string required_environment          = "required_environment";
+						static inline const std::string required_local_environment    = "required_local_environment";
 						static inline const std::string min_price_change              = "min_price_change";
 						static inline const std::string max_price_rollback            = "max_price_rollback";
 						static inline const std::string level_max_deviation           = "level_max_deviation";
@@ -151,6 +152,8 @@ namespace solution
 						static inline const std::string intraday_test_asset           = "intraday_test_asset";
 						static inline const std::string intraday_test_scale           = "intraday_test_scale";
 						static inline const std::string intraday_test_year            = "intraday_test_year";
+						static inline const std::string local_environment_test_asset  = "local_environment_test_asset";
+						static inline const std::string run_local_environment_test    = "run_local_environment_test";
 					};
 				};
 

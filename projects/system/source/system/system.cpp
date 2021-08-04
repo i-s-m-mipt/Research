@@ -27,6 +27,7 @@ namespace solution
 				config.required_price_deviations     = raw_config[Key::Config::required_price_deviations    ].get < bool > ();
 				config.required_tagged_charts        = raw_config[Key::Config::required_tagged_charts       ].get < bool > ();
 				config.required_environment          = raw_config[Key::Config::required_environment         ].get < bool > ();
+				config.required_local_environment    = raw_config[Key::Config::required_local_environment   ].get < bool > ();
 				config.min_price_change              = raw_config[Key::Config::min_price_change             ].get < double > ();
 				config.max_price_rollback            = raw_config[Key::Config::max_price_rollback           ].get < double > ();
 				config.level_max_deviation           = raw_config[Key::Config::level_max_deviation          ].get < double > ();
@@ -65,6 +66,8 @@ namespace solution
 				config.intraday_test_asset           = raw_config[Key::Config::intraday_test_asset          ].get < std::string > ();
 				config.intraday_test_scale           = raw_config[Key::Config::intraday_test_scale          ].get < std::string > ();
 				config.intraday_test_year            = raw_config[Key::Config::intraday_test_year           ].get < unsigned int > ();
+				config.local_environment_test_asset  = raw_config[Key::Config::local_environment_test_asset ].get < std::string > ();
+				config.run_local_environment_test    = raw_config[Key::Config::run_local_environment_test   ].get < bool > ();
 			}
 			catch (const std::exception & exception)
 			{

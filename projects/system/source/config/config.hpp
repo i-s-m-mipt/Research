@@ -117,6 +117,8 @@ namespace solution
 
             bool required_environment = false;
 
+            bool required_local_environment = false;
+
             double min_price_change   = 0.020;
             double max_price_rollback = 0.333;
 
@@ -185,6 +187,10 @@ namespace solution
             std::string intraday_test_scale;
 
             unsigned int intraday_test_year = 0U;
+
+            std::string local_environment_test_asset;
+
+            bool run_local_environment_test = false;
         };
 
     } // namespace system

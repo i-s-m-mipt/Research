@@ -132,6 +132,10 @@ namespace solution
 			using oscillators_container_t =
 				std::vector < std::function < void(candles_container_t &) > > ;
 
+			using environment_record_t = std::vector < double > ;
+
+			using environment_t = std::vector < environment_record_t > ;
+
 			using thread_pool_t = boost::asio::thread_pool;
 
 		private:
@@ -343,15 +347,25 @@ namespace solution
 
 			void handle_environment();
 
+			void handle_local_environment();
+
 			void handle_quik_initialization();
 
 		private:
+
+			void run_local_environment_test() const;
 
 			void run_fridays_test() const;
 
 			void run_mornings_test() const;
 
 			void run_intraday_test() const;
+
+		private:
+
+			double distance(
+				const environment_record_t & record_1,
+				const environment_record_t & record_2) const;
 
 		private:
 
@@ -427,9 +441,11 @@ namespace solution
 
 		private:
 
-			void make_environment();
+			void prepare_environment_data();
 
 			void save_environment() const;
+
+			void make_local_environment();
 
 		private:
 
@@ -519,6 +535,10 @@ namespace solution
 			indicators_container_t m_indicators;
 
 			oscillators_container_t m_oscillators;
+
+			environment_t m_environment;
+
+			environment_t m_environment_test;
 
 			thread_pool_t m_thread_pool;
 		};

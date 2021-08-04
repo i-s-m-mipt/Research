@@ -673,20 +673,17 @@ namespace solution
 									level = candle.resistance;
 								}
 
-								/*
 								if (level.strength != 0U)
 								{
-									auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
-										seconds_in_day / config.level_max_lifetime;
+									//auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
+									//	seconds_in_day / config.level_max_lifetime;
 
-									sout << std::setprecision(6) << std::fixed << std::noshowpos <<
-										(level_alive > 1.0 ? 0.0 : level_alive) << delimeter;
+									sout << std::noshowpos << 1 << delimeter;
 								}
 								else
 								{
-									sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
+									sout << std::noshowpos << 0 << delimeter;
 								}
-								*/
 							}
 
 							for (auto regression_tag : candles[i + delta - 1U].regression_tags)
@@ -831,6 +828,16 @@ namespace solution
 				if (m_config.required_environment)
 				{
 					handle_environment();
+				}
+
+				if (m_config.required_local_environment)
+				{
+					handle_local_environment();
+
+					if (m_config.run_local_environment_test)
+					{
+						run_local_environment_test();
+					}
 				}
 
 				if (m_config.required_quik)
@@ -1391,9 +1398,27 @@ namespace solution
 
 				save_supports_resistances();
 
-				make_environment();
+				prepare_environment_data();
 
 				save_environment();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::handle_local_environment()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				make_supports_resistances();
+
+				prepare_environment_data();
+
+				make_local_environment();
 			}
 			catch (const std::exception & exception)
 			{
@@ -1410,6 +1435,51 @@ namespace solution
 				initialize_sources();
 
 				update_supports_resistances();
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::run_local_environment_test() const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
+				const auto size = std::size(m_environment.front()) - Candle::prediction_range;
+
+				const auto transaction = 100.0;
+
+				auto reward = 0.0;
+
+				for (const auto & record_test : m_environment_test)
+				{
+					auto min_distance = 1.0 * size;
+
+					auto direction = 0;
+
+					for (const auto & record : m_environment)
+					{
+						if (auto new_distance = distance(record, record_test); 
+							min_distance - new_distance > epsilon)
+						{
+							min_distance = new_distance;
+
+							direction = (record[size] < 0.0 ? -1 : +1);
+						}
+					}
+
+					reward += transaction * direction * record_test[size];
+
+					std::cout << std::setprecision(6) << std::fixed << std::noshowpos << min_distance << " ";
+
+					std::cout << std::setw(8) << std::setfill(' ') << std::right <<
+						std::setprecision(2) << std::fixed << std::showpos << reward << std::endl;
+				}
 			}
 			catch (const std::exception & exception)
 			{
@@ -1578,6 +1648,41 @@ namespace solution
 				std::cout << "days (L)    : " << counter_deviation_L    << std::endl;
 				std::cout << "days (S)    : " << counter_deviation_S    << std::endl;
 				std::cout << "days (both) : " << counter_deviation_both << std::endl;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		double Market::distance(
+			const environment_record_t & record_1,
+			const environment_record_t & record_2) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto size = std::size(record_1) - Candle::prediction_range;
+
+				const auto timesteps = m_config.prediction_timesteps;
+
+				auto distance = 0.0;
+
+				for (auto i = 0U; i < size / timesteps; ++i)
+				{
+					auto partial_distance = 0.0;
+
+					for (auto j = 0U; j < timesteps; ++j)
+					{
+						partial_distance += (j + 1.0) * std::abs(
+							record_1[i * timesteps + j] - record_2[i * timesteps + j]);
+					}
+
+					distance += (partial_distance / (timesteps * (timesteps + 1.0) / 2.0));
+				}
+
+				return distance;
 			}
 			catch (const std::exception & exception)
 			{
@@ -2516,7 +2621,7 @@ namespace solution
 			}
 		}
 
-		void Market::make_environment()
+		void Market::prepare_environment_data()
 		{
 			RUN_LOGGER(logger);
 
@@ -2552,6 +2657,205 @@ namespace solution
 				}
 
 				std::for_each(std::begin(futures), std::end(futures), [](auto & future) { future.wait(); });
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::make_local_environment()
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				const auto delta = m_config.prediction_timesteps;
+
+				for (const auto & [asset, scales] : m_charts)
+				{
+					for (const auto & [scale, candles] : scales)
+					{
+						std::vector < std::pair < double, double > > min_max_oscillators;
+
+						for (auto k = 0U; k < std::size(candles.at(days_in_year / 2U).oscillators); ++k)
+						{
+							auto min_max_oscillator = std::minmax_element(std::next(std::begin(candles), days_in_year / 2U), std::end(candles),
+								[k](const auto & lhs, const auto & rhs) { return (lhs.oscillators[k] < rhs.oscillators[k]); });
+
+							min_max_oscillators.push_back(std::make_pair(
+								min_max_oscillator.first ->oscillators[k],
+								min_max_oscillator.second->oscillators[k]));
+						}
+
+						for (auto i = days_in_year / 2U; i < std::size(candles) - delta + 1U; ++i)
+						{
+							environment_record_t environment_record;
+
+							environment_record.reserve(delta *
+								(std::size(candles[i].indicators ) +
+								 std::size(candles[i].oscillators) + 2U) + Candle::prediction_range);
+
+							auto min_max_price_close = std::minmax_element(std::next(std::begin(candles), i),
+								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
+									{ return (lhs.price_close < rhs.price_close); });
+
+							auto min_price_close = min_max_price_close.first ->price_close;
+							auto max_price_close = min_max_price_close.second->price_close;
+
+							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
+							{
+								auto min_max_indicator = std::minmax_element(std::next(std::begin(candles), i),
+									std::next(std::begin(candles), i + delta), [k](const auto & lhs, const auto & rhs)
+										{ return (lhs.indicators[k] < rhs.indicators[k]); });
+
+								min_price_close = std::min(min_price_close, min_max_indicator.first ->indicators[k]);
+								max_price_close = std::max(max_price_close, min_max_indicator.second->indicators[k]);
+							}
+
+							auto delta_price_close = max_price_close - min_price_close;
+
+							if (delta_price_close < std::numeric_limits < double > ::epsilon())
+							{
+								delta_price_close = 1.0;
+
+								logger.write(Severity::error, "division by zero for delta price close of " + asset);
+							}
+
+							for (auto j = i; j < i + delta; ++j)
+							{
+								auto normal_price_close = (candles[j].price_close - min_price_close) / delta_price_close;
+
+								if (normal_price_close < 0.0 || normal_price_close > 1.0)
+								{
+									logger.write(Severity::error, "bad normal price close");
+								}
+
+								environment_record.push_back(normal_price_close);
+							}
+
+							auto min_max_volume = std::minmax_element(std::next(std::begin(candles), i),
+								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
+									{ return (lhs.volume < rhs.volume); });
+
+							auto min_volume = min_max_volume.first ->volume;
+							auto max_volume = min_max_volume.second->volume;
+
+							auto delta_volume = max_volume - min_volume;
+
+							if (delta_volume == 0ULL)
+							{
+								delta_volume = 1ULL;
+
+								logger.write(Severity::error, "division by zero for delta volume of " + asset);
+							}
+
+							for (auto j = i; j < i + delta; ++j)
+							{
+								auto normal_volume = static_cast < double > (candles[j].volume - 
+									min_volume) / static_cast < double > (delta_volume);
+
+								if (normal_volume < 0.0 || normal_volume > 1.0)
+								{
+									logger.write(Severity::error, "bad normal volume");
+								}
+
+								environment_record.push_back(normal_volume);
+							}
+
+							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
+							{
+								for (auto j = i; j < i + delta; ++j)
+								{
+									auto normal_indicator = (candles[j].indicators[k] -
+										min_price_close) / delta_price_close;
+
+									if (normal_indicator < 0.0 || normal_indicator > 1.0)
+									{
+										logger.write(Severity::error, "bad normal indicator");
+									}
+
+									environment_record.push_back(normal_indicator);
+								}
+							}
+
+							for (auto k = 0U; k < std::size(candles[i].oscillators); ++k)
+							{
+								auto min_oscillator = min_max_oscillators[k].first;
+								auto max_oscillator = min_max_oscillators[k].second;
+
+								auto delta_oscillator = max_oscillator - min_oscillator;
+
+								for (auto j = i; j < i + delta; ++j)
+								{
+									auto normal_oscillator = (candles[j].oscillators[k] -
+										min_oscillator) / delta_oscillator;
+
+									if (normal_oscillator < 0.0 || normal_oscillator > 1.0)
+									{
+										logger.write(Severity::error, "bad normal oscillator");
+									}
+
+									environment_record.push_back(normal_oscillator);
+								}
+							}
+
+							for (auto j = i; j < i + delta; ++j)
+							{
+								const auto & candle = candles[j];
+
+								if (candle.price_close < std::numeric_limits < double > ::epsilon())
+								{
+									throw std::domain_error("division by zero");
+								}
+
+								Level level;
+
+								auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
+
+								if (support_deviation < m_config.level_max_deviation)
+								{
+									level = candle.support;
+								}
+
+								auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
+
+								if (resistance_deviation < m_config.level_max_deviation &&
+									resistance_deviation < support_deviation &&
+									candle.support.begin < candle.resistance.begin)
+								{
+									level = candle.resistance;
+								}
+
+								if (level.strength != 0U)
+								{
+									//auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
+									//	seconds_in_day / config.level_max_lifetime;
+
+									environment_record.push_back(1.0);
+								}
+								else
+								{
+									environment_record.push_back(0.0);
+								}
+							}
+
+							for (auto regression_tag : candles[i + delta - 1U].regression_tags)
+							{
+								environment_record.push_back(regression_tag);
+							}
+
+							if (asset == m_config.local_environment_test_asset)
+							{
+								m_environment_test.push_back(std::move(environment_record));
+							}
+							else
+							{
+								m_environment.push_back(std::move(environment_record));
+							}
+						}
+					}
+				}
 			}
 			catch (const std::exception & exception)
 			{
