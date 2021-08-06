@@ -26,12 +26,17 @@ namespace solution
 							throw std::domain_error("required: (min_acceleration >= 0.0)");
 						}
 
+						if (m_max_acceleration < 0.0)
+						{
+							throw std::domain_error("required: (max_acceleration >= 0.0)");
+						}
+
 						if (m_acceleration_step <= 0.0)
 						{
 							throw std::domain_error("required: (acceleration_step > 0.0)");
 						}
 
-						if (m_max_acceleration - m_min_acceleration >= epsilon)
+						if (m_max_acceleration - m_min_acceleration < epsilon)
 						{
 							throw std::domain_error("required: (min_acceleration < max_acceleration)");
 						}
