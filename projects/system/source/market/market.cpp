@@ -958,6 +958,8 @@ namespace solution
 				m_indicators.push_back(market::indicators::EMA ( 20U          )); // 1 indicator
 				m_indicators.push_back(market::indicators::EMA ( 60U          )); // 1 indicator
 				m_indicators.push_back(market::indicators::EMA (125U          )); // 1 indicator
+				m_indicators.push_back(market::indicators::SAR
+					(5U, 0.02, 0.2, 0.02));                                       // 1 indicator
 			}
 			catch (const std::exception & exception)
 			{
@@ -1450,67 +1452,67 @@ namespace solution
 			{
 				const auto epsilon = std::numeric_limits < double > ::epsilon();
 
-				const auto size = std::size(m_environment.front().vector) - Candle::prediction_range;
+				const auto size = std::size(m_environment.front().vector) - 
+					Candle::prediction_range;
 
-				const auto min_transaction = 100U;
-				const auto max_transaction = 400U;
+				auto transaction = m_config.transaction_base_value;
 
-				const auto transaction_step = 100U;
-
-				auto transaction = min_transaction;
-
-				auto reward = 0.0;
+				std::mutex mutex;
 
 				std::string asset;
-
 				Date_Time date_time;
+
+				auto reward = 0.0;
+				auto error_counter = 0U;
+				auto total_counter = 0U;
 
 				for (const auto & record_test : m_environment_test)
 				{
 					auto min_distance = 1.0 * size;
-
 					auto direction = 0;
 
-					for (const auto & record : m_environment)
-					{
-						if (auto new_distance = distance(record, record_test); 
-							min_distance - new_distance > epsilon)
+					std::for_each(std::execution::par, std::begin(m_environment), std::end(m_environment),
+						[this, &record_test, &mutex, &min_distance, epsilon, &direction, &asset, &date_time, size]
+							(const auto & record)
 						{
-							min_distance = new_distance;
+							auto current_distance = distance(record, record_test);
 
-							direction = (record.vector[size] < 0.0 ? -1 : +1);
+							{
+								std::scoped_lock lock(mutex);
 
-							asset = record.asset;
-
-							date_time = record.date_time;
-						}
-					}
+								if (min_distance - current_distance > epsilon)
+								{
+									min_distance = current_distance;
+									direction = (record.vector[size + 3U] < 0.0 ? -1 : +1);
+									asset = record.asset;
+									date_time = record.date_time;
+								}
+							}
+						});
 
 					auto deviation = direction * record_test.vector[size];
+
+					transaction = m_config.transaction_base_value + reward;
 
 					reward += deviation * transaction;
 
 					if (deviation < 0.0)
 					{
-						if (transaction < max_transaction)
-						{
-							transaction += transaction_step;
-						}
+						++error_counter;
 					}
-					else
-					{
-						if (transaction > min_transaction)
-						{
-							transaction -= transaction_step;
-						}
-					}
+
+					++total_counter;
 
 					std::cout << record_test.asset << " [" << record_test.date_time << "] close to " <<
 						std::setw(5) << std::setfill(' ') << std::right << asset << " [" << date_time << "] with distance = " <<
-						std::setprecision(6) << std::fixed << std::noshowpos << min_distance << " REWARD: " <<
-						std::setw(8) << std::setfill(' ') << std::right <<
-						std::setprecision(3) << std::fixed << std::showpos << reward << " TRANSACTION: " << 
-						std::setprecision(3) << std::fixed << std::noshowpos << transaction << std::endl;
+						std::setprecision(3) << std::fixed << std::noshowpos << min_distance << " DIRECTION: " <<
+						std::showpos << direction << " REWARD: " <<
+						std::setw(11) << std::setfill(' ') << std::right <<
+						std::setprecision(2) << std::fixed << std::showpos << reward << " TRANSACTION: " <<
+						std::setw(12) << std::setfill(' ') << std::right <<
+						std::setprecision(2) << std::fixed << std::noshowpos << transaction <<
+							(deviation < 0.0 ? " ERROR (" + std::to_string(
+								static_cast < int > (100.0 * error_counter / total_counter)) + "%)\n" : "\n");
 				}
 			}
 			catch (const std::exception & exception)
@@ -1539,7 +1541,7 @@ namespace solution
 					{
 						if (day_of_week(candles[i]) == 3U && day_of_week(candles[i + 1]) == 4U)
 						{
-							if (candles[i].price_deviation * candles[i + 1].price_deviation > 0)
+							if (candles[i].price_deviation * candles[i + 1U].price_deviation > 0.0)
 							{
 								++counter;
 							}
@@ -1697,20 +1699,26 @@ namespace solution
 
 				const auto timesteps = m_config.prediction_timesteps;
 
+				const auto q = m_config.geometric_progression_q;
+
 				auto distance = 0.0;
 
 				for (auto i = 0U; i < size / timesteps; ++i)
 				{
 					auto partial_distance = 0.0;
 
+					auto k = 1.0;
+
 					for (auto j = 0U; j < timesteps; ++j)
 					{
-						partial_distance += (j + 1.0) * std::abs(
-							record_1.vector[i * timesteps + j] - 
+						partial_distance += k * std::abs(
+							record_1.vector[i * timesteps + j] -
 							record_2.vector[i * timesteps + j]);
+
+						k *= q;
 					}
 
-					distance += (partial_distance / (timesteps * (timesteps + 1.0) / 2.0));
+					distance += partial_distance;
 				}
 
 				return distance;
@@ -2707,6 +2715,8 @@ namespace solution
 				{
 					for (const auto & [scale, candles] : scales)
 					{
+						const auto price_deviation_multiplier = Market::get_price_deviation_multiplier(scale);
+
 						std::vector < std::pair < double, double > > min_max_oscillators;
 
 						for (auto k = 0U; k < std::size(candles.at(days_in_year / 2U).oscillators); ++k)
@@ -2769,6 +2779,15 @@ namespace solution
 								record.vector.push_back(normal_price_close);
 							}
 
+							/*
+							for (auto j = i; j < i + delta; ++j)
+							{
+								record.vector.push_back(price_deviation_multiplier * 
+									(candles[j].price_deviation_open + candles[j].price_deviation));
+							}
+							*/
+
+							/*
 							auto min_max_volume = std::minmax_element(std::next(std::begin(candles), i),
 								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
 									{ return (lhs.volume < rhs.volume); });
@@ -2795,9 +2814,11 @@ namespace solution
 									logger.write(Severity::error, "bad normal volume");
 								}
 
-								record.vector.push_back(normal_volume);
+								//record.vector.push_back(normal_volume);
 							}
-
+							*/
+													
+							/*
 							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
 							{
 								for (auto j = i; j < i + delta; ++j)
@@ -2813,7 +2834,9 @@ namespace solution
 									record.vector.push_back(normal_indicator);
 								}
 							}
+							*/
 
+							/*
 							for (auto k = 0U; k < std::size(candles[i].oscillators); ++k)
 							{
 								auto min_oscillator = min_max_oscillators[k].first;
@@ -2831,7 +2854,7 @@ namespace solution
 										logger.write(Severity::error, "bad normal oscillator");
 									}
 
-									record.vector.push_back(normal_oscillator);
+									//record.vector.push_back(normal_oscillator);
 								}
 							}
 
@@ -2867,18 +2890,38 @@ namespace solution
 									//auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
 									//	seconds_in_day / config.level_max_lifetime;
 
-									record.vector.push_back(1.0);
+									//record.vector.push_back(1.0);
 								}
 								else
 								{
-									record.vector.push_back(0.0);
+									//record.vector.push_back(0.0);
 								}
 							}
+							*/
 
 							for (auto regression_tag : candles[i + delta - 1U].regression_tags)
 							{
 								record.vector.push_back(regression_tag);
 							}
+
+							/*
+							auto classification_tag = candles[i + delta - 1U].classification_tag;
+
+							if (classification_tag == State_Tag::S)
+							{
+								record.vector.push_back(-1.0);
+							}
+
+							if (classification_tag == State_Tag::C)
+							{
+								record.vector.push_back( 0.0);
+							}
+
+							if (classification_tag == State_Tag::L)
+							{
+								record.vector.push_back(+1.0);
+							}							
+							*/
 
 							if (asset == m_config.local_environment_test_asset)
 							{

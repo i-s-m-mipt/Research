@@ -154,6 +154,8 @@ namespace solution
 						static inline const std::string intraday_test_year            = "intraday_test_year";
 						static inline const std::string local_environment_test_asset  = "local_environment_test_asset";
 						static inline const std::string run_local_environment_test    = "run_local_environment_test";
+						static inline const std::string knn_method_parameter          = "knn_method_parameter";
+						static inline const std::string geometric_progression_q       = "geometric_progression_q";
 					};
 				};
 

@@ -191,6 +191,10 @@ namespace solution
             std::string local_environment_test_asset;
 
             bool run_local_environment_test = false;
+
+            std::size_t knn_method_parameter = 1U;
+
+            double geometric_progression_q = 1.0;
         };
 
     } // namespace system

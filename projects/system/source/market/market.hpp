@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <ctime>
 #include <exception>
+#include <execution>
 #include <filesystem>
 #include <fstream>
 #include <future>

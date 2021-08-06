@@ -68,6 +68,8 @@ namespace solution
 				config.intraday_test_year            = raw_config[Key::Config::intraday_test_year           ].get < unsigned int > ();
 				config.local_environment_test_asset  = raw_config[Key::Config::local_environment_test_asset ].get < std::string > ();
 				config.run_local_environment_test    = raw_config[Key::Config::run_local_environment_test   ].get < bool > ();
+				config.knn_method_parameter          = raw_config[Key::Config::knn_method_parameter         ].get < std::size_t > ();
+				config.geometric_progression_q       = raw_config[Key::Config::geometric_progression_q      ].get < double > ();
 			}
 			catch (const std::exception & exception)
 			{
