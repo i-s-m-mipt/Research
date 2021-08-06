@@ -280,15 +280,18 @@ async def estimate_sentiments_implementation(asset, client):
             
         
     keywords = {
-        "BR"  : ["oil", "нефт", "brent"],
+        "BR"  : ["oil", "нефт", "brent", "wti"],
         "NG"  : ["gaz", "газ"],
         "GC"  : ["gold", "золот"],
+        "SBER": ["sber", "сбер", "сбербанк", "sberbank"],
+        "GAZP": ["gazp", "газпром", "gazprom"],
+        "GMKN": ["gmkn", "норникел", "норильский никель", "nornickel"],
         "LKOH": ["lkoh", "лукойл", "lukoil"],
-        "SIBN": ["sibn", "газпромнефт", "gazpromneft"],
         "ROSN": ["rosn", "роснефт", "rosneft"],
-        "TATN": ["tatn", "татнефт", "tatneft"],
-        "SNGS": ["sngs", "сургутнефтегаз", "surgutneftegas"]
-        }
+        "SIBN": ["sibn", "газпромнефт", "gazpromneft"],
+        "SNGS": ["sngs", "сургутнефтегаз", "surgutneftegas"],
+        "TATN": ["tatn", "татнефт", "tatneft"]
+    }
     
     key_sentences = []
 
@@ -318,8 +321,8 @@ async def estimate_sentiments_implementation(asset, client):
         if polarity < 0.0:
             negative_sentences_counter += 1
 
-    s1 = "%2d" % positive_sentences_counter
-    s2 = "%2d" % negative_sentences_counter
+    s1 = "%3d" % positive_sentences_counter
+    s2 = "%3d" % negative_sentences_counter
         
     return s1 + "(P), " + s2 + "(N)"
 
