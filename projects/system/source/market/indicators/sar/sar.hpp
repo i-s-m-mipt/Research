@@ -24,7 +24,7 @@ namespace solution
 					explicit SAR(std::size_t initial_candles, double min_acceleration, 
 						double max_acceleration, double acceleration_step) :
 							m_initial_candles(initial_candles), m_min_acceleration(min_acceleration),
-							m_max_acceleration(m_max_acceleration), m_acceleration_step(acceleration_step)
+							m_max_acceleration(max_acceleration), m_acceleration_step(acceleration_step)
 					{
 						initialize();
 					}
