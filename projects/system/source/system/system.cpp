@@ -560,8 +560,8 @@ namespace solution
 				boost::python::object function = python.global()["estimate_sentiments"];
 
 				const std::vector < std::vector < std::string > > asset_classes = { 
-					{ "BR", "NG", "GC" }, 
-					{ "LKOH", "ROSN", "SIBN", "SNGS", "TATN" } };
+					{ "BR" }, 
+					{ "SBER", "GAZP", "GMKN", "LKOH", "ROSN", "SIBN", "SNGS", "TATN" } };
 
 				for (const auto & asset_class : asset_classes)
 				{
