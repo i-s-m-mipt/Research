@@ -56,7 +56,8 @@ namespace solution
 
 				date_time_t begin;
 
-				double price = 0.0;
+				double price_low  = 0.0;
+				double price_high = 0.0;
 
 				std::size_t strength = 0U;
 			};
@@ -113,8 +114,7 @@ namespace solution
 
 				int movement_tag = 0;
 
-				Level support;
-				Level resistance;
+				std::size_t n_levels = 0U;
 
 				std::vector < double > indicators;
 				std::vector < double > oscillators;

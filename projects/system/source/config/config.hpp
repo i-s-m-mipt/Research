@@ -122,14 +122,14 @@ namespace solution
             double min_price_change   = 0.020;
             double max_price_rollback = 0.333;
 
-            double level_max_deviation = 0.005;
+            double level_max_deviation = 0.0025;
 
             double level_max_lifetime = 1825.0;
             double level_max_strength = 25.0;
 
             std::string level_resolution = "D";
 
-            std::size_t level_frame = 10U;
+            std::size_t level_frame = 30U;
 
             double critical_deviation = 1.00;
 

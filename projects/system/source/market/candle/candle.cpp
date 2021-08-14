@@ -76,7 +76,9 @@ namespace solution
 					level.begin.month << delimeter << std::setfill('0') << std::setw(2) <<
 					level.begin.day   << delimeter;
 
-				stream << std::setprecision(6) << std::fixed << level.price << delimeter << level.strength;
+				stream << 
+					std::setprecision(6) << std::fixed << level.price_low  << delimeter << 
+					std::setprecision(6) << std::fixed << level.price_high << delimeter << level.strength;
 
 				return stream;
 			}
