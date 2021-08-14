@@ -14,12 +14,14 @@ namespace solution
 
 					try
 					{
+						const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 						if (m_timesteps == 0U)
 						{
 							throw std::domain_error("required: (timesteps > 0)");
 						}
 
-						if (m_deviations < std::numeric_limits < double > ::epsilon())
+						if (m_deviations < epsilon)
 						{
 							throw std::domain_error("required: (deviations > 0.0)");
 						}

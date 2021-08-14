@@ -53,8 +53,6 @@ namespace solution
 
 					try
 					{
-						const auto epsilon = std::numeric_limits < double > ::epsilon();
-
 						auto is_growing = candles.at(m_initial_candles - 1U).price_close > candles.front().price_close;
 
 						auto acceleration = m_min_acceleration;
