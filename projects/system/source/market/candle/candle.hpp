@@ -83,7 +83,7 @@ namespace solution
 
 			public:
 
-				static inline const std::size_t prediction_range = 5U;
+				static inline const std::size_t prediction_range = 10U;
 
 			public:
 
