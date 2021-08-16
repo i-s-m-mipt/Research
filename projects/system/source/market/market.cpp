@@ -387,6 +387,7 @@ namespace solution
 				{
 					for (const auto & [scale, candles] : scales)
 					{
+						/*
 						sout << asset << " " << scale << " " << std::size(candles) << "\n";
 
 						const auto price_deviation_multiplier = Market::get_price_deviation_multiplier(scale);
@@ -482,6 +483,7 @@ namespace solution
 								
 								sout << candle.classification_tag << "\n";
 							});
+						*/
 					}
 				}
 
@@ -512,6 +514,8 @@ namespace solution
 
 				const auto delta = config.prediction_timesteps;
 
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 				static const char delimeter = ',';
 
 				for (const auto & [asset, scales] : charts)
@@ -520,10 +524,6 @@ namespace solution
 
 					for (const auto & [scale, candles] : scales)
 					{
-						const auto size = std::size(candles) - delta + 1U - days_in_year / 2U;
-
-						sout << asset << " " << scale << " " << size << "\n";
-
 						std::vector < std::pair < double, double > > min_max_oscillators;
 
 						for (auto k = 0U; k < std::size(candles[days_in_year / 2U].oscillators); ++k)
@@ -538,13 +538,33 @@ namespace solution
 
 						for (auto i = days_in_year / 2U; i < std::size(candles) - delta + 1U; ++i)
 						{
+							if (candles[i + delta - 1U].n_levels == 0U)
+							{
+								continue;
+							}
+
+							/*
+							for (auto j = i; j < i + delta - 1U; ++j)
+							{
+								for (auto k = j + 1U; k < i + delta; ++k)
+								{
+									auto price_deviation = (candles[k].price_close -
+										candles[j].price_close) / candles[j].price_close;
+
+									sout << std::setprecision(3) << std::fixed << std::showpos <<
+										(price_deviation > 1.0 ? 1.0 :
+											(price_deviation < -1.0 ? -1.0 : price_deviation)) << delimeter;
+								}
+							}
+							*/
+
 							auto min_max_price_close = std::minmax_element(std::next(std::begin(candles), i),
 								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
 									{ return (lhs.price_close < rhs.price_close); });
 
 							auto min_price_close = min_max_price_close.first ->price_close;
 							auto max_price_close = min_max_price_close.second->price_close;
-
+							
 							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
 							{
 								auto min_max_indicator = std::minmax_element(std::next(std::begin(candles), i),
@@ -555,26 +575,13 @@ namespace solution
 								max_price_close = std::max(max_price_close, min_max_indicator.second->indicators[k]);
 							}
 
-							auto delta_price_close = max_price_close - min_price_close;
-
-							if (delta_price_close < std::numeric_limits < double > ::epsilon())
-							{
-								delta_price_close = 1.0;
-
-								logger.write(Severity::error, "division by zero for delta price close of " + asset);
-							}
+							auto delta_price_close = std::max((max_price_close - min_price_close), epsilon);
 
 							for (auto j = i; j < i + delta; ++j)
 							{
-								auto normal_price_close = (candles[j].price_close - min_price_close) / delta_price_close;
-
-								if (normal_price_close < 0.0 || normal_price_close > 1.0)
-								{
-									logger.write(Severity::error, "bad normal price close");
-								}
-
 								sout << std::setprecision(3) << std::fixed << std::noshowpos << 
-									normal_price_close << delimeter;
+									(candles[j].price_close - min_price_close) / 
+										delta_price_close << delimeter;
 							}
 
 							auto min_max_volume = std::minmax_element(std::next(std::begin(candles), i),
@@ -584,43 +591,22 @@ namespace solution
 							auto min_volume = min_max_volume.first ->volume;
 							auto max_volume = min_max_volume.second->volume;
 
-							auto delta_volume = max_volume - min_volume;
-
-							if (delta_volume == 0ULL)
-							{
-								delta_volume = 1ULL;
-
-								logger.write(Severity::error, "division by zero for delta volume of " + asset);
-							}
+							auto delta_volume = std::max((max_volume - min_volume), 1ULL);
 
 							for (auto j = i; j < i + delta; ++j)
 							{
-								auto normal_volume = static_cast < double > (candles[j].volume - 
-									min_volume) / static_cast < double > (delta_volume);
-
-								if (normal_volume < 0.0 || normal_volume > 1.0)
-								{
-									logger.write(Severity::error, "bad normal volume");
-								}
-
 								sout << std::setprecision(3) << std::fixed << std::noshowpos << 
-									normal_volume << delimeter;
+									static_cast < double > (candles[j].volume - min_volume) / 
+									static_cast < double > (delta_volume) << delimeter;
 							}
 
 							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
 							{
 								for (auto j = i; j < i + delta; ++j)
 								{
-									auto normal_indicator = (candles[j].indicators[k] -
-										min_price_close) / delta_price_close;
-
-									if (normal_indicator < 0.0 || normal_indicator > 1.0)
-									{
-										logger.write(Severity::error, "bad normal indicator");
-									}
-
 									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-										normal_indicator << delimeter;
+										(candles[j].indicators[k] - min_price_close) / 
+											delta_price_close << delimeter;
 								}
 							}
 
@@ -629,70 +615,25 @@ namespace solution
 								auto min_oscillator = min_max_oscillators[k].first;
 								auto max_oscillator = min_max_oscillators[k].second;
 
-								auto delta_oscillator = max_oscillator - min_oscillator;
+								auto delta_oscillator = std::max((max_oscillator - min_oscillator), epsilon);
 
 								for (auto j = i; j < i + delta; ++j)
 								{
-									auto normal_oscillator = (candles[j].oscillators[k] -
-										min_oscillator) / delta_oscillator;
-
-									if (normal_oscillator < 0.0 || normal_oscillator > 1.0)
-									{
-										logger.write(Severity::error, "bad normal oscillator");
-									}
-
 									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-										normal_oscillator << delimeter;
+										(candles[j].oscillators[k] - min_oscillator) / 
+											delta_oscillator << delimeter;
 								}
 							}
 
-							for (auto j = i; j < i + delta; ++j)
-							{
-								const auto & candle = candles[j];
-
-								if (candle.price_close < std::numeric_limits < double > ::epsilon())
-								{
-									throw std::domain_error("division by zero");
-								}
-
-								Level level;
-
-								auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
-
-								if (support_deviation < config.level_max_deviation)
-								{
-									level = candle.support;
-								}
-
-								auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
-
-								if (resistance_deviation < config.level_max_deviation &&
-									resistance_deviation < support_deviation &&
-									candle.support.begin < candle.resistance.begin)
-								{
-									level = candle.resistance;
-								}
-
-								if (level.strength != 0U)
-								{
-									//auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
-									//	seconds_in_day / config.level_max_lifetime;
-
-									sout << std::noshowpos << 1 << delimeter;
-								}
-								else
-								{
-									sout << std::noshowpos << 0 << delimeter;
-								}
-							}
-
+							/*
 							for (auto regression_tag : candles[i + delta - 1U].regression_tags)
 							{
 								sout << std::setprecision(3) << std::fixed << std::showpos <<
 									regression_tag << delimeter;
 							}
 
-							sout << candles[i + delta - 1U].classification_tag << delimeter;
+							sout << candles[i + delta - 1U].classification_tag << "\n";
+							*/
 
 							sout << std::showpos << candles[i + delta - 1U].movement_tag << "\n";
 						}
@@ -952,6 +893,9 @@ namespace solution
 
 			try
 			{
+				m_indicators.push_back(market::indicators::EMA (  5U          )); // 1 indicator
+
+				/*
 				m_indicators.push_back(market::indicators::AMA ( 10U,  2U, 30U)); // 1 indicator
 				m_indicators.push_back(market::indicators::BBS ( 20U, 2.0     )); // 2 indicator
 				m_indicators.push_back(market::indicators::EMA (  5U          )); // 1 indicator
@@ -960,6 +904,7 @@ namespace solution
 				m_indicators.push_back(market::indicators::EMA (125U          )); // 1 indicator
 				m_indicators.push_back(market::indicators::SAR
 					(5U, 0.02, 0.2, 0.02));                                       // 1 indicator
+				*/
 			}
 			catch (const std::exception & exception)
 			{
@@ -1233,11 +1178,6 @@ namespace solution
 
 				for (auto i = 0U; i < std::size(candles); ++i)
 				{
-					if (std::abs(candles[i].price_open) <= std::numeric_limits < double > ::epsilon())
-					{
-						throw std::domain_error("division by zero");
-					}
-
 					candles[i].price_deviation = (candles[i].price_close - candles[i].price_open) / candles[i].price_open;
 
 					if ((candles[i].price_deviation >  m_config.critical_deviation ||
@@ -1264,11 +1204,6 @@ namespace solution
 					}
 					else
 					{
-						if (std::abs(candles[i - 1].price_close) <= std::numeric_limits < double > ::epsilon())
-						{
-							throw std::domain_error("division by zero");
-						}
-
 						candles[i].price_deviation_open = (candles[i].price_open - candles[i - 1].price_close) / candles[i - 1].price_close;
 
 						if ((candles[i].price_deviation_open >  m_config.critical_deviation ||
@@ -1452,27 +1387,19 @@ namespace solution
 			{
 				const auto epsilon = std::numeric_limits < double > ::epsilon();
 
-				const auto size = std::size(m_environment.front().vector) - 
-					Candle::prediction_range;
-
-				auto transaction = m_config.transaction_base_value;
-
 				std::mutex mutex;
 
-				std::string asset;
-				Date_Time date_time;
-
-				auto reward = 0.0;
 				auto error_counter = 0U;
 				auto total_counter = 0U;
 
 				for (const auto & record_test : m_environment_test)
 				{
-					auto min_distance = 1.0 * size;
-					auto direction = 0;
+					auto min_distance = 1.0 * std::size(record_test.vector);
+					
+					Record record_neighbour;
 
 					std::for_each(std::execution::par, std::begin(m_environment), std::end(m_environment),
-						[this, &record_test, &mutex, &min_distance, epsilon, &direction, &asset, &date_time, size]
+						[this, &record_test, &mutex, &min_distance, epsilon, &record_neighbour]
 							(const auto & record)
 						{
 							auto current_distance = distance(record, record_test);
@@ -1483,36 +1410,31 @@ namespace solution
 								if (min_distance - current_distance > epsilon)
 								{
 									min_distance = current_distance;
-									direction = (record.vector[size + 3U] < 0.0 ? -1 : +1);
-									asset = record.asset;
-									date_time = record.date_time;
+									
+									record_neighbour = record;
 								}
 							}
 						});
 
-					auto deviation = direction * record_test.vector[size];
+					bool has_error = false;
 
-					transaction = m_config.transaction_base_value + reward;
-
-					reward += deviation * transaction;
-
-					if (deviation < 0.0)
+					if (static_cast < int > (record_test.     vector.back()) != 
+						static_cast < int > (record_neighbour.vector.back()))
 					{
+						has_error = true;
+
 						++error_counter;
 					}
 
 					++total_counter;
 
 					std::cout << record_test.asset << " [" << record_test.date_time << "] close to " <<
-						std::setw(5) << std::setfill(' ') << std::right << asset << " [" << date_time << "] with distance = " <<
+						std::setw(5) << std::setfill(' ') << std::right << record_neighbour.asset << 
+							" [" << record_neighbour.date_time << "] with distance = " <<
 						std::setprecision(3) << std::fixed << std::noshowpos << min_distance << " DIRECTION: " <<
-						std::showpos << direction << " REWARD: " <<
-						std::setw(11) << std::setfill(' ') << std::right <<
-						std::setprecision(2) << std::fixed << std::showpos << reward << " TRANSACTION: " <<
-						std::setw(12) << std::setfill(' ') << std::right <<
-						std::setprecision(2) << std::fixed << std::noshowpos << transaction <<
-							(deviation < 0.0 ? " ERROR (" + std::to_string(
-								static_cast < int > (100.0 * error_counter / total_counter)) + "%)\n" : "\n");
+						std::showpos << static_cast < int > (record_neighbour.vector.back()) << 
+							(has_error ? " ERROR (" + std::to_string(static_cast < int > (
+								100.0 * error_counter / total_counter)) + "%)\n"  : "\n");
 				}
 			}
 			catch (const std::exception & exception)
@@ -1695,30 +1617,13 @@ namespace solution
 
 			try
 			{
-				const auto size = std::size(record_1.vector) - Candle::prediction_range;
-
-				const auto timesteps = m_config.prediction_timesteps;
-
-				const auto q = m_config.geometric_progression_q;
+				const auto size = std::size(record_1.vector) - 1U;
 
 				auto distance = 0.0;
 
-				for (auto i = 0U; i < size / timesteps; ++i)
+				for (auto j = 0U; j < size; ++j)
 				{
-					auto partial_distance = 0.0;
-
-					auto k = 1.0;
-
-					for (auto j = 0U; j < timesteps; ++j)
-					{
-						partial_distance += k * std::abs(
-							record_1.vector[i * timesteps + j] -
-							record_2.vector[i * timesteps + j]);
-
-						k *= q;
-					}
-
-					distance += partial_distance;
+					distance += std::abs(record_1.vector[j] - record_2.vector[j]);
 				}
 
 				return distance;
@@ -2140,9 +2045,6 @@ namespace solution
 						{
 							auto levels = make_levels(m_charts.at(asset).at(m_config.level_resolution));
 
-							std::sort(std::begin(levels), std::end(levels), [](const auto & lhs, const auto & rhs)
-								{ return (lhs.begin < rhs.begin); });
-							
 							std::scoped_lock lock(mutex);
 
 							m_supports_resistances[asset] = std::move(levels);
@@ -2169,36 +2071,39 @@ namespace solution
 
 				levels_container_t levels;
 
-				for (auto first = std::begin(candles); first != std::end(candles); )
+				for (auto first = std::begin(candles); first != std::prev(std::end(candles), frame - 1U); ++first)
 				{
-					auto last = std::next(first, std::min(frame,
-						static_cast < decltype(frame) > (std::distance(first, std::end(candles)))));
+					auto last = std::next(first, frame);
 
 					auto extremum = std::minmax_element(first, last, [](const auto & lhs, const auto & rhs)
 						{
-							return (lhs.price_close < rhs.price_close);
+							return (
+								(lhs.price_high + lhs.price_low + lhs.price_close) < 
+								(rhs.price_high + rhs.price_low + rhs.price_close));
 						});
 
-					if ((extremum.first == first && first != std::begin(candles) &&
-						std::prev(first)->price_close > extremum.first->price_close) ||
-						(extremum.first == std::prev(last) && last != std::end(candles) &&
-							last->price_close > extremum.first->price_close) ||
-						(extremum.first != first && extremum.first != std::prev(last)))
+					if (std::distance(first, extremum.first) >= Candle::prediction_range &&
+						std::distance(extremum.first, last ) >= Candle::prediction_range)
 					{
-						levels.push_back(Level{ extremum.first->date_time, extremum.first->price_close, 1U });
+						levels.push_back(Level{ extremum.first->date_time, 
+							extremum.first->price_low, extremum.first->price_close, 1U });
 					}
 
-					if ((extremum.second == first && first != std::begin(candles) &&
-						std::prev(first)->price_close < extremum.second->price_close) ||
-						(extremum.second == std::prev(last) && last != std::end(candles) &&
-							last->price_close < extremum.second->price_close) ||
-						(extremum.second != first && extremum.second != std::prev(last)))
+					if (std::distance(first, extremum.second) >= Candle::prediction_range &&
+						std::distance(extremum.second, last ) >= Candle::prediction_range)
 					{
-						levels.push_back(Level{ extremum.second->date_time, extremum.second->price_close, 1U });
+						levels.push_back(Level{ extremum.second->date_time, 
+							extremum.second->price_close, extremum.second->price_high, 1U });
 					}
-
-					first = last;
 				}
+
+				std::sort(std::begin(levels), std::end(levels), 
+					[](const auto & lhs, const auto & rhs)
+						{ return (lhs.begin < rhs.begin); });
+
+				levels.erase(std::unique(std::begin(levels), std::end(levels), 
+					[](const auto & lhs, const auto & rhs)
+						{ return (lhs.begin == rhs.begin); }), std::end(levels));
 
 				if (m_config.required_level_reduction)
 				{
@@ -2221,26 +2126,7 @@ namespace solution
 
 			try
 			{
-				if (std::size(levels) > 1)
-				{
-					for (auto first = std::begin(levels); first != std::end(levels); ++first)
-					{
-						for (auto current = std::next(first); current != std::end(levels);)
-						{
-							if (std::abs(first->price - current->price) / first->price <=
-								m_config.level_max_deviation)
-							{
-								++first->strength;
-
-								current = levels.erase(current);
-							}
-							else
-							{
-								++current;
-							}
-						}
-					}
-				}
+				// TODO
 
 				return levels;
 			}
@@ -2319,11 +2205,6 @@ namespace solution
 					{
 						if (i + j + 1 < std::size(candles))
 						{
-							if (std::abs(candles[i].price_close) <= std::numeric_limits < double > ::epsilon())
-							{
-								throw std::domain_error("division by zero");
-							}
-
 							candles[i].regression_tags[j] = (candles[i + j + 1].price_close -
 								candles[i].price_close) / candles[i].price_close;
 						}
@@ -2526,7 +2407,7 @@ namespace solution
 			}
 		}
 
-		void Market::update_movement_tags(candles_container_t & candles) const // TODO
+		void Market::update_movement_tags(candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);
 
@@ -2534,38 +2415,31 @@ namespace solution
 			{
 				const auto epsilon = std::numeric_limits < double > ::epsilon();
 
-				const auto base_deviation = m_config.min_price_change;
+				const auto prediction_range = Candle::prediction_range / 2U;
 
-				for (auto i = 0U; i < std::size(candles) - market::Candle::prediction_range; ++i)
+				for (auto i = 0U; i < std::size(candles) - prediction_range; ++i)
 				{
+					auto max_price = candles[i + prediction_range].price_close;
+					auto min_price = candles[i + prediction_range].price_close;
+
+					for (auto j = 1U; j < prediction_range; ++j)
+					{
+						max_price = std::max(max_price, candles[i + j].price_close);
+						min_price = std::min(min_price, candles[i + j].price_close);
+					}
+
 					auto current_price_close = candles[i].price_close;
 
-					auto deviation_L = std::abs(max(
-						candles[i + 1U].price_close,
-						candles[i + 2U].price_close,
-						candles[i + 3U].price_close,
-						candles[i + 4U].price_close,
-						candles[i + 5U].price_close) - current_price_close) / current_price_close;
+					auto deviation_L = std::abs(max_price - current_price_close) / current_price_close;
+					auto deviation_S = std::abs(min_price - current_price_close) / current_price_close;
 
-					auto deviation_S = std::abs(min(
-						candles[i + 1U].price_close,
-						candles[i + 2U].price_close,
-						candles[i + 3U].price_close,
-						candles[i + 4U].price_close,
-						candles[i + 5U].price_close) - current_price_close) / current_price_close;
-
-					if (deviation_L - base_deviation > epsilon)
+					if (deviation_L - deviation_S > epsilon)
 					{
 						candles[i].movement_tag = +1;
-
-						continue;
 					}
-					
-					if (deviation_S - base_deviation > epsilon)
+					else
 					{
 						candles[i].movement_tag = -1;
-
-						continue;
 					}
 				}
 			}
@@ -2591,16 +2465,13 @@ namespace solution
 						}
 						else
 						{
-							if ((level.price < candle.price_close) &&
-								(candle.support.strength == 0U || candle.support.price < level.price))
-							{
-								candle.support = level;
-							}
+							auto level_alive = candle.date_time.to_time_t() - level.begin.to_time_t();
 
-							if ((level.price > candle.price_close) &&
-								(candle.resistance.strength == 0U || candle.resistance.price > level.price))
+							if ((level.price_low  <= candle.price_close) &&
+								(level.price_high >= candle.price_close) &&
+								(level_alive <= seconds_in_day * m_config.level_max_lifetime))
 							{
-								candle.resistance = level;
+								++candle.n_levels;
 							}
 						}
 					}
@@ -2715,221 +2586,55 @@ namespace solution
 				{
 					for (const auto & [scale, candles] : scales)
 					{
-						const auto price_deviation_multiplier = Market::get_price_deviation_multiplier(scale);
-
-						std::vector < std::pair < double, double > > min_max_oscillators;
-
-						for (auto k = 0U; k < std::size(candles.at(days_in_year / 2U).oscillators); ++k)
-						{
-							auto min_max_oscillator = std::minmax_element(std::next(std::begin(candles), days_in_year / 2U), std::end(candles),
-								[k](const auto & lhs, const auto & rhs) { return (lhs.oscillators[k] < rhs.oscillators[k]); });
-
-							min_max_oscillators.push_back(std::make_pair(
-								min_max_oscillator.first ->oscillators[k],
-								min_max_oscillator.second->oscillators[k]));
-						}
-
 						for (auto i = days_in_year / 2U; i < std::size(candles) - delta + 1U; ++i)
 						{
-							Record record;
-
-							record.asset = asset;
-
-							record.date_time = candles[i + delta - 1U].date_time;
-
-							record.vector.reserve(delta *
-								(std::size(candles[i].indicators ) +
-								 std::size(candles[i].oscillators) + 2U) + Candle::prediction_range);
-
-							auto min_max_price_close = std::minmax_element(std::next(std::begin(candles), i),
-								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
-									{ return (lhs.price_close < rhs.price_close); });
-
-							auto min_price_close = min_max_price_close.first ->price_close;
-							auto max_price_close = min_max_price_close.second->price_close;
-
-							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
+							if (candles[i + delta - 1U].n_levels == 0U)
 							{
-								auto min_max_indicator = std::minmax_element(std::next(std::begin(candles), i),
-									std::next(std::begin(candles), i + delta), [k](const auto & lhs, const auto & rhs)
-										{ return (lhs.indicators[k] < rhs.indicators[k]); });
-
-								min_price_close = std::min(min_price_close, min_max_indicator.first ->indicators[k]);
-								max_price_close = std::max(max_price_close, min_max_indicator.second->indicators[k]);
-							}
-
-							auto delta_price_close = max_price_close - min_price_close;
-
-							if (delta_price_close < std::numeric_limits < double > ::epsilon())
-							{
-								delta_price_close = 1.0;
-
-								logger.write(Severity::error, "division by zero for delta price close of " + asset);
-							}
-
-							for (auto j = i; j < i + delta; ++j)
-							{
-								auto normal_price_close = (candles[j].price_close - min_price_close) / delta_price_close;
-
-								if (normal_price_close < 0.0 || normal_price_close > 1.0)
-								{
-									logger.write(Severity::error, "bad normal price close");
-								}
-
-								record.vector.push_back(normal_price_close);
-							}
-
-							/*
-							for (auto j = i; j < i + delta; ++j)
-							{
-								record.vector.push_back(price_deviation_multiplier * 
-									(candles[j].price_deviation_open + candles[j].price_deviation));
-							}
-							*/
-
-							/*
-							auto min_max_volume = std::minmax_element(std::next(std::begin(candles), i),
-								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
-									{ return (lhs.volume < rhs.volume); });
-
-							auto min_volume = min_max_volume.first ->volume;
-							auto max_volume = min_max_volume.second->volume;
-
-							auto delta_volume = max_volume - min_volume;
-
-							if (delta_volume == 0ULL)
-							{
-								delta_volume = 1ULL;
-
-								logger.write(Severity::error, "division by zero for delta volume of " + asset);
-							}
-
-							for (auto j = i; j < i + delta; ++j)
-							{
-								auto normal_volume = static_cast < double > (candles[j].volume - 
-									min_volume) / static_cast < double > (delta_volume);
-
-								if (normal_volume < 0.0 || normal_volume > 1.0)
-								{
-									logger.write(Severity::error, "bad normal volume");
-								}
-
-								//record.vector.push_back(normal_volume);
-							}
-							*/
-													
-							/*
-							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
-							{
-								for (auto j = i; j < i + delta; ++j)
-								{
-									auto normal_indicator = (candles[j].indicators[k] -
-										min_price_close) / delta_price_close;
-
-									if (normal_indicator < 0.0 || normal_indicator > 1.0)
-									{
-										logger.write(Severity::error, "bad normal indicator");
-									}
-
-									record.vector.push_back(normal_indicator);
-								}
-							}
-							*/
-
-							/*
-							for (auto k = 0U; k < std::size(candles[i].oscillators); ++k)
-							{
-								auto min_oscillator = min_max_oscillators[k].first;
-								auto max_oscillator = min_max_oscillators[k].second;
-
-								auto delta_oscillator = max_oscillator - min_oscillator;
-
-								for (auto j = i; j < i + delta; ++j)
-								{
-									auto normal_oscillator = (candles[j].oscillators[k] -
-										min_oscillator) / delta_oscillator;
-
-									if (normal_oscillator < 0.0 || normal_oscillator > 1.0)
-									{
-										logger.write(Severity::error, "bad normal oscillator");
-									}
-
-									//record.vector.push_back(normal_oscillator);
-								}
-							}
-
-							for (auto j = i; j < i + delta; ++j)
-							{
-								const auto & candle = candles[j];
-
-								if (candle.price_close < std::numeric_limits < double > ::epsilon())
-								{
-									throw std::domain_error("division by zero");
-								}
-
-								Level level;
-
-								auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
-
-								if (support_deviation < m_config.level_max_deviation)
-								{
-									level = candle.support;
-								}
-
-								auto resistance_deviation = (candle.resistance.price - candle.price_close) / candle.price_close;
-
-								if (resistance_deviation < m_config.level_max_deviation &&
-									resistance_deviation < support_deviation &&
-									candle.support.begin < candle.resistance.begin)
-								{
-									level = candle.resistance;
-								}
-
-								if (level.strength != 0U)
-								{
-									//auto level_alive = (candle.date_time.to_time_t() - level.begin.to_time_t()) /
-									//	seconds_in_day / config.level_max_lifetime;
-
-									//record.vector.push_back(1.0);
-								}
-								else
-								{
-									//record.vector.push_back(0.0);
-								}
-							}
-							*/
-
-							for (auto regression_tag : candles[i + delta - 1U].regression_tags)
-							{
-								record.vector.push_back(regression_tag);
-							}
-
-							/*
-							auto classification_tag = candles[i + delta - 1U].classification_tag;
-
-							if (classification_tag == State_Tag::S)
-							{
-								record.vector.push_back(-1.0);
-							}
-
-							if (classification_tag == State_Tag::C)
-							{
-								record.vector.push_back( 0.0);
-							}
-
-							if (classification_tag == State_Tag::L)
-							{
-								record.vector.push_back(+1.0);
-							}							
-							*/
-
-							if (asset == m_config.local_environment_test_asset)
-							{
-								m_environment_test.push_back(std::move(record));
+								continue;
 							}
 							else
 							{
-								m_environment.push_back(std::move(record));
+								Record record;
+
+								record.asset = asset;
+
+								record.date_time = candles[i + delta - 1U].date_time;
+
+								record.vector.reserve(delta + 1U);
+
+								/*
+								for (auto j = i; j < i + delta - 1U; ++j)
+								{
+									for (auto k = j + 1U; k < i + delta; ++k)
+									{
+										auto price_deviation = (candles[k].price_close -
+											candles[j].price_close) / candles[j].price_close;
+
+										record.vector.push_back(price_deviation > 1.0 ? 1.0 :
+											(price_deviation < -1.0 ? -1.0 : price_deviation));
+									}
+								}
+								*/
+
+								for (auto j = i; j < i + delta; ++j)
+								{
+									record.vector.push_back((candles[j].indicators.front() -
+										candles[j - 1U].indicators.front()) / candles[j - 1U].indicators.front());
+								}
+
+								record.vector.push_back(static_cast < double > (
+									candles[i + delta - 1U].movement_tag));
+
+								if (asset == m_config.local_environment_test_asset)
+								{
+									m_environment_test.push_back(std::move(record));
+
+									i += Candle::prediction_range;
+								}
+								else
+								{
+									m_environment.push_back(std::move(record));
+								}
 							}
 						}
 					}
@@ -3205,21 +2910,8 @@ namespace solution
 				std::cout << std::setprecision(2) << std::fixed << std::showpos <<
 					100.0 * (candle.price_deviation_open + candle.price_deviation) << " ";
 
-				std::cout << std::setw(12) << std::right << std::setfill(' ') << 
-					std::setprecision(6) << std::fixed << std::noshowpos << candle.support.price << " ";
-
-				std::cout <<
-					std::setw(4) << std::setfill('0') << candle.support.begin.year  << '.' <<
-					std::setw(2) << std::setfill('0') << candle.support.begin.month << '.' <<
-					std::setw(2) << std::setfill('0') << candle.support.begin.day   << " ";
-
-				std::cout << std::setw(12) << std::right << std::setfill(' ') <<
-					std::setprecision(6) << std::fixed << std::noshowpos << candle.resistance.price << " ";
-
-				std::cout <<
-					std::setw(4) << std::setfill('0') << candle.resistance.begin.year  << '.' <<
-					std::setw(2) << std::setfill('0') << candle.resistance.begin.month << '.' <<
-					std::setw(2) << std::setfill('0') << candle.resistance.begin.day   << " ";
+				std::cout << std::setw(2) << std::right << std::setfill(' ') << std::noshowpos << 
+					candle.n_levels << " ";
 			}
 			catch (const std::exception & exception)
 			{
@@ -3270,6 +2962,7 @@ namespace solution
 					}
 				}
 
+				/*
 				Level level;
 
 				auto support_deviation = (candle.price_close - candle.support.price) / candle.price_close;
@@ -3300,6 +2993,7 @@ namespace solution
 				{
 					sout << std::setprecision(6) << std::fixed << std::noshowpos << 0.0 << delimeter;
 				}
+				*/
 
 				const auto volume_history_length = m_config.volume_timesteps;
 
