@@ -156,6 +156,7 @@ namespace solution
 						static inline const std::string run_local_environment_test    = "run_local_environment_test";
 						static inline const std::string knn_method_parameter          = "knn_method_parameter";
 						static inline const std::string geometric_progression_q       = "geometric_progression_q";
+						static inline const std::string movement_timesteps            = "movement_timesteps";
 					};
 				};
 

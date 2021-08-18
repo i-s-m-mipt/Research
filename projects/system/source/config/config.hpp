@@ -195,6 +195,8 @@ namespace solution
             std::size_t knn_method_parameter = 1U;
 
             double geometric_progression_q = 1.0;
+
+            std::size_t movement_timesteps = 1U;
         };
 
     } // namespace system

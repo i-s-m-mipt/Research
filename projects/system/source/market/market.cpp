@@ -1407,7 +1407,8 @@ namespace solution
 							{
 								std::scoped_lock lock(mutex);
 
-								if (min_distance - current_distance > epsilon)
+								if (min_distance - current_distance > epsilon &&
+									record_test.date_time != record.date_time)
 								{
 									min_distance = current_distance;
 									
@@ -2086,14 +2087,16 @@ namespace solution
 						std::distance(extremum.first, last ) >= Candle::prediction_range)
 					{
 						levels.push_back(Level{ extremum.first->date_time, 
-							extremum.first->price_low, extremum.first->price_close, 1U });
+							std::max(extremum.first->price_low, extremum.first->price_close * 
+								(1.0 - m_config.level_max_deviation)), extremum.first->price_close, 1U });
 					}
 
 					if (std::distance(first, extremum.second) >= Candle::prediction_range &&
 						std::distance(extremum.second, last ) >= Candle::prediction_range)
 					{
 						levels.push_back(Level{ extremum.second->date_time, 
-							extremum.second->price_close, extremum.second->price_high, 1U });
+							extremum.second->price_close, std::min(extremum.second->price_high,
+								extremum.second->price_close * (1.0 + m_config.level_max_deviation)), 1U });
 					}
 				}
 
@@ -2415,7 +2418,7 @@ namespace solution
 			{
 				const auto epsilon = std::numeric_limits < double > ::epsilon();
 
-				const auto prediction_range = Candle::prediction_range / 2U;
+				const auto prediction_range = m_config.movement_timesteps;
 
 				for (auto i = 0U; i < std::size(candles) - prediction_range; ++i)
 				{
