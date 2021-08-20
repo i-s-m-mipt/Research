@@ -121,6 +121,9 @@
     <Filter Include="source\market\indicators\sar">
       <UniqueIdentifier>{dab1a534-a0e0-4f95-bdef-8a5f887c10ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\market\indicators\ics">
+      <UniqueIdentifier>{b62d02d0-3d36-40f1-a8d6-faa292aa3dc9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\main.cpp">
@@ -227,6 +230,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\indicators\sar\sar.cpp">
       <Filter>source\market\indicators\sar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\ics\ics.cpp">
+      <Filter>source\market\indicators\ics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -349,6 +355,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\indicators\sar\sar.hpp">
       <Filter>source\market\indicators\sar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\ics\ics.hpp">
+      <Filter>source\market\indicators\ics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

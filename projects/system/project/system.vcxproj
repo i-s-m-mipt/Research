@@ -196,6 +196,7 @@
     <ClCompile Include="..\source\market\oscillators\vhf\vhf.cpp" />
     <ClCompile Include="..\source\market\source\source.cpp" />
     <ClCompile Include="..\source\system\system.cpp" />
+    <ClCompile Include="..\source\market\indicators\ics\ics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\shared\source\logger\logger.hpp" />
@@ -238,6 +239,7 @@
     <ClInclude Include="..\source\market\oscillators\vhf\vhf.hpp" />
     <ClInclude Include="..\source\market\source\source.hpp" />
     <ClInclude Include="..\source\system\system.hpp" />
+    <ClInclude Include="..\source\market\indicators\ics\ics.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
