@@ -41,8 +41,6 @@ namespace solution
 
 					try
 					{
-						const auto epsilon = std::numeric_limits < double > ::epsilon();
-
 						std::vector < double > tenkan;
 
 						tenkan.reserve(std::size(candles) - m_timesteps_s);
@@ -51,13 +49,13 @@ namespace solution
 						{
 							auto max = std::max_element(
 								std::next(std::begin(candles), i - m_timesteps_s),
-								std::next(std::begin(candles), i),
+								std::next(std::begin(candles), i + 1U),
 								[](const auto & lhs, const auto & rhs) 
 									{ return (lhs.price_high < rhs.price_high); })->price_high;
 
 							auto min = std::min_element(
 								std::next(std::begin(candles), i - m_timesteps_s),
-								std::next(std::begin(candles), i),
+								std::next(std::begin(candles), i + 1U),
 								[](const auto & lhs, const auto & rhs) 
 									{ return (lhs.price_low < rhs.price_low); })->price_low;
 
@@ -72,13 +70,13 @@ namespace solution
 						{
 							auto max = std::max_element(
 								std::next(std::begin(candles), i - m_timesteps_m),
-								std::next(std::begin(candles), i),
+								std::next(std::begin(candles), i + 1U),
 								[](const auto & lhs, const auto & rhs) 
 									{ return (lhs.price_high < rhs.price_high); })->price_high;
 
 							auto min = std::min_element(
 								std::next(std::begin(candles), i - m_timesteps_m),
-								std::next(std::begin(candles), i),
+								std::next(std::begin(candles), i + 1U),
 								[](const auto & lhs, const auto & rhs) 
 									{ return (lhs.price_low < rhs.price_low); })->price_low;
 
@@ -102,13 +100,13 @@ namespace solution
 						{
 							auto max = std::max_element(
 								std::next(std::begin(candles), i - m_timesteps_m - m_timesteps_l),
-								std::next(std::begin(candles), i - m_timesteps_m),
+								std::next(std::begin(candles), i - m_timesteps_m + 1U),
 								[](const auto & lhs, const auto & rhs) 
 									{ return (lhs.price_high < rhs.price_high); })->price_high;
 
 							auto min = std::min_element(
 								std::next(std::begin(candles), i - m_timesteps_m - m_timesteps_l),
-								std::next(std::begin(candles), i - m_timesteps_m),
+								std::next(std::begin(candles), i - m_timesteps_m + 1U),
 								[](const auto & lhs, const auto & rhs) 
 									{ return (lhs.price_low < rhs.price_low); })->price_low;
 
