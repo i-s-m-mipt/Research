@@ -1394,16 +1394,12 @@ namespace solution
 
 				for (const auto & record_test : m_environment_test)
 				{
-					auto min_distance = 1.0 * (std::size(record_test.vector) - 1U);
-					
-					Record neighbour;
-
 					std::vector < std::pair < double, Record > > neighbours;
 
 					neighbours.reserve(m_config.knn_method_parameter);
 
 					std::for_each(std::execution::par, std::begin(m_environment), std::end(m_environment),
-						[this, &record_test, &mutex, &min_distance, epsilon, &neighbour, &neighbours]
+						[this, &record_test, &mutex, epsilon, &neighbours]
 							(const auto & record)
 						{
 							auto current_distance = distance(record_test, record);
@@ -1415,13 +1411,6 @@ namespace solution
 										record_test.date_time.to_time_t() - record.date_time.to_time_t()) /
 											seconds_in_day) >= m_config.knn_method_timesteps)
 								{
-									if (min_distance - current_distance > epsilon)
-									{
-										min_distance = current_distance;
-
-										neighbour = record;
-									}
-
 									if (std::size(neighbours) < m_config.knn_method_parameter)
 									{
 										neighbours.push_back(std::make_pair(current_distance, record));
@@ -1459,11 +1448,11 @@ namespace solution
 
 					++total_counter;
 
-					std::cout << record_test.asset << " [" << record_test.date_time << "] close to " <<
-						std::setw(5) << std::setfill(' ') << std::right << neighbour.asset << 
-							" [" << neighbour.date_time << "] with distance = " <<
-						std::setprecision(3) << std::fixed << std::noshowpos << min_distance << " DIRECTION: " <<
-						std::showpos << static_cast < int > (neighbour.vector.back()) << 
+					std::cout << record_test.asset << " [" << record_test.date_time << "] closest to " <<
+						std::setw(5) << std::setfill(' ') << std::right << neighbours.front().second.asset << 
+							" [" << neighbours.front().second.date_time << "] with distance = " <<
+						std::setprecision(3) << std::fixed << std::noshowpos << neighbours.front().first << " DIRECTION: " <<
+						std::showpos << predicted_movement <<
 							(has_error ? " ERROR (" + std::to_string(static_cast < int > (
 								100.0 * error_counter / total_counter)) + "%)\n"  : "\n");
 				}
@@ -1648,14 +1637,17 @@ namespace solution
 
 			try
 			{
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 				const auto size = std::size(record_test.vector) - 1U;
 
 				auto distance = 0.0;
 
 				for (auto j = 0U; j < size; ++j)
 				{
-					distance += std::abs((record_test.vector[j] -
-						record.vector[j]) / record_test.vector[j]);
+					distance += 
+						std::min(std::abs(record_test.vector[j] - record.vector[j]) /
+						std::max(std::abs(record_test.vector[j]), epsilon), 1.0);
 				}
 
 				return distance;
@@ -2673,7 +2665,8 @@ namespace solution
 
 								record.vector.push_back(static_cast < double > (candles[i].movement_tag));
 
-								if (asset == m_config.local_environment_test_asset)
+								if (asset == m_config.local_environment_test_asset &&
+									record.date_time.year >= 2007U)
 								{
 									m_environment_test.push_back(std::move(record));
 

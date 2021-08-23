@@ -159,6 +159,7 @@ namespace solution
 						static inline const std::string movement_timesteps            = "movement_timesteps";
 						static inline const std::string knn_method_timesteps          = "knn_method_timesteps";
 						static inline const std::string max_waves_sequence            = "max_waves_sequence";
+						static inline const std::string local_environment_test_start  = "local_environment_test_start";
 					};
 				};
 

@@ -73,6 +73,7 @@ namespace solution
 				config.movement_timesteps            = raw_config[Key::Config::movement_timesteps           ].get < std::size_t > ();
 				config.knn_method_timesteps          = raw_config[Key::Config::knn_method_timesteps         ].get < std::size_t > ();
 				config.max_waves_sequence            = raw_config[Key::Config::max_waves_sequence           ].get < std::size_t > ();
+				config.local_environment_test_start  = raw_config[Key::Config::local_environment_test_start ].get < std::size_t > ();
 			}
 			catch (const std::exception & exception)
 			{

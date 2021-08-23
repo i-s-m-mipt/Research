@@ -201,6 +201,8 @@ namespace solution
             std::size_t knn_method_timesteps = 1U;
 
             std::size_t max_waves_sequence = 5U;
+
+            std::size_t local_environment_test_start = 2000U;
         };
 
     } // namespace system
