@@ -1394,33 +1394,63 @@ namespace solution
 
 				for (const auto & record_test : m_environment_test)
 				{
-					auto min_distance = 1.0 * std::size(record_test.vector);
+					auto min_distance = 1.0 * (std::size(record_test.vector) - 1U);
 					
-					Record record_neighbour;
+					Record neighbour;
+
+					std::vector < std::pair < double, Record > > neighbours;
+
+					neighbours.reserve(m_config.knn_method_parameter);
 
 					std::for_each(std::execution::par, std::begin(m_environment), std::end(m_environment),
-						[this, &record_test, &mutex, &min_distance, epsilon, &record_neighbour]
+						[this, &record_test, &mutex, &min_distance, epsilon, &neighbour, &neighbours]
 							(const auto & record)
 						{
-							auto current_distance = distance(record, record_test);
+							auto current_distance = distance(record_test, record);
 
 							{
 								std::scoped_lock lock(mutex);
 
-								if (min_distance - current_distance > epsilon &&
-									record_test.date_time != record.date_time)
+								if (static_cast < std::size_t > (std::abs(
+										record_test.date_time.to_time_t() - record.date_time.to_time_t()) /
+											seconds_in_day) >= m_config.knn_method_timesteps)
 								{
-									min_distance = current_distance;
-									
-									record_neighbour = record;
+									if (min_distance - current_distance > epsilon)
+									{
+										min_distance = current_distance;
+
+										neighbour = record;
+									}
+
+									if (std::size(neighbours) < m_config.knn_method_parameter)
+									{
+										neighbours.push_back(std::make_pair(current_distance, record));
+									}
+									else if (neighbours.back().first - current_distance > epsilon)
+									{
+										neighbours.back().first  = current_distance;
+										neighbours.back().second = record;
+									}
+
+									std::sort(std::begin(neighbours), std::end(neighbours),
+										[](const auto & lhs, const auto & rhs)
+											{ return (lhs.first < rhs.first); });
 								}
 							}
 						});
+										
+					auto predicted_movement = 0;
 
-					bool has_error = false;
+					for (const auto & neighbour : neighbours)
+					{
+						predicted_movement += static_cast < int > (neighbour.second.vector.back());
+					}
 
-					if (static_cast < int > (record_test.     vector.back()) != 
-						static_cast < int > (record_neighbour.vector.back()))
+					predicted_movement /= std::max(std::abs(predicted_movement), 1);
+
+					auto has_error = false;
+
+					if (static_cast < int > (record_test.vector.back()) != predicted_movement)
 					{
 						has_error = true;
 
@@ -1430,10 +1460,10 @@ namespace solution
 					++total_counter;
 
 					std::cout << record_test.asset << " [" << record_test.date_time << "] close to " <<
-						std::setw(5) << std::setfill(' ') << std::right << record_neighbour.asset << 
-							" [" << record_neighbour.date_time << "] with distance = " <<
+						std::setw(5) << std::setfill(' ') << std::right << neighbour.asset << 
+							" [" << neighbour.date_time << "] with distance = " <<
 						std::setprecision(3) << std::fixed << std::noshowpos << min_distance << " DIRECTION: " <<
-						std::showpos << static_cast < int > (record_neighbour.vector.back()) << 
+						std::showpos << static_cast < int > (neighbour.vector.back()) << 
 							(has_error ? " ERROR (" + std::to_string(static_cast < int > (
 								100.0 * error_counter / total_counter)) + "%)\n"  : "\n");
 				}
@@ -1612,19 +1642,20 @@ namespace solution
 			}
 		}
 
-		double Market::distance(const Record & record_1, const Record & record_2) const
+		double Market::distance(const Record & record_test, const Record & record) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				const auto size = std::size(record_1.vector) - 1U;
+				const auto size = std::size(record_test.vector) - 1U;
 
 				auto distance = 0.0;
 
 				for (auto j = 0U; j < size; ++j)
 				{
-					distance += std::abs(record_1.vector[j] - record_2.vector[j]);
+					distance += std::abs((record_test.vector[j] -
+						record.vector[j]) / record_test.vector[j]);
 				}
 
 				return distance;
@@ -2062,13 +2093,13 @@ namespace solution
 			}
 		}
 
-		Market::levels_container_t Market::make_levels(const candles_container_t & candles) const
+		Market::levels_container_t Market::make_levels(candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				const auto frame = m_config.level_frame;
+				const auto frame = 2U * m_config.level_frame + 1U;
 
 				levels_container_t levels;
 
@@ -2083,20 +2114,30 @@ namespace solution
 								(rhs.price_high + rhs.price_low + rhs.price_close));
 						});
 
-					if (std::distance(first, extremum.first) >= Candle::prediction_range &&
-						std::distance(extremum.first, last ) >= Candle::prediction_range)
+					if (std::distance(first, extremum.first) == m_config.level_frame)
 					{
-						levels.push_back(Level{ extremum.first->date_time, 
-							std::max(extremum.first->price_low, extremum.first->price_close * 
-								(1.0 - m_config.level_max_deviation)), extremum.first->price_close, 1U });
+						auto typical_price = (
+							extremum.first->price_low  +
+							extremum.first->price_high +
+							extremum.first->price_close) / 3.0;
+
+						levels.push_back(Level { extremum.first->date_time,
+							extremum.first->price_low, typical_price, 1U });
+
+						extremum.first->type = Candle::Type::local_min;
 					}
 
-					if (std::distance(first, extremum.second) >= Candle::prediction_range &&
-						std::distance(extremum.second, last ) >= Candle::prediction_range)
+					if (std::distance(first, extremum.second) == m_config.level_frame)
 					{
-						levels.push_back(Level{ extremum.second->date_time, 
-							extremum.second->price_close, std::min(extremum.second->price_high,
-								extremum.second->price_close * (1.0 + m_config.level_max_deviation)), 1U });
+						auto typical_price = (
+							extremum.second->price_low  +
+							extremum.second->price_high +
+							extremum.second->price_close) / 3.0;
+
+						levels.push_back(Level { extremum.second->date_time,
+							typical_price, extremum.second->price_high, 1U });
+
+						extremum.second->type = Candle::Type::local_max;
 					}
 				}
 
@@ -2583,15 +2624,15 @@ namespace solution
 
 			try
 			{
-				const auto delta = m_config.prediction_timesteps;
+				const auto delta = m_config.max_waves_sequence;
 
 				for (const auto & [asset, scales] : m_charts)
 				{
 					for (const auto & [scale, candles] : scales)
 					{
-						for (auto i = days_in_year / 2U; i < std::size(candles) - delta + 1U; ++i)
+						for (auto i = days_in_year / 2U; i < std::size(candles); ++i)
 						{
-							if (candles[i + delta - 1U].n_levels == 0U)
+							if (candles[i].n_levels == 0U)
 							{
 								continue;
 							}
@@ -2600,33 +2641,37 @@ namespace solution
 								Record record;
 
 								record.asset = asset;
-
-								record.date_time = candles[i + delta - 1U].date_time;
-
+								record.date_time = candles[i].date_time;
 								record.vector.reserve(delta + 1U);
 
-								/*
-								for (auto j = i; j < i + delta - 1U; ++j)
-								{
-									for (auto k = j + 1U; k < i + delta; ++k)
-									{
-										auto price_deviation = (candles[k].price_close -
-											candles[j].price_close) / candles[j].price_close;
+								candles_container_t waves;
 
-										record.vector.push_back(price_deviation > 1.0 ? 1.0 :
-											(price_deviation < -1.0 ? -1.0 : price_deviation));
+								waves.reserve(delta + 1U);
+								waves.push_back(candles[i]);
+
+								for (auto j = i - 1U; (j > 0U) && (std::size(waves) < delta + 1U); --j)
+								{
+									if (candles[j].type != Candle::Type::empty &&
+										candles[j].type != waves.back().type)
+									{
+										waves.push_back(candles[j]);
 									}
 								}
-								*/
 
-								for (auto j = i; j < i + delta; ++j)
+								if (std::size(waves) < delta + 1U)
 								{
-									record.vector.push_back((candles[j].indicators.front() -
-										candles[j - 1U].indicators.front()) / candles[j - 1U].indicators.front());
+									continue;
 								}
 
-								record.vector.push_back(static_cast < double > (
-									candles[i + delta - 1U].movement_tag));
+								std::reverse(std::begin(waves), std::end(waves));
+
+								for (auto j = 0U; j < std::size(waves) - 1U; ++j)
+								{
+									record.vector.push_back((waves[j + 1U].price_close -
+										waves[j].price_close) / waves[j].price_close);
+								}
+
+								record.vector.push_back(static_cast < double > (candles[i].movement_tag));
 
 								if (asset == m_config.local_environment_test_asset)
 								{

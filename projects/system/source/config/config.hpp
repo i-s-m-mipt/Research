@@ -197,6 +197,10 @@ namespace solution
             double geometric_progression_q = 1.0;
 
             std::size_t movement_timesteps = 1U;
+
+            std::size_t knn_method_timesteps = 1U;
+
+            std::size_t max_waves_sequence = 5U;
         };
 
     } // namespace system

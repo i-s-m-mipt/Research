@@ -375,7 +375,7 @@ namespace solution
 
 		private:
 
-			double distance(const Record & record_1, const Record & record_2) const;
+			double distance(const Record & record_test, const Record & record) const;
 
 		private:
 
@@ -414,7 +414,7 @@ namespace solution
 
 		private:
 
-			levels_container_t make_levels(const candles_container_t & candles) const;
+			levels_container_t make_levels(candles_container_t & candles) const;
 
 			levels_container_t reduce_levels(levels_container_t && levels) const;
 

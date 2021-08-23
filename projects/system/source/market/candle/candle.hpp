@@ -79,6 +79,16 @@ namespace solution
 
 			public:
 
+				enum class Type
+				{
+					local_min,
+					local_max,
+
+					empty
+				};
+
+			public:
+
 				void update_date_time() noexcept;
 
 			public:
@@ -118,6 +128,8 @@ namespace solution
 
 				std::vector < double > indicators;
 				std::vector < double > oscillators;
+
+				Type type = Type::empty;
 			};
 
 		} // namespace market
