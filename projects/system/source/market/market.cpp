@@ -1389,6 +1389,10 @@ namespace solution
 
 				std::mutex mutex;
 
+				auto transaction = m_config.transaction_base_value;
+
+				auto reward = 0.0;
+
 				auto error_counter = 0U;
 				auto total_counter = 0U;
 
@@ -1428,18 +1432,24 @@ namespace solution
 							}
 						});
 										
-					auto predicted_movement = 0;
+					auto direction = 0;
 
 					for (const auto & neighbour : neighbours)
 					{
-						predicted_movement += static_cast < int > (neighbour.second.vector.back());
+						direction += neighbour.second.direction;
 					}
 
-					predicted_movement /= std::max(std::abs(predicted_movement), 1);
+					direction /= std::max(std::abs(direction), 1);
+
+					auto deviation = direction * record_test.deviation;
+
+					transaction = m_config.transaction_base_value + reward;
+
+					reward += deviation * transaction;
 
 					auto has_error = false;
 
-					if (static_cast < int > (record_test.vector.back()) != predicted_movement)
+					if (record_test.direction != direction)
 					{
 						has_error = true;
 
@@ -1452,7 +1462,9 @@ namespace solution
 						std::setw(5) << std::setfill(' ') << std::right << neighbours.front().second.asset << 
 							" [" << neighbours.front().second.date_time << "] with distance = " <<
 						std::setprecision(3) << std::fixed << std::noshowpos << neighbours.front().first << " DIRECTION: " <<
-						std::showpos << predicted_movement <<
+						std::showpos << direction << " REWARD: " <<
+						std::setw(11) << std::setfill(' ') << std::right <<
+						std::setprecision(2) << std::fixed << std::showpos << reward <<
 							(has_error ? " ERROR (" + std::to_string(static_cast < int > (
 								100.0 * error_counter / total_counter)) + "%)\n"  : "\n");
 				}
@@ -1639,7 +1651,7 @@ namespace solution
 			{
 				const auto epsilon = std::numeric_limits < double > ::epsilon();
 
-				const auto size = std::size(record_test.vector) - 1U;
+				const auto size = std::size(record_test.vector);
 
 				auto distance = 0.0;
 
@@ -2455,6 +2467,9 @@ namespace solution
 
 				for (auto i = 0U; i < std::size(candles) - prediction_range; ++i)
 				{
+					/*
+					auto current_price_close = candles[i].price_close;
+
 					auto max_price = candles[i + prediction_range].price_close;
 					auto min_price = candles[i + prediction_range].price_close;
 
@@ -2464,12 +2479,24 @@ namespace solution
 						min_price = std::min(min_price, candles[i + j].price_close);
 					}
 
-					auto current_price_close = candles[i].price_close;
-
 					auto deviation_L = std::abs(max_price - current_price_close) / current_price_close;
 					auto deviation_S = std::abs(min_price - current_price_close) / current_price_close;
 
 					if (deviation_L - deviation_S > epsilon)
+					{
+						candles[i].movement_tag = +1;
+					}
+					else
+					{
+						candles[i].movement_tag = -1;
+					}
+					*/
+
+					auto current_price_close = candles[i].price_close;
+
+					auto next_price_close = candles[i + prediction_range].price_close;
+
+					if (next_price_close - current_price_close > epsilon)
 					{
 						candles[i].movement_tag = +1;
 					}
@@ -2624,58 +2651,49 @@ namespace solution
 					{
 						for (auto i = days_in_year / 2U; i < std::size(candles); ++i)
 						{
-							if (candles[i].n_levels == 0U)
+							Record record;
+
+							record.asset = asset;
+							record.date_time = candles[i].date_time;
+							record.vector.reserve(delta);
+							record.direction = candles[i].movement_tag;
+							record.deviation = candles[i].regression_tags.front();
+
+							candles_container_t waves;
+
+							waves.reserve(delta + 1U);
+							waves.push_back(candles[i]);
+
+							for (auto j = i - 1U; (j > 0U) && (std::size(waves) < delta + 1U); --j)
+							{
+								if (candles[j].type != Candle::Type::empty &&
+									candles[j].type != waves.back().type)
+								{
+									waves.push_back(candles[j]);
+								}
+							}
+
+							if (std::size(waves) < delta + 1U)
 							{
 								continue;
 							}
+
+							std::reverse(std::begin(waves), std::end(waves));
+
+							for (auto j = 0U; j < std::size(waves) - 1U; ++j)
+							{
+								record.vector.push_back((waves[j + 1U].price_close -
+									waves[j].price_close) / waves[j].price_close);
+							}
+
+							if (asset == m_config.local_environment_test_asset &&
+								record.date_time.year >= m_config.local_environment_test_start)
+							{
+								m_environment_test.push_back(std::move(record));
+							}
 							else
 							{
-								Record record;
-
-								record.asset = asset;
-								record.date_time = candles[i].date_time;
-								record.vector.reserve(delta + 1U);
-
-								candles_container_t waves;
-
-								waves.reserve(delta + 1U);
-								waves.push_back(candles[i]);
-
-								for (auto j = i - 1U; (j > 0U) && (std::size(waves) < delta + 1U); --j)
-								{
-									if (candles[j].type != Candle::Type::empty &&
-										candles[j].type != waves.back().type)
-									{
-										waves.push_back(candles[j]);
-									}
-								}
-
-								if (std::size(waves) < delta + 1U)
-								{
-									continue;
-								}
-
-								std::reverse(std::begin(waves), std::end(waves));
-
-								for (auto j = 0U; j < std::size(waves) - 1U; ++j)
-								{
-									record.vector.push_back((waves[j + 1U].price_close -
-										waves[j].price_close) / waves[j].price_close);
-								}
-
-								record.vector.push_back(static_cast < double > (candles[i].movement_tag));
-
-								if (asset == m_config.local_environment_test_asset &&
-									record.date_time.year >= 2007U)
-								{
-									m_environment_test.push_back(std::move(record));
-
-									i += Candle::prediction_range;
-								}
-								else
-								{
-									m_environment.push_back(std::move(record));
-								}
+								m_environment.push_back(std::move(record));
 							}
 						}
 					}

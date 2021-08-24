@@ -142,6 +142,10 @@ namespace solution
 				Date_Time date_time;
 
 				std::vector < double > vector;
+
+				int direction;
+
+				double deviation;
 			};
 
 		private:
