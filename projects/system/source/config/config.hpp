@@ -198,7 +198,7 @@ namespace solution
 
             std::size_t movement_timesteps = 1U;
 
-            std::size_t knn_method_timesteps = 1U;
+            std::time_t knn_method_timesteps = 10LL;
 
             std::size_t max_waves_sequence = 5U;
 

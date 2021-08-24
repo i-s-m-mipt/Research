@@ -67,6 +67,11 @@ namespace solution
 				return stream;
 			}
 
+			std::time_t duration(const Date_Time & date_time_1, const Date_Time & date_time_2)
+			{
+				return (date_time_1.to_time_t() - date_time_2.to_time_t());
+			}
+
 			std::ostream & operator<< (std::ostream & stream, const Level & level)
 			{
 				static const char delimeter = ',';

@@ -46,6 +46,8 @@ namespace solution
 
 			std::ostream & operator<< (std::ostream & stream, const Date_Time & date_time);
 
+			std::time_t duration(const Date_Time & date_time_1, const Date_Time & date_time_2);
+
 			struct Level
 			{
 			public:

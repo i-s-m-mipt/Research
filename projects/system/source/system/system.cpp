@@ -70,7 +70,7 @@ namespace solution
 				config.run_local_environment_test    = raw_config[Key::Config::run_local_environment_test   ].get < bool > ();
 				config.knn_method_parameter          = raw_config[Key::Config::knn_method_parameter         ].get < std::size_t > ();
 				config.geometric_progression_q       = raw_config[Key::Config::geometric_progression_q      ].get < double > ();
-				config.movement_timesteps            = raw_config[Key::Config::movement_timesteps           ].get < std::size_t > ();
+				config.movement_timesteps            = raw_config[Key::Config::movement_timesteps           ].get < std::time_t > ();
 				config.knn_method_timesteps          = raw_config[Key::Config::knn_method_timesteps         ].get < std::size_t > ();
 				config.max_waves_sequence            = raw_config[Key::Config::max_waves_sequence           ].get < std::size_t > ();
 				config.local_environment_test_start  = raw_config[Key::Config::local_environment_test_start ].get < std::size_t > ();

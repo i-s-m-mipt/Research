@@ -1385,14 +1385,12 @@ namespace solution
 
 			try
 			{
-				const auto epsilon = std::numeric_limits < double > ::epsilon();
-
 				std::mutex mutex;
 
 				auto reward = 0.0;
 
-				auto error_counter = 0U;
 				auto total_counter = 0U;
+				auto error_counter = 0U;
 
 				for (const auto & record_test : m_environment_test)
 				{
@@ -1401,32 +1399,28 @@ namespace solution
 					neighbours.reserve(m_config.knn_method_parameter);
 
 					std::for_each(std::execution::par, std::begin(m_environment), std::end(m_environment),
-						[this, &record_test, &mutex, epsilon, &neighbours]
-							(const auto & record)
+						[this, &mutex, &record_test, &neighbours](const auto & record)
 						{
-							auto current_distance = distance(record_test, record);
-
+							if (std::abs(duration(record_test.date_time, record.date_time)) /
+									seconds_in_day >= m_config.knn_method_timesteps)
 							{
+								auto current_distance = distance(record_test, record);
+
 								std::scoped_lock lock(mutex);
 
-								if (static_cast < std::size_t > (std::abs(
-										record_test.date_time.to_time_t() - record.date_time.to_time_t()) /
-											seconds_in_day) >= m_config.knn_method_timesteps)
+								if (std::size(neighbours) < m_config.knn_method_parameter)
 								{
-									if (std::size(neighbours) < m_config.knn_method_parameter)
-									{
-										neighbours.push_back(std::make_pair(current_distance, record));
-									}
-									else if (neighbours.back().first - current_distance > epsilon)
-									{
-										neighbours.back().first  = current_distance;
-										neighbours.back().second = record;
-									}
-
-									std::sort(std::begin(neighbours), std::end(neighbours),
-										[](const auto & lhs, const auto & rhs)
-											{ return (lhs.first < rhs.first); });
+									neighbours.push_back(std::make_pair(current_distance, record));
 								}
+								else if (neighbours.back().first > current_distance)
+								{
+									neighbours.back().first  = current_distance;
+									neighbours.back().second = record;
+								}
+
+								std::sort(std::begin(neighbours), std::end(neighbours),
+									[](const auto & lhs, const auto & rhs)
+										{ return (lhs.first < rhs.first); });
 							}
 						});
 										
@@ -1438,19 +1432,10 @@ namespace solution
 					}
 
 					direction = ((direction == 0) ? 1 : direction);
-
+					
 					direction /= std::abs(direction);
 
 					reward += direction * record_test.deviation * m_config.transaction_base_value;
-
-					auto has_error = false;
-
-					if (direction * record_test.deviation < 0.0)
-					{
-						has_error = true;
-
-						++error_counter;
-					}
 
 					++total_counter;
 
@@ -1462,12 +1447,12 @@ namespace solution
 							neighbour.second.asset << " [" << neighbour.second.date_time << "] ";
 					}
 
-					std::cout << "} DIRECTION: " <<
-						std::showpos << direction << " REWARD: " <<
-						std::setw(11) << std::setfill(' ') << std::right <<
+					std::cout << "} DIRECTION: " << std::showpos << direction << " REWARD: " <<
+						std::setw(8) << std::setfill(' ') << std::right <<
 						std::setprecision(2) << std::fixed << std::showpos << reward <<
-							(has_error ? " ERROR (" + std::to_string(static_cast < int > (
-								100.0 * error_counter / total_counter)) + "%)\n"  : "\n");
+							((direction * record_test.deviation < 0.0) ? " ERROR (" + 
+								std::to_string(static_cast < int > (100.0 * 
+									(++error_counter) / total_counter)) + "%)\n" : "\n");
 				}
 			}
 			catch (const std::exception & exception)
@@ -1652,11 +1637,9 @@ namespace solution
 			{
 				const auto epsilon = std::numeric_limits < double > ::epsilon();
 
-				const auto size = std::size(record_test.vector);
-
 				auto distance = 0.0;
 
-				for (auto j = 0U; j < size; ++j)
+				for (auto j = 0U; j < std::size(record_test.vector); ++j)
 				{
 					distance += 
 						std::min(std::abs(record_test.vector[j] - record.vector[j]) /
@@ -2462,48 +2445,17 @@ namespace solution
 
 			try
 			{
-				const auto epsilon = std::numeric_limits < double > ::epsilon();
+				const auto delta = m_config.movement_timesteps;
 
-				const auto prediction_range = m_config.movement_timesteps;
-
-				for (auto i = 0U; i < std::size(candles) - prediction_range; ++i)
+				for (auto i = 0U; i < std::size(candles) - delta; ++i)
 				{
-					/*
-					auto current_price_close = candles[i].price_close;
-
-					auto max_price = candles[i + prediction_range].price_close;
-					auto min_price = candles[i + prediction_range].price_close;
-
-					for (auto j = 1U; j < prediction_range; ++j)
-					{
-						max_price = std::max(max_price, candles[i + j].price_close);
-						min_price = std::min(min_price, candles[i + j].price_close);
-					}
-
-					auto deviation_L = std::abs(max_price - current_price_close) / current_price_close;
-					auto deviation_S = std::abs(min_price - current_price_close) / current_price_close;
-
-					if (deviation_L - deviation_S > epsilon)
-					{
-						candles[i].movement_tag = +1;
-					}
-					else
+					if (candles[i + delta].price_close < candles[i].price_close)
 					{
 						candles[i].movement_tag = -1;
 					}
-					*/
-
-					auto current_price_close = candles[i].price_close;
-
-					auto next_price_close = candles[i + prediction_range].price_close;
-
-					if (next_price_close - current_price_close > epsilon)
-					{
-						candles[i].movement_tag = +1;
-					}
 					else
 					{
-						candles[i].movement_tag = -1;
+						candles[i].movement_tag = +1;
 					}
 				}
 			}
