@@ -1431,9 +1431,7 @@ namespace solution
 						direction += neighbour.second.direction;
 					}
 
-					direction = ((direction == 0) ? 1 : direction);
-					
-					direction /= std::abs(direction);
+					direction = ((direction == 0) ? 1 : (direction / std::abs(direction)));
 
 					reward += direction * record_test.deviation * m_config.transaction_base_value;
 
@@ -2128,14 +2126,6 @@ namespace solution
 						extremum.second->type = Candle::Type::local_max;
 					}
 				}
-
-				std::sort(std::begin(levels), std::end(levels), 
-					[](const auto & lhs, const auto & rhs)
-						{ return (lhs.begin < rhs.begin); });
-
-				levels.erase(std::unique(std::begin(levels), std::end(levels), 
-					[](const auto & lhs, const auto & rhs)
-						{ return (lhs.begin == rhs.begin); }), std::end(levels));
 
 				if (m_config.required_level_reduction)
 				{
