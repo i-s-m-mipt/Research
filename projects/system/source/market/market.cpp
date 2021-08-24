@@ -1389,8 +1389,6 @@ namespace solution
 
 				std::mutex mutex;
 
-				auto transaction = m_config.transaction_base_value;
-
 				auto reward = 0.0;
 
 				auto error_counter = 0U;
@@ -1439,17 +1437,15 @@ namespace solution
 						direction += neighbour.second.direction;
 					}
 
-					direction /= std::max(std::abs(direction), 1);
+					direction = ((direction == 0) ? 1 : direction);
 
-					auto deviation = direction * record_test.deviation;
+					direction /= std::abs(direction);
 
-					transaction = m_config.transaction_base_value + reward;
-
-					reward += deviation * transaction;
+					reward += direction * record_test.deviation * m_config.transaction_base_value;
 
 					auto has_error = false;
 
-					if (record_test.direction != direction)
+					if (direction * record_test.deviation < 0.0)
 					{
 						has_error = true;
 
@@ -1458,10 +1454,15 @@ namespace solution
 
 					++total_counter;
 
-					std::cout << record_test.asset << " [" << record_test.date_time << "] closest to " <<
-						std::setw(5) << std::setfill(' ') << std::right << neighbours.front().second.asset << 
-							" [" << neighbours.front().second.date_time << "] with distance = " <<
-						std::setprecision(3) << std::fixed << std::noshowpos << neighbours.front().first << " DIRECTION: " <<
+					std::cout << record_test.asset << " [" << record_test.date_time << "] NEIGHBORS: { ";
+					
+					for (const auto & neighbour : neighbours)
+					{
+						std::cout << std::setw(5) << std::setfill(' ') << std::right <<
+							neighbour.second.asset << " [" << neighbour.second.date_time << "] ";
+					}
+
+					std::cout << "} DIRECTION: " <<
 						std::showpos << direction << " REWARD: " <<
 						std::setw(11) << std::setfill(' ') << std::right <<
 						std::setprecision(2) << std::fixed << std::showpos << reward <<
