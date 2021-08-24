@@ -1454,7 +1454,7 @@ namespace solution
 
 					++total_counter;
 
-					std::cout << record_test.asset << " [" << record_test.date_time << "] NEIGHBORS: { ";
+					std::cout << record_test.asset << " [" << record_test.date_time << "] NEIGHBOURS: { ";
 					
 					for (const auto & neighbour : neighbours)
 					{
