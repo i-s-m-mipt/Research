@@ -379,9 +379,9 @@ namespace solution
 					throw market_exception("cannot open file " + path.string());
 				}
 
-				std::ostringstream sout;
+				const char delimeter = ',';
 
-				static const char delimeter = ',';
+				std::ostringstream sout;
 
 				for (const auto & [asset, scales] : charts)
 				{
@@ -503,146 +503,65 @@ namespace solution
 			{
 				auto path = File::environment_data;
 
-				std::fstream fout(path.string(), std::ios::out | std::ios::trunc);
+				std::fstream fout(path.string(), std::ios::out);
 
 				if (!fout)
 				{
 					throw market_exception("cannot open file " + path.string());
 				}
 
-				fout.close();
+				const auto delta = config.max_waves_sequence;
 
-				const auto delta = config.prediction_timesteps;
+				const char delimeter = ',';
 
-				const auto epsilon = std::numeric_limits < double > ::epsilon();
-
-				static const char delimeter = ',';
+				std::ostringstream sout;
 
 				for (const auto & [asset, scales] : charts)
 				{
-					std::ostringstream sout;
-
 					for (const auto & [scale, candles] : scales)
 					{
-						std::vector < std::pair < double, double > > min_max_oscillators;
-
-						for (auto k = 0U; k < std::size(candles[days_in_year / 2U].oscillators); ++k)
+						for (auto i = days_in_year / 2U; i < std::size(candles); ++i)
 						{
-							auto min_max_oscillator = std::minmax_element(std::next(std::begin(candles), days_in_year / 2U), std::end(candles), 
-								[k](const auto & lhs, const auto & rhs) { return (lhs.oscillators[k] < rhs.oscillators[k]); });
+							candles_container_t waves;
 
-							min_max_oscillators.push_back(std::make_pair(
-								min_max_oscillator.first ->oscillators[k],
-								min_max_oscillator.second->oscillators[k]));
-						}
+							waves.reserve(delta + 1U);
 
-						for (auto i = days_in_year / 2U; i < std::size(candles) - delta + 1U; ++i)
-						{
-							if (candles[i + delta - 1U].n_levels == 0U)
+							waves.push_back(candles[i]);
+
+							for (auto j = i - 1U; (j > 0U) && (std::size(waves) < delta + 1U); --j)
+							{
+								if (candles[j].type != Candle::Type::empty &&
+									candles[j].type != waves.back().type)
+								{
+									waves.push_back(candles[j]);
+								}
+							}
+
+							if (std::size(waves) < delta + 1U)
 							{
 								continue;
 							}
 
-							/*
-							for (auto j = i; j < i + delta - 1U; ++j)
+							std::reverse(std::begin(waves), std::end(waves));
+
+							for (auto j = 0U; j < std::size(waves) - 1U; ++j)
 							{
-								for (auto k = j + 1U; k < i + delta; ++k)
-								{
-									auto price_deviation = (candles[k].price_close -
-										candles[j].price_close) / candles[j].price_close;
+								auto deviation = (waves[j + 1U].price_close -
+									waves[j].price_close) / waves[j].price_close;
 
-									sout << std::setprecision(3) << std::fixed << std::showpos <<
-										(price_deviation > 1.0 ? 1.0 :
-											(price_deviation < -1.0 ? -1.0 : price_deviation)) << delimeter;
-								}
-							}
-							*/
-
-							auto min_max_price_close = std::minmax_element(std::next(std::begin(candles), i),
-								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
-									{ return (lhs.price_close < rhs.price_close); });
-
-							auto min_price_close = min_max_price_close.first ->price_close;
-							auto max_price_close = min_max_price_close.second->price_close;
-							
-							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
-							{
-								auto min_max_indicator = std::minmax_element(std::next(std::begin(candles), i),
-									std::next(std::begin(candles), i + delta), [k](const auto & lhs, const auto & rhs)
-										{ return (lhs.indicators[k] < rhs.indicators[k]); });
-
-								min_price_close = std::min(min_price_close, min_max_indicator.first ->indicators[k]);
-								max_price_close = std::max(max_price_close, min_max_indicator.second->indicators[k]);
-							}
-
-							auto delta_price_close = std::max((max_price_close - min_price_close), epsilon);
-
-							for (auto j = i; j < i + delta; ++j)
-							{
-								sout << std::setprecision(3) << std::fixed << std::noshowpos << 
-									(candles[j].price_close - min_price_close) / 
-										delta_price_close << delimeter;
-							}
-
-							auto min_max_volume = std::minmax_element(std::next(std::begin(candles), i),
-								std::next(std::begin(candles), i + delta), [](const auto & lhs, const auto & rhs)
-									{ return (lhs.volume < rhs.volume); });
-
-							auto min_volume = min_max_volume.first ->volume;
-							auto max_volume = min_max_volume.second->volume;
-
-							auto delta_volume = std::max((max_volume - min_volume), 1ULL);
-
-							for (auto j = i; j < i + delta; ++j)
-							{
-								sout << std::setprecision(3) << std::fixed << std::noshowpos << 
-									static_cast < double > (candles[j].volume - min_volume) / 
-									static_cast < double > (delta_volume) << delimeter;
-							}
-
-							for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
-							{
-								for (auto j = i; j < i + delta; ++j)
-								{
-									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-										(candles[j].indicators[k] - min_price_close) / 
-											delta_price_close << delimeter;
-								}
-							}
-
-							for (auto k = 0U; k < std::size(candles[i].oscillators); ++k)
-							{
-								auto min_oscillator = min_max_oscillators[k].first;
-								auto max_oscillator = min_max_oscillators[k].second;
-
-								auto delta_oscillator = std::max((max_oscillator - min_oscillator), epsilon);
-
-								for (auto j = i; j < i + delta; ++j)
-								{
-									sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-										(candles[j].oscillators[k] - min_oscillator) / 
-											delta_oscillator << delimeter;
-								}
-							}
-
-							/*
-							for (auto regression_tag : candles[i + delta - 1U].regression_tags)
-							{
 								sout << std::setprecision(3) << std::fixed << std::showpos <<
-									regression_tag << delimeter;
+									(deviation > 1.0 ? 1.0 : (deviation < -1.0 ? -1.0 : deviation)) << delimeter;
 							}
 
-							sout << candles[i + delta - 1U].classification_tag << "\n";
-							*/
+							sout << std::setprecision(6) << std::fixed << std::showpos <<
+								candles[i].regression_tags.front() << delimeter;
 
-							sout << std::showpos << candles[i + delta - 1U].movement_tag << "\n";
+							sout << std::showpos << candles[i].movement_tag << "\n";
 						}
 					}
-
-					std::fstream fout(path.string(), std::ios::out | std::ios::app);
-
-					fout << sout.str();
 				}
+
+				fout << sout.str();
 			}
 			catch (const std::exception & exception)
 			{
