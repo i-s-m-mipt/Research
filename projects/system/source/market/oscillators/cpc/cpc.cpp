@@ -66,7 +66,7 @@ namespace solution
 								value += rocs[j] * k;
 							}
 
-							candles[m_timesteps_long + i].indicators.push_back(
+							candles[m_timesteps_long + i].oscillators.push_back(
 								value / (m_timesteps * (m_timesteps + 1.0) / 2.0));
 						}
 					}
