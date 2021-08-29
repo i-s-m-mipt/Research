@@ -48,8 +48,10 @@ namespace solution
 								s += std::abs(candles[j].price_close - candles[j - 1U].price_close);
 							}
 
-							candles[i - 1U].oscillators.push_back((min_max.second - 
-								min_max.first) / std::max(s, epsilon));
+							auto value = (min_max.second - min_max.first) / std::max(s, epsilon);
+
+							candles[i - 1U].oscillators.push_back(
+								std::min(std::max(value / max_value, +0.0), +1.0));
 						}
 					}
 					catch (const std::exception & exception)
