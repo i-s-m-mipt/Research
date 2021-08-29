@@ -60,8 +60,11 @@ namespace solution
 								}
 							}
 
-							candles[i - 1U].oscillators.push_back(100.0 - 100.0 / (1.0 + 
-								(positive_money_flow / std::max(negative_money_flow, epsilon))));
+							auto value = 100.0 - 100.0 / (1.0 + (positive_money_flow /
+								std::max(negative_money_flow, epsilon)));
+
+							candles[i - 1U].oscillators.push_back(
+								std::min(std::max(value / max_value, +0.0), +1.0));
 						}
 					}
 					catch (const std::exception & exception)
