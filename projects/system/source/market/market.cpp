@@ -2550,65 +2550,7 @@ namespace solution
 
 			try
 			{
-				const auto delta = m_config.max_waves_sequence;
-
-				for (const auto & [asset, scales] : m_charts)
-				{
-					for (const auto & [scale, candles] : scales)
-					{
-						for (auto i = days_in_year / 2U; i < std::size(candles); ++i)
-						{
-							Record record;
-
-							record.asset = asset;
-							record.date_time = candles[i].date_time;
-							record.vector.reserve(delta);
-							record.direction = candles[i].movement_tag;
-							record.deviation = candles[i].regression_tags.front();
-
-							candles_container_t waves;
-
-							waves.reserve(delta + 1U);
-							waves.push_back(candles[i]);
-
-							for (auto j = i - 1U; (j > 0U) && (std::size(waves) < delta + 1U); --j)
-							{
-								if (candles[j].type != Candle::Type::empty &&
-									candles[j].type != waves.back().type)
-								{
-									waves.push_back(candles[j]);
-								}
-							}
-
-							if (std::size(waves) < delta + 1U)
-							{
-								continue;
-							}
-
-							std::reverse(std::begin(waves), std::end(waves));
-
-							for (auto j = 0U; j < std::size(waves) - 1U; ++j)
-							{
-								record.vector.push_back((waves[j + 1U].price_close -
-									waves[j].price_close) / waves[j].price_close);
-							}
-
-							if (asset == m_config.local_environment_test_asset &&
-								record.date_time.year >= m_config.local_environment_test_start)
-							{
-								m_environment_test.push_back(std::move(record));
-							}
-							else
-							{
-								m_environment.push_back(std::move(record));
-							}
-						}
-					}
-				}
-
-				m_environment_test.shrink_to_fit();
-
-				m_environment.shrink_to_fit();
+				// TODO
 			}
 			catch (const std::exception & exception)
 			{
