@@ -68,14 +68,19 @@ namespace solution
 								}
 							}
 
+							auto value = 0.0;
+
 							if (ema_U + ema_D < epsilon)
 							{
-								candles[i].oscillators.push_back(100.0);
+								value = 100.0;
 							}
 							else
 							{
-								candles[i].oscillators.push_back(100.0 * ema_U / (ema_U + ema_D));
+								value = 100.0 * ema_U / (ema_U + ema_D);
 							}
+
+							candles[i].oscillators.push_back(
+								std::min(std::max(value / max_value, +0.0), +1.0));
 						}
 					}
 					catch (const std::exception & exception)
