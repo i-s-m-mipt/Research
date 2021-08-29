@@ -21,10 +21,10 @@ namespace solution
 				{
 				public:
 
-					explicit SAR(std::size_t initial_candles, double min_acceleration, 
-						double max_acceleration, double acceleration_step) :
-							m_initial_candles(initial_candles), m_min_acceleration(min_acceleration),
-							m_max_acceleration(max_acceleration), m_acceleration_step(acceleration_step)
+					explicit SAR(double min_acceleration, double max_acceleration, 
+						double acceleration_step, std::size_t initial_candles = 5U) :
+							m_min_acceleration(min_acceleration), m_max_acceleration(max_acceleration), 
+							m_acceleration_step(acceleration_step), m_initial_candles(initial_candles)
 					{
 						initialize();
 					}
@@ -39,11 +39,11 @@ namespace solution
 
 				private:
 
-					std::size_t m_initial_candles;
-
 					double m_min_acceleration;
 					double m_max_acceleration;
 					double m_acceleration_step;
+
+					std::size_t m_initial_candles;
 				};
 
 			} // namespace indicators
