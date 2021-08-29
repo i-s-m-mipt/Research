@@ -79,9 +79,6 @@
     <Filter Include="source\market\oscillators\eri">
       <UniqueIdentifier>{387e65ff-e5b3-417f-8a5e-64c222c6d1a3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\market\oscillators\cpc">
-      <UniqueIdentifier>{671f0443-3a34-41fd-ae58-39ce1d7806ef}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\market\indicators\bbs">
       <UniqueIdentifier>{e0200499-2460-4a32-8d7d-16f660131f65}</UniqueIdentifier>
     </Filter>
@@ -123,6 +120,9 @@
     </Filter>
     <Filter Include="source\market\indicators\ics">
       <UniqueIdentifier>{b62d02d0-3d36-40f1-a8d6-faa292aa3dc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\market\indicators\dpc">
+      <UniqueIdentifier>{12669d20-0614-4ded-b216-b29f1702cbe6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -189,9 +189,6 @@
     <ClCompile Include="..\source\market\oscillators\eri\eri.cpp">
       <Filter>source\market\oscillators\eri</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\market\oscillators\cpc\cpc.cpp">
-      <Filter>source\market\oscillators\cpc</Filter>
-    </ClCompile>
     <ClCompile Include="..\source\market\indicators\bbs\bbs.cpp">
       <Filter>source\market\indicators\bbs</Filter>
     </ClCompile>
@@ -233,6 +230,9 @@
     </ClCompile>
     <ClCompile Include="..\source\market\indicators\ics\ics.cpp">
       <Filter>source\market\indicators\ics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\market\indicators\dpc\dpc.cpp">
+      <Filter>source\market\indicators\dpc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -302,9 +302,6 @@
     <ClInclude Include="..\source\market\oscillators\eri\eri.hpp">
       <Filter>source\market\oscillators\eri</Filter>
     </ClInclude>
-    <ClInclude Include="..\source\market\oscillators\cpc\cpc.hpp">
-      <Filter>source\market\oscillators\cpc</Filter>
-    </ClInclude>
     <ClInclude Include="..\source\market\indicators\bbs\bbs.hpp">
       <Filter>source\market\indicators\bbs</Filter>
     </ClInclude>
@@ -358,6 +355,9 @@
     </ClInclude>
     <ClInclude Include="..\source\market\indicators\ics\ics.hpp">
       <Filter>source\market\indicators\ics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\market\indicators\dpc\dpc.hpp">
+      <Filter>source\market\indicators\dpc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

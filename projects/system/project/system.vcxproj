@@ -168,6 +168,7 @@
     <ClCompile Include="..\source\market\indicators\ama\ama.cpp" />
     <ClCompile Include="..\source\market\indicators\bbs\bbs.cpp" />
     <ClCompile Include="..\source\market\indicators\dema\dema.cpp" />
+    <ClCompile Include="..\source\market\indicators\dpc\dpc.cpp" />
     <ClCompile Include="..\source\market\indicators\ema\ema.cpp" />
     <ClCompile Include="..\source\market\indicators\sar\sar.cpp" />
     <ClCompile Include="..\source\market\indicators\sma\sma.cpp" />
@@ -179,7 +180,6 @@
     <ClCompile Include="..\source\market\oscillators\cci\cci.cpp" />
     <ClCompile Include="..\source\market\oscillators\chv\chv.cpp" />
     <ClCompile Include="..\source\market\oscillators\cmo\cmo.cpp" />
-    <ClCompile Include="..\source\market\oscillators\cpc\cpc.cpp" />
     <ClCompile Include="..\source\market\oscillators\dmi\dmi.cpp" />
     <ClCompile Include="..\source\market\oscillators\emv\emv.cpp" />
     <ClCompile Include="..\source\market\oscillators\eri\eri.cpp" />
@@ -208,6 +208,7 @@
     <ClInclude Include="..\source\market\indicators\bbs\bbs.hpp" />
     <ClInclude Include="..\source\market\indicators\dema\dema.hpp" />
     <ClInclude Include="..\source\market\indicators\detail.hpp" />
+    <ClInclude Include="..\source\market\indicators\dpc\dpc.hpp" />
     <ClInclude Include="..\source\market\indicators\ema\ema.hpp" />
     <ClInclude Include="..\source\market\indicators\indicators.hpp" />
     <ClInclude Include="..\source\market\indicators\sar\sar.hpp" />
@@ -220,7 +221,6 @@
     <ClInclude Include="..\source\market\oscillators\cci\cci.hpp" />
     <ClInclude Include="..\source\market\oscillators\chv\chv.hpp" />
     <ClInclude Include="..\source\market\oscillators\cmo\cmo.hpp" />
-    <ClInclude Include="..\source\market\oscillators\cpc\cpc.hpp" />
     <ClInclude Include="..\source\market\oscillators\detail.hpp" />
     <ClInclude Include="..\source\market\oscillators\dmi\dmi.hpp" />
     <ClInclude Include="..\source\market\oscillators\emv\emv.hpp" />
