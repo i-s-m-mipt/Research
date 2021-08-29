@@ -2059,7 +2059,13 @@ namespace solution
 							extremum.first->price_high +
 							extremum.first->price_close) / 3.0;
 
+						/*
 						levels.push_back(Level { extremum.first->date_time,
+							typical_price * (1.0 - m_config.level_max_deviation),
+							typical_price * (1.0 + m_config.level_max_deviation), 1U });
+						*/
+
+						levels.push_back(Level{ extremum.first->date_time,
 							extremum.first->price_low, typical_price, 1U });
 
 						extremum.first->type = Candle::Type::local_min;
@@ -2072,7 +2078,13 @@ namespace solution
 							extremum.second->price_high +
 							extremum.second->price_close) / 3.0;
 
+						/*
 						levels.push_back(Level { extremum.second->date_time,
+							typical_price * (1.0 - m_config.level_max_deviation),
+							typical_price * (1.0 + m_config.level_max_deviation), 1U });
+						*/
+
+						levels.push_back(Level{ extremum.second->date_time,
 							typical_price, extremum.second->price_high, 1U });
 
 						extremum.second->type = Candle::Type::local_max;
