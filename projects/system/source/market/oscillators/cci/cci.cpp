@@ -62,7 +62,9 @@ namespace solution
 								std::next(std::begin(typical_prices), j + m_timesteps), 0.0, std::plus <> (),
 									[m](auto typical_price) { return (std::abs(typical_price - m)); }) / m_timesteps;
 
-							candles[i].oscillators.push_back((typical_prices[i] - m) / (0.015 * std::max(mad, epsilon)));
+							auto value = (typical_prices[i] - m) / (0.015 * std::max(mad, epsilon));
+
+							candles[i].oscillators.push_back(std::min(std::max(value / max_value, -1.0), +1.0));
 						}
 					}
 					catch (const std::exception & exception)
