@@ -75,6 +75,9 @@ namespace solution
 								ndi = k * ndm_div_tr + (1.0 - k) * ndi;
 							}
 
+							candles[i].oscillators.push_back(std::min(std::max(pdi / max_value, +0.0), +1.0));
+							candles[i].oscillators.push_back(std::min(std::max(ndi / max_value, +0.0), +1.0));
+							
 							dx[i - 1U] = 100.0 * std::abs(pdi - ndi) / std::max((pdi + ndi), epsilon);
 						}
 
@@ -96,9 +99,12 @@ namespace solution
 
 						for (auto i = 1U + m_timesteps; i < std::size(candles); ++i)
 						{
-							candles[i].oscillators.push_back( dx [i - 1U]);
-							candles[i].oscillators.push_back(adx [i - 1U]);
-							candles[i].oscillators.push_back(adxr[i - 1U - m_timesteps]);
+							candles[i].oscillators.push_back(std::min(std::max(
+								 dx [i - 1U] / max_value, +0.0), +1.0));
+							candles[i].oscillators.push_back(std::min(std::max(
+								adx [i - 1U] / max_value, +0.0), +1.0));
+							candles[i].oscillators.push_back(std::min(std::max(
+								adxr[i - 1U - m_timesteps] / max_value, +0.0), +1.0));
 						}
 					}
 					catch (const std::exception & exception)
