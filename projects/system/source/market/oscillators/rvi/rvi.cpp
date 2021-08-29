@@ -67,8 +67,10 @@ namespace solution
 								value += sma[j] * k;
 							}
 
+							value /= (m_timesteps_wma * (m_timesteps_wma + 1.0) / 2.0);
+
 							candles[i + m_timesteps_sma - 2U].oscillators.push_back(
-								value / (m_timesteps_wma * (m_timesteps_wma + 1.0) / 2.0));
+								std::min(std::max(value / max_value, -1.0), +1.0));
 						}
 					}
 					catch (const std::exception & exception)

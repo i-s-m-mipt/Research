@@ -37,6 +37,10 @@ namespace solution
 
 				private:
 
+					static inline const double max_value = 0.50;
+
+				private:
+
 					std::size_t m_timesteps_sma;
 					std::size_t m_timesteps_wma;
 				};
