@@ -72,13 +72,6 @@ namespace solution
 
 							candles[i - 1U].indicators.push_back(upper_band);
 							candles[i - 1U].indicators.push_back(lower_band);
-
-							/*
-							candles[i - 1U].oscillators.push_back(
-								2.0 * m_deviations * standard_deviation / m);
-							candles[i - 1U].oscillators.push_back((candles[i - 1U].price_close - 
-								lower_band) / std::max((upper_band - lower_band), epsilon));
-							*/
 						}
 					}
 					catch (const std::exception & exception)
