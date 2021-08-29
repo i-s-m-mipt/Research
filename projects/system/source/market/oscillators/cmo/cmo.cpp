@@ -52,8 +52,11 @@ namespace solution
 								}
 							}
 
-							candles[i].oscillators.push_back(100.0 * (positive_s - negative_s) / 
-								std::max((positive_s + negative_s), epsilon));
+							auto value = 100.0 * (positive_s - negative_s) /
+								std::max((positive_s + negative_s), epsilon);
+
+							candles[i].oscillators.push_back(
+								std::min(std::max(value / max_value, -1.0), +1.0));
 						}
 					}
 					catch (const std::exception & exception)
