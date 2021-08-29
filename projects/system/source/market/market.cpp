@@ -512,6 +512,8 @@ namespace solution
 
 				const auto delimeter = ',';
 
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
 				std::ostringstream sout;
 
 				for (const auto & [asset, scales] : charts)
@@ -552,37 +554,25 @@ namespace solution
 								sout << std::setprecision(3) << std::fixed << std::showpos <<
 									std::min(std::max(volume_deviation, -1.0), +1.0) << delimeter;
 
-								for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
+								auto price = std::max(candles[i].price_close, epsilon);
+
+								for (auto j = 0U; j < 2U; ++j)
 								{
-									auto deviation = (candles[i].indicators[k] - 
-										candles[i].price_close) / candles[i].price_close;
+									const auto & candle = candles[i - j];
 
-									sout << std::setprecision(3) << std::fixed << std::showpos <<
-										std::min(std::max(deviation, -1.0), +1.0) << delimeter;
-								}
+									for (auto k = 0U; k < std::size(candle.indicators); ++k)
+									{
+										auto deviation = (candle.indicators[k] - price) / price;
 
-								for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
-								{
-									auto deviation = (candles[i].indicators[k] - 
-										candles[i - 1U].indicators[k]) / candles[i - 1U].indicators[k];
+										sout << std::setprecision(3) << std::fixed << std::showpos <<
+											std::min(std::max(deviation, -1.0), +1.0) << delimeter;
+									}
 
-									sout << std::setprecision(3) << std::fixed << std::showpos <<
-										std::min(std::max(deviation, -1.0), +1.0) << delimeter;
-								}
-
-								for (auto k = 0U; k < std::size(candles[i].oscillators); ++k)
-								{
-									sout << std::setprecision(3) << std::fixed << std::showpos <<
-										candles[i].oscillators[k] << delimeter;
-								}
-
-								for (auto k = 0U; k < std::size(candles[i].oscillators); ++k)
-								{
-									auto deviation = (candles[i].oscillators[k] -
-										candles[i - 1U].oscillators[k]) / candles[i - 1U].oscillators[k];
-
-									sout << std::setprecision(3) << std::fixed << std::showpos <<
-										std::min(std::max(deviation, -1.0), +1.0) << delimeter;
+									for (auto k = 0U; k < std::size(candle.oscillators); ++k)
+									{
+										sout << std::setprecision(3) << std::fixed << std::showpos <<
+											candle.oscillators[k] << delimeter;
+									}
 								}
 
 								/*
