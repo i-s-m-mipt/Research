@@ -189,6 +189,7 @@ namespace solution
             unsigned int intraday_test_year = 0U;
 
             std::string local_environment_test_asset;
+            std::string local_environment_test_scale;
 
             bool run_local_environment_test = false;
 
@@ -203,6 +204,14 @@ namespace solution
             std::size_t max_waves_sequence = 5U;
 
             std::size_t local_environment_test_start = 2000U;
+
+            std::time_t max_wave_length = 60LL;
+
+            bool required_test_data = false;
+
+            std::size_t test_data_start = 2020U;
+
+            std::size_t skipped_timesteps = 125U;
         };
 
     } // namespace system

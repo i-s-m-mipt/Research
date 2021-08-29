@@ -153,6 +153,7 @@ namespace solution
 						static inline const std::string intraday_test_scale           = "intraday_test_scale";
 						static inline const std::string intraday_test_year            = "intraday_test_year";
 						static inline const std::string local_environment_test_asset  = "local_environment_test_asset";
+						static inline const std::string local_environment_test_scale  = "local_environment_test_scale";
 						static inline const std::string run_local_environment_test    = "run_local_environment_test";
 						static inline const std::string knn_method_parameter          = "knn_method_parameter";
 						static inline const std::string geometric_progression_q       = "geometric_progression_q";
@@ -160,6 +161,10 @@ namespace solution
 						static inline const std::string knn_method_timesteps          = "knn_method_timesteps";
 						static inline const std::string max_waves_sequence            = "max_waves_sequence";
 						static inline const std::string local_environment_test_start  = "local_environment_test_start";
+						static inline const std::string max_wave_length               = "max_wave_length";
+						static inline const std::string required_test_data            = "required_test_data";
+						static inline const std::string test_data_start               = "test_data_start";
+						static inline const std::string skipped_timesteps             = "skipped_timesteps";
 					};
 				};
 

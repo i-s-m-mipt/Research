@@ -67,6 +67,7 @@ namespace solution
 				config.intraday_test_scale           = raw_config[Key::Config::intraday_test_scale          ].get < std::string > ();
 				config.intraday_test_year            = raw_config[Key::Config::intraday_test_year           ].get < unsigned int > ();
 				config.local_environment_test_asset  = raw_config[Key::Config::local_environment_test_asset ].get < std::string > ();
+				config.local_environment_test_scale  = raw_config[Key::Config::local_environment_test_scale ].get < std::string > ();
 				config.run_local_environment_test    = raw_config[Key::Config::run_local_environment_test   ].get < bool > ();
 				config.knn_method_parameter          = raw_config[Key::Config::knn_method_parameter         ].get < std::size_t > ();
 				config.geometric_progression_q       = raw_config[Key::Config::geometric_progression_q      ].get < double > ();
@@ -74,6 +75,10 @@ namespace solution
 				config.knn_method_timesteps          = raw_config[Key::Config::knn_method_timesteps         ].get < std::size_t > ();
 				config.max_waves_sequence            = raw_config[Key::Config::max_waves_sequence           ].get < std::size_t > ();
 				config.local_environment_test_start  = raw_config[Key::Config::local_environment_test_start ].get < std::size_t > ();
+				config.max_wave_length               = raw_config[Key::Config::max_wave_length              ].get < std::time_t > ();
+				config.required_test_data            = raw_config[Key::Config::required_test_data           ].get < bool > ();
+				config.test_data_start               = raw_config[Key::Config::test_data_start              ].get < std::size_t > ();
+				config.skipped_timesteps             = raw_config[Key::Config::skipped_timesteps            ].get < std::size_t > ();
 			}
 			catch (const std::exception & exception)
 			{
