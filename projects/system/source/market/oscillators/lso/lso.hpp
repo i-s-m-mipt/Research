@@ -37,6 +37,10 @@ namespace solution
 
 				private:
 
+					static inline const double max_value = 100.0;
+
+				private:
+
 					std::size_t m_timesteps_fast;
 					std::size_t m_timesteps_slow;
 				};

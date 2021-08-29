@@ -56,7 +56,8 @@ namespace solution
 								[](const auto & lhs, const auto & rhs)
 									{ return (lhs.price_high < rhs.price_high); })->price_high;
 
-							auto fast = 100.0 * (candles[i].price_close - min) / std::max((max - min), epsilon);
+							auto fast = 100.0 * (candles[i].price_close - min) / 
+								std::max((max - min), epsilon);
 
 							if (i == m_timesteps_fast - 1U)
 							{
@@ -67,7 +68,8 @@ namespace solution
 								ema_slow = k * fast + (1.0 - k) * ema_slow;
 							}
 
-							candles[i].oscillators.push_back(ema_slow);
+							candles[i].oscillators.push_back(
+								std::min(std::max(ema_slow / max_value, +0.0), +1.0));
 						}
 					}
 					catch (const std::exception & exception)
