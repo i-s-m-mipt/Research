@@ -61,7 +61,9 @@ namespace solution
 				double price_low  = 0.0;
 				double price_high = 0.0;
 
+				std::size_t locality = 0U;
 				std::size_t strength = 0U;
+				std::size_t weakness = 0U;
 			};
 
 			std::ostream & operator<< (std::ostream & stream, const Level & level);

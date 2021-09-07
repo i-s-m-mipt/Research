@@ -74,16 +74,22 @@ namespace solution
 
 			std::ostream & operator<< (std::ostream & stream, const Level & level)
 			{
-				static const char delimeter = ',';
-
-				stream <<
-					level.begin.year  << delimeter << std::setfill('0') << std::setw(2) <<
-					level.begin.month << delimeter << std::setfill('0') << std::setw(2) <<
-					level.begin.day   << delimeter;
+				const char delimeter = ',';
 
 				stream << 
-					std::setprecision(6) << std::fixed << level.price_low  << delimeter << 
-					std::setprecision(6) << std::fixed << level.price_high << delimeter << level.strength;
+					std::setw(4) << std::right << std::setfill('0') << level.begin.year  << delimeter <<
+					std::setw(2) << std::right << std::setfill('0') << level.begin.month << delimeter <<
+					std::setw(2) << std::right << std::setfill('0') << level.begin.day   << delimeter;
+
+				stream <<
+					std::setprecision(6) << std::fixed << level.price_low  << delimeter <<
+					std::setprecision(6) << std::fixed << level.price_high << delimeter;
+
+				stream <<
+					std::setw(3) << std::right << std::setfill('0') << 
+					std::noshowpos << level.locality << delimeter <<
+					std::noshowpos << level.strength << delimeter << 
+					std::noshowpos << level.weakness;
 
 				return stream;
 			}
