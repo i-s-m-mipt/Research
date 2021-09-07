@@ -120,7 +120,8 @@ namespace solution
 						static inline const std::string level_max_lifetime            = "level_max_lifetime";
 						static inline const std::string level_max_strength            = "level_max_strength";
 						static inline const std::string level_resolution              = "level_resolution";
-						static inline const std::string level_frame                   = "level_frame";
+						static inline const std::string level_min_bias                = "level_min_bias";
+						static inline const std::string level_max_bias                = "level_max_bias";
 						static inline const std::string critical_deviation            = "critical_deviation";
 						static inline const std::string required_level_reduction      = "required_level_reduction";
 						static inline const std::string required_quik                 = "required_quik";

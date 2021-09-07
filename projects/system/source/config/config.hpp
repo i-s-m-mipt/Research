@@ -129,7 +129,8 @@ namespace solution
 
             std::string level_resolution = "D";
 
-            std::size_t level_frame = 30U;
+            std::size_t level_min_bias = 10U;
+            std::size_t level_max_bias = 120U;
 
             double critical_deviation = 1.00;
 
