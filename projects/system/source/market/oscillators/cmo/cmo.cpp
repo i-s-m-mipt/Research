@@ -56,7 +56,7 @@ namespace solution
 								std::max((positive_s + negative_s), epsilon);
 
 							candles[i].oscillators.push_back(
-								std::min(std::max(value / max_value, -1.0), +1.0));
+								(std::min(std::max(value / max_value, -1.0), +1.0) + 1.0) / 2.0);
 						}
 					}
 					catch (const std::exception & exception)

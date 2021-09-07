@@ -64,7 +64,8 @@ namespace solution
 
 							auto value = (typical_prices[i] - m) / (0.015 * std::max(mad, epsilon));
 
-							candles[i].oscillators.push_back(std::min(std::max(value / max_value, -1.0), +1.0));
+							candles[i].oscillators.push_back(
+								(std::min(std::max(value / max_value, -1.0), +1.0) + 1.0) / 2.0);
 						}
 					}
 					catch (const std::exception & exception)
