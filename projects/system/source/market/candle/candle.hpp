@@ -130,6 +130,8 @@ namespace solution
 
 				std::size_t n_levels = 0U;
 
+				Level level;
+
 				std::vector < double > indicators;
 				std::vector < double > oscillators;
 
