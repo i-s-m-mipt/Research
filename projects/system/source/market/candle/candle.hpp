@@ -7,6 +7,7 @@
 #  pragma once
 #endif // #ifdef BOOST_HAS_PRAGMA_ONCE
 
+#include <algorithm>
 #include <array>
 #include <ctime>
 #include <iomanip>
@@ -54,6 +55,13 @@ namespace solution
 
 				using date_time_t = Date_Time;
 
+				using points_container_t = std::vector < date_time_t > ;
+
+			public:
+
+				std::size_t strength_to_date(const date_time_t & date) const;
+				std::size_t weakness_to_date(const date_time_t & date) const;
+
 			public:
 
 				date_time_t begin;
@@ -62,8 +70,9 @@ namespace solution
 				double price_high = 0.0;
 
 				std::size_t locality = 0U;
-				std::size_t strength = 0U;
-				std::size_t weakness = 0U;
+
+				points_container_t strength_points;
+				points_container_t weakness_points;
 			};
 
 			std::ostream & operator<< (std::ostream & stream, const Level & level);
@@ -113,12 +122,10 @@ namespace solution
 
 				volume_t volume = 0ULL;
 
-				double price_deviation = 0.0;
-
+				double price_deviation      = 0.0;
 				double price_deviation_open = 0.0;
-
-				double price_deviation_max = 0.0;
-				double price_deviation_min = 0.0;
+				double price_deviation_max  = 0.0;
+				double price_deviation_min  = 0.0;
 
 				double volume_deviation = 0.0;
 

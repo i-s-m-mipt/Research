@@ -57,7 +57,7 @@ namespace solution
 
 			std::ostream & operator<< (std::ostream & stream, const Date_Time & date_time)
 			{
-				static const char delimeter = '/';
+				const char delimeter = '/';
 
 				stream <<
 					std::setw(4) << std::right << std::setfill('0') << std::noshowpos << date_time.year  << delimeter <<
@@ -72,24 +72,34 @@ namespace solution
 				return (date_time_1.to_time_t() - date_time_2.to_time_t());
 			}
 
+			std::size_t Level::strength_to_date(const date_time_t & date) const
+			{
+				return std::count_if(std::begin(strength_points), std::end(strength_points),
+					[&date](const auto & strength_point) { return (strength_point < date); });
+			}
+
+			std::size_t Level::weakness_to_date(const date_time_t & date) const
+			{
+				return std::count_if(std::begin(weakness_points), std::end(weakness_points),
+					[&date](const auto & weakness_point) { return (weakness_point < date); });
+			}
+
 			std::ostream & operator<< (std::ostream & stream, const Level & level)
 			{
 				const char delimeter = ',';
 
-				stream << 
-					std::setw(4) << std::right << std::setfill('0') << level.begin.year  << delimeter <<
-					std::setw(2) << std::right << std::setfill('0') << level.begin.month << delimeter <<
-					std::setw(2) << std::right << std::setfill('0') << level.begin.day   << delimeter;
+				stream << level.begin << delimeter;
 
 				stream <<
 					std::setprecision(6) << std::fixed << level.price_low  << delimeter <<
 					std::setprecision(6) << std::fixed << level.price_high << delimeter;
 
+				stream << std::setw(3) << std::right << std::setfill('0') <<
+					std::noshowpos << level.locality << delimeter;
+
 				stream <<
-					std::setw(3) << std::right << std::setfill('0') << 
-					std::noshowpos << level.locality << delimeter <<
-					std::noshowpos << level.strength << delimeter << 
-					std::noshowpos << level.weakness;
+					std::noshowpos << std::size(level.strength_points) << delimeter << 
+					std::noshowpos << std::size(level.weakness_points);
 
 				return stream;
 			}
