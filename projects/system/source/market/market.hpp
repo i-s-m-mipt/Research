@@ -420,7 +420,14 @@ namespace solution
 
 			levels_container_t make_levels(candles_container_t & candles) const;
 
-			levels_container_t reduce_levels(levels_container_t && levels) const;
+			void make_level(const Candle & extremum, levels_container_t & levels, 
+				std::size_t locality) const;
+
+			void update_levels_strength(levels_container_t & levels, 
+				const candles_container_t & candles) const;
+
+			void update_levels_weakness(levels_container_t & levels,
+				const candles_container_t & candles) const;
 
 		private:
 
