@@ -2842,7 +2842,77 @@ namespace solution
 
 			try
 			{
-				// TODO
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
+				for (const auto & [asset, scales] : m_charts)
+				{
+					for (const auto & [scale, candles] : scales)
+					{
+						const auto price_deviation_multiplier =
+							get_price_deviation_multiplier(scale);
+
+						for (auto i = m_config.skipped_timesteps + 1U; i < std::size(candles); ++i)
+						{
+							if (candles[i].n_levels != 0U)
+							{
+								Record record;
+
+								record.asset = asset;
+								record.date_time = candles[i].date_time;
+								record.vector.reserve(59U);
+								record.direction = candles[i].movement_tag;
+								record.deviation = candles[i].regression_tags.front();
+
+								auto price_deviation_1 = candles[i].price_deviation_open * price_deviation_multiplier;
+								auto price_deviation_2 = candles[i].price_deviation      * price_deviation_multiplier;
+								auto price_deviation_3 = candles[i].price_deviation_max  * price_deviation_multiplier;
+								auto price_deviation_4 = candles[i].price_deviation_min  * price_deviation_multiplier;
+
+								record.vector.push_back(std::min(std::max(price_deviation_1, -1.0), +1.0));
+								record.vector.push_back(std::min(std::max(price_deviation_2, -1.0), +1.0));
+								record.vector.push_back(std::min(std::max(price_deviation_3, +0.0), +1.0));
+								record.vector.push_back(std::min(std::max(price_deviation_3, +0.0), +1.0));
+
+								auto volume_deviation = candles[i].volume_deviation;
+
+								record.vector.push_back(std::min(std::max(volume_deviation, -1.0), +1.0));
+
+								auto price = std::max(candles[i].price_close, epsilon);
+
+								for (auto j = 0U; j < 2U; ++j)
+								{
+									const auto & candle = candles[i - j];
+
+									for (auto k = 0U; k < std::size(candle.indicators); ++k)
+									{
+										auto deviation = (candle.indicators[k] - price) / price;
+
+										record.vector.push_back(std::min(std::max(deviation, -1.0), +1.0));
+									}
+
+									for (auto k = 0U; k < std::size(candle.oscillators); ++k)
+									{
+										record.vector.push_back(candle.oscillators[k]);
+									}
+								}
+
+								if (asset == m_config.local_environment_test_asset &&
+									record.date_time.year >= m_config.local_environment_test_start)
+								{
+									m_environment_test.push_back(std::move(record));
+								}
+								else
+								{
+									m_environment.push_back(std::move(record));
+								}
+							}
+						}
+					}
+				}
+
+				m_environment_test.shrink_to_fit();
+
+				m_environment.shrink_to_fit();
 			}
 			catch (const std::exception & exception)
 			{
