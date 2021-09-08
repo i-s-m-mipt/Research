@@ -420,8 +420,8 @@ namespace solution
 
 			levels_container_t make_levels(candles_container_t & candles) const;
 
-			void make_level(const Candle & extremum, levels_container_t & levels, 
-				std::size_t locality) const;
+			void make_level(Candle & extremum, levels_container_t & levels, 
+				std::size_t locality, Candle::Type type) const;
 
 			void update_levels_strength(levels_container_t & levels, 
 				const candles_container_t & candles) const;

@@ -525,19 +525,14 @@ namespace solution
 
 						for (auto i = config.skipped_timesteps + 1U; i < std::size(candles); ++i)
 						{
-							if (((candles[i].date_time.year <  config.test_data_start) &&
-									( config.required_test_data)) ||
-								((candles[i].date_time.year >= config.test_data_start) &&
-									(!config.required_test_data)) ||
-								 (candles[i - 1U].n_levels == 0U) || 
-								 (candles[i     ].n_levels != 0U) || (candles[i].movement_tag == 0))
-							{
-								continue;
-							}
-							else
+							if (((candles[i].date_time.year >= config.test_data_start &&  config.required_test_data)  ||
+								 (candles[i].date_time.year  < config.test_data_start && !config.required_test_data)) &&
+								 (candles[i - 1U].n_levels != 0U && candles[i].n_levels == 0U))
 							{
 								auto price_deviation = price_deviation_multiplier *
 									(candles[i].price_deviation + candles[i].price_deviation_open);
+
+								sout << candles[i].date_time << delimeter;
 
 								sout << std::setprecision(3) << std::fixed << std::showpos <<
 									std::min(std::max(price_deviation, -1.0), +1.0) << delimeter;
@@ -546,9 +541,11 @@ namespace solution
 									1.0 * candles[i - 1U].level.locality / config.level_max_bias << delimeter;
 
 								sout << std::setprecision(3) << std::fixed << std::noshowpos <<
-									std::min(candles[i - 1U].level.strength / config.level_max_strength, 1.0) << delimeter;
+									std::min(candles[i - 1U].level.strength_to_date(candles[i - 1U].date_time) / 
+										config.level_max_strength, 1.0) << delimeter;
 
-								sout << std::noshowpos << candles[i - 1U].level.weakness << delimeter;
+								sout << std::noshowpos << candles[i - 1U].level.weakness_to_date(
+									candles[i - 1U].date_time) << delimeter;
 
 								/*
 								for (auto k = 0U; k < std::size(candles[i].indicators); ++k)
@@ -2256,16 +2253,12 @@ namespace solution
 
 						if (std::distance(first, min_candle) == bias)
 						{
-							make_level(*min_candle, levels, bias);
-
-							min_candle->type = Candle::Type::local_min;
+							make_level(*min_candle, levels, bias, Candle::Type::local_min);
 						}
 
 						if (std::distance(first, max_candle) == bias)
 						{
-							make_level(*max_candle, levels, bias);
-
-							max_candle->type = Candle::Type::local_max;
+							make_level(*max_candle, levels, bias, Candle::Type::local_max);
 						}
 					}
 				}
@@ -2283,7 +2276,8 @@ namespace solution
 			}
 		}
 
-		void Market::make_level(const Candle & extremum, levels_container_t & levels, std::size_t locality) const
+		void Market::make_level(Candle & extremum, levels_container_t & levels, 
+			std::size_t locality, Candle::Type type) const
 		{
 			RUN_LOGGER(logger);
 
@@ -2294,11 +2288,37 @@ namespace solution
 							iterator == std::end(levels))
 				{
 					auto typical_price = (
-						extremum.price_low + extremum.price_high + extremum.price_close) / 3.0;
+						extremum.price_low  + 
+						extremum.price_high + 
+						extremum.price_close) / 3.0;
 
-					levels.push_back(Level { extremum.date_time,
-						typical_price * (1.0 - m_config.level_max_deviation),
-						typical_price * (1.0 + m_config.level_max_deviation), locality, 1U, 0U });
+					switch (type)
+					{
+					case Candle::Type::local_min:
+					{
+						levels.push_back(Level { extremum.date_time, 
+							typical_price * (1.0 - 2.0 * m_config.level_max_deviation), 
+							typical_price * (1.0 + 0.5 * m_config.level_max_deviation), 
+								locality, {}, {} });
+
+						break;
+					}
+					case Candle::Type::local_max:
+					{
+						levels.push_back(Level { extremum.date_time, 
+							typical_price * (1.0 - 0.5 * m_config.level_max_deviation),
+							typical_price * (1.0 + 2.0 * m_config.level_max_deviation), 
+								locality, {}, {} });
+
+						break;
+					}
+					default:
+					{
+						break;
+					}
+					}
+
+					extremum.type = type;
 				}
 				else
 				{
@@ -2327,7 +2347,7 @@ namespace solution
 							candle.price_close >= level.price_low &&
 							candle.price_close <= level.price_high)
 						{
-							++level.strength;
+							level.strength_points.push_back(candle.date_time);
 						}
 					}
 				}
@@ -2356,12 +2376,19 @@ namespace solution
 							{
 								if (candles[j].type != Candle::Type::empty)
 								{
-									if ((candles[i].price_close < level.price_low ) &&
-										(candles[j].price_close > level.price_high) ||
-										(candles[i].price_close > level.price_high) &&
-										(candles[j].price_close < level.price_low ))
+									for (auto k = i; k <= j; ++k)
 									{
-										++level.weakness;
+										if ((candles[i].price_close > level.price_high) &&
+											(candles[j].price_close < level.price_low ) &&
+											(candles[k].price_close < level.price_low ) ||
+											(candles[i].price_close < level.price_low ) &&
+											(candles[j].price_close > level.price_high) && 
+											(candles[k].price_close > level.price_high))
+										{
+											level.weakness_points.push_back(candles[k].date_time);
+
+											break;
+										}
 									}
 
 									break;
@@ -2718,15 +2745,16 @@ namespace solution
 				{
 					for (const auto & level : levels)
 					{
-						if ((candle.date_time.to_time_t() - level.begin.to_time_t()) <=
-								seconds_in_day * static_cast < std::time_t > (m_config.level_min_bias))
+						if ((candle.date_time.to_time_t() - level.begin.to_time_t()) <
+								seconds_in_day * static_cast < std::time_t > (level.locality))
 						{
 							break;
 						}
 						else
 						{
 							if ((level.price_low  <= candle.price_close) &&
-								(level.price_high >= candle.price_close) && (level.weakness < 2U))
+								(level.price_high >= candle.price_close) && 
+								(level.weakness_to_date(candle.date_time) < 2U))
 							{
 								++candle.n_levels;
 
