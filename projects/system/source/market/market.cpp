@@ -2707,7 +2707,8 @@ namespace solution
 			}
 		}
 
-		void Market::update_supports_resistances(candles_container_t & candles, const levels_container_t & levels) const
+		void Market::update_supports_resistances(candles_container_t & candles, 
+			const levels_container_t & levels) const
 		{
 			RUN_LOGGER(logger);
 
@@ -2717,19 +2718,22 @@ namespace solution
 				{
 					for (const auto & level : levels)
 					{
-						if (level.begin >= candle.date_time)
+						if ((candle.date_time.to_time_t() - level.begin.to_time_t()) <=
+								seconds_in_day * static_cast < std::time_t > (m_config.level_min_bias))
 						{
 							break;
 						}
 						else
 						{
-							auto level_alive = candle.date_time.to_time_t() - level.begin.to_time_t();
-
 							if ((level.price_low  <= candle.price_close) &&
-								(level.price_high >= candle.price_close) &&
-								(level_alive <= seconds_in_day * m_config.level_max_lifetime))
+								(level.price_high >= candle.price_close) && (level.weakness < 2U))
 							{
 								++candle.n_levels;
+
+								if (candle.level.locality < level.locality)
+								{
+									candle.level = level;
+								}
 							}
 						}
 					}
