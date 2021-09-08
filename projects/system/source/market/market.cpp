@@ -2238,67 +2238,71 @@ namespace solution
 
 			try
 			{
-				const auto frame = 2U * m_config.level_frame + 1U;
-
 				levels_container_t levels;
 
-				for (auto first = std::begin(candles); first != std::prev(std::end(candles), frame - 1U); ++first)
+				for (auto bias = m_config.level_min_bias; bias <= m_config.level_max_bias; ++bias)
 				{
-					auto last = std::next(first, frame);
+					for (auto first = std::begin(candles); first != 
+							std::prev(std::end(candles), 2U * bias); ++first)
+					{
+						auto [min_candle, max_candle] = std::minmax_element(
+							first, std::next(first, 2U * bias + 1U),
+							[](const auto & lhs, const auto & rhs)
+							{
+								return (
+									(lhs.price_high + lhs.price_low + lhs.price_close) <
+									(rhs.price_high + rhs.price_low + rhs.price_close));
+							});
 
-					auto extremum = std::minmax_element(first, last, [](const auto & lhs, const auto & rhs)
+						if (std::distance(first, min_candle) == bias)
 						{
-							return (
-								(lhs.price_high + lhs.price_low + lhs.price_close) < 
-								(rhs.price_high + rhs.price_low + rhs.price_close));
-						});
+							make_level(*min_candle, levels, bias);
 
-					if (std::distance(first, extremum.first) == m_config.level_frame)
-					{
-						auto typical_price = (
-							extremum.first->price_low  +
-							extremum.first->price_high +
-							extremum.first->price_close) / 3.0;
+							min_candle->type = Candle::Type::local_min;
+						}
 
-						/*
-						levels.push_back(Level { extremum.first->date_time,
-							typical_price * (1.0 - m_config.level_max_deviation),
-							typical_price * (1.0 + m_config.level_max_deviation), 1U });
-						*/
+						if (std::distance(first, max_candle) == bias)
+						{
+							make_level(*max_candle, levels, bias);
 
-						levels.push_back(Level{ extremum.first->date_time,
-							extremum.first->price_low, typical_price, 1U });
-
-						extremum.first->type = Candle::Type::local_min;
-					}
-
-					if (std::distance(first, extremum.second) == m_config.level_frame)
-					{
-						auto typical_price = (
-							extremum.second->price_low  +
-							extremum.second->price_high +
-							extremum.second->price_close) / 3.0;
-
-						/*
-						levels.push_back(Level { extremum.second->date_time,
-							typical_price * (1.0 - m_config.level_max_deviation),
-							typical_price * (1.0 + m_config.level_max_deviation), 1U });
-						*/
-
-						levels.push_back(Level{ extremum.second->date_time,
-							typical_price, extremum.second->price_high, 1U });
-
-						extremum.second->type = Candle::Type::local_max;
+							max_candle->type = Candle::Type::local_max;
+						}
 					}
 				}
 
-				if (m_config.required_level_reduction)
+				levels.shrink_to_fit();
+
+				update_levels_strength(levels, candles);
+				update_levels_weakness(levels, candles);
+
+				return levels;
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
+
+		void Market::make_level(const Candle & extremum, levels_container_t & levels, std::size_t locality) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				if (auto iterator = std::find_if(std::begin(levels), std::end(levels),
+						[&extremum](const auto & level) { return (level.begin == extremum.date_time); }); 
+							iterator == std::end(levels))
 				{
-					return reduce_levels(std::move(levels));
+					auto typical_price = (
+						extremum.price_low + extremum.price_high + extremum.price_close) / 3.0;
+
+					levels.push_back(Level { extremum.date_time,
+						typical_price * (1.0 - m_config.level_max_deviation),
+						typical_price * (1.0 + m_config.level_max_deviation), locality, 1U, 0U });
 				}
 				else
 				{
-					return levels;
+					iterator->locality = locality;
 				}
 			}
 			catch (const std::exception & exception)
@@ -2307,15 +2311,65 @@ namespace solution
 			}
 		}
 
-		Market::levels_container_t Market::reduce_levels(levels_container_t && levels) const
+		void Market::update_levels_strength(levels_container_t & levels,
+			const candles_container_t & candles) const
 		{
 			RUN_LOGGER(logger);
 
 			try
 			{
-				// TODO
+				for (auto & level : levels)
+				{
+					for (const auto & candle : candles)
+					{
+						if (candle.date_time > level.begin &&
+							candle.type != Candle::Type::empty &&
+							candle.price_close >= level.price_low &&
+							candle.price_close <= level.price_high)
+						{
+							++level.strength;
+						}
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+		}
 
-				return levels;
+		void Market::update_levels_weakness(levels_container_t & levels,
+			const candles_container_t & candles) const
+		{
+			RUN_LOGGER(logger);
+
+			try
+			{
+				for (auto & level : levels)
+				{
+					for (auto i = 0U; i < std::size(candles); ++i)
+					{
+						if (candles[i].date_time > level.begin &&
+							candles[i].type != Candle::Type::empty)
+						{
+							for (auto j = i + 1U; j < std::size(candles); ++j)
+							{
+								if (candles[j].type != Candle::Type::empty)
+								{
+									if ((candles[i].price_close < level.price_low ) &&
+										(candles[j].price_close > level.price_high) ||
+										(candles[i].price_close > level.price_high) &&
+										(candles[j].price_close < level.price_low ))
+									{
+										++level.weakness;
+									}
+
+									break;
+								}
+							}
+						}
+					}
+				}
 			}
 			catch (const std::exception & exception)
 			{
