@@ -899,14 +899,14 @@ namespace solution
 
 			try
 			{
-				m_oscillators.push_back(market::oscillators::CCI(20U     )); // 1 oscillator(s) [-1.0, +1.0]
-				m_oscillators.push_back(market::oscillators::CMO(14U     )); // 1 oscillator(s) [-1.0, +1.0]
-				m_oscillators.push_back(market::oscillators::DMI(14U     )); // 5 oscillator(s) [+0.0, +1.0]
-				m_oscillators.push_back(market::oscillators::LSO(14U,  3U)); // 1 oscillator(s) [+0.0, +1.0]
-				m_oscillators.push_back(market::oscillators::MFI(14U     )); // 1 oscillator(s) [+0.0, +1.0]
-				m_oscillators.push_back(market::oscillators::RSI(14U     )); // 1 oscillator(s) [+0.0, +1.0]
-				m_oscillators.push_back(market::oscillators::RVI(10U,  4U)); // 1 oscillator(s) [-1.0, +1.0]
-				m_oscillators.push_back(market::oscillators::VHF(28U     )); // 1 oscillator(s) [+0.0, +1.0]
+				m_oscillators.push_back(market::oscillators::CCI(20U     )); // 1 oscillator(s) 
+				m_oscillators.push_back(market::oscillators::CMO(14U     )); // 1 oscillator(s) 
+				m_oscillators.push_back(market::oscillators::DMI(14U     )); // 5 oscillator(s) 
+				m_oscillators.push_back(market::oscillators::LSO(14U,  3U)); // 1 oscillator(s) 
+				m_oscillators.push_back(market::oscillators::MFI(14U     )); // 1 oscillator(s) 
+				m_oscillators.push_back(market::oscillators::RSI(14U     )); // 1 oscillator(s) 
+				m_oscillators.push_back(market::oscillators::RVI(10U,  4U)); // 1 oscillator(s) 
+				m_oscillators.push_back(market::oscillators::VHF(28U     )); // 1 oscillator(s) 
 			}
 			catch (const std::exception & exception)
 			{
