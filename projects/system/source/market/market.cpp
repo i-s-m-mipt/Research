@@ -2654,6 +2654,7 @@ namespace solution
 
 			try
 			{
+				/*
 				const auto delta = m_config.movement_timesteps;
 
 				for (auto i = 0U; i < std::size(candles) - delta; ++i)
@@ -2665,6 +2666,38 @@ namespace solution
 					else
 					{
 						candles[i].movement_tag = +1;
+					}
+				}
+				*/
+
+				const auto prediction_range = m_config.movement_timesteps;
+
+				for (auto i = 0U; i < std::size(candles) - prediction_range; ++i)
+				{
+					auto max_price = candles[i + prediction_range].price_high;
+					auto min_price = candles[i + prediction_range].price_low;
+
+					for (auto j = 1U; j < prediction_range; ++j)
+					{
+						max_price = std::max(max_price, candles[i + j].price_high);
+						min_price = std::min(min_price, candles[i + j].price_low);
+					}
+
+					auto current_price_close = candles[i].price_close;
+
+					auto deviation_L = std::abs(max_price - current_price_close) / current_price_close;
+					auto deviation_S = std::abs(min_price - current_price_close) / current_price_close;
+
+					if (std::abs(deviation_L - deviation_S) > 0.01)
+					{
+						if (deviation_L > deviation_S)
+						{
+							candles[i].movement_tag = +1;
+						}
+						else
+						{
+							candles[i].movement_tag = -1;
+						}
 					}
 				}
 			}
