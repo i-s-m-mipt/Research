@@ -1092,6 +1092,11 @@ namespace solution
 							throw std::domain_error("required: (price_close > 0.0) for " + asset);
 						}
 
+						if (candle.volume == 0ULL)
+						{
+							throw std::domain_error("required: (volume > 0) for " + asset);
+						}
+
 						candles.push_back(std::move(candle));
 					}
 				}
@@ -1178,7 +1183,8 @@ namespace solution
 					}
 					else
 					{
-						candles[i].price_deviation_open = (candles[i].price_open - candles[i - 1].price_close) / candles[i - 1].price_close;
+						candles[i].price_deviation_open = (candles[i].price_open - 
+							candles[i - 1U].price_close) / candles[i - 1U].price_close;
 
 						if ((candles[i].price_deviation_open >  m_config.critical_deviation ||
 							 candles[i].price_deviation_open < -m_config.critical_deviation / 2.0) && !flag)
@@ -1196,13 +1202,13 @@ namespace solution
 							flag = true;
 						}
 
-						if (candles[i - 1].volume == 0ULL)
+						if (candles[i - 1U].volume == 0ULL)
 						{
-							candles[i - 1].volume = 1ULL;
+							candles[i - 1U].volume = 1ULL;
 						}
 
-						const auto a = static_cast < double > (candles[i    ].volume);
-						const auto b = static_cast < double > (candles[i - 1].volume);
+						const auto a = static_cast < double > (candles[i     ].volume);
+						const auto b = static_cast < double > (candles[i - 1U].volume);
 
 						candles[i].volume_deviation = (a - b) / b;
 					}
@@ -1357,6 +1363,123 @@ namespace solution
 		{
 			RUN_LOGGER(logger);
 
+			/*
+			try
+			{
+				const auto asset = m_config.local_environment_test_asset;
+				const auto scale = m_config.local_environment_test_scale;
+				const auto start = m_config.local_environment_test_start;
+
+				const auto & candles = m_charts.at(asset).at(scale);
+
+				const auto price_deviation_multiplier =
+					get_price_deviation_multiplier(scale);
+
+				const auto delimeter = ',';
+
+				const auto epsilon = std::numeric_limits < double > ::epsilon();
+
+				shared::Python python;
+
+				boost::python::exec("from system import predict", python.global(), python.global());
+
+				boost::python::object function = python.global()["predict"];
+
+				auto direction = 0;
+
+				auto reward = 0.0;
+
+				for (std::size_t i = m_config.skipped_timesteps + 1U, 
+					index = 0U; i < std::size(candles); ++i)
+				{
+					if (candles[i].date_time.year < start)
+					{
+						continue;
+					}
+
+					if (candles[i].n_levels != 0U)
+					{
+						std::ostringstream sout;
+
+						auto price_deviation_1 = candles[i].price_deviation_open * price_deviation_multiplier;
+						auto price_deviation_2 = candles[i].price_deviation      * price_deviation_multiplier;
+						auto price_deviation_3 = candles[i].price_deviation_max  * price_deviation_multiplier;
+						auto price_deviation_4 = candles[i].price_deviation_min  * price_deviation_multiplier;
+
+						sout << std::setprecision(3) << std::fixed << std::showpos <<
+							std::min(std::max(price_deviation_1, -1.0), +1.0) << delimeter;
+						sout << std::setprecision(3) << std::fixed << std::showpos <<
+							std::min(std::max(price_deviation_2, -1.0), +1.0) << delimeter;
+						sout << std::setprecision(3) << std::fixed << std::showpos <<
+							std::min(std::max(price_deviation_3, +0.0), +1.0) << delimeter;
+						sout << std::setprecision(3) << std::fixed << std::showpos <<
+							std::min(std::max(price_deviation_3, +0.0), +1.0) << delimeter;
+
+						auto volume_deviation = candles[i].volume_deviation;
+
+						sout << std::setprecision(3) << std::fixed << std::showpos <<
+							std::min(std::max(volume_deviation, -1.0), +1.0) << delimeter;
+
+						auto price = std::max(candles[i].price_close, epsilon);
+
+						for (auto j = 0U; j < 2U; ++j)
+						{
+							const auto & candle = candles[i - j];
+
+							for (auto k = 0U; k < std::size(candle.indicators); ++k)
+							{
+								auto deviation = (candle.indicators[k] - price) / price;
+
+								sout << std::setprecision(3) << std::fixed << std::showpos <<
+									std::min(std::max(deviation, -1.0), +1.0) << delimeter;
+							}
+
+							for (auto k = 0U; k < std::size(candle.oscillators); ++k)
+							{
+								sout << std::setprecision(3) << std::fixed << std::showpos <<
+									candle.oscillators[k] << delimeter;
+							}
+						}
+
+						auto data = sout.str();
+
+						data.pop_back();
+
+						direction = boost::python::extract < int > (function(
+							asset.c_str(), scale.c_str(), data.c_str()))();
+
+						index = i;
+					}
+				
+					if (i - index >= m_config.movement_timesteps)
+					{
+						direction = 0;
+					}
+
+					reward += direction * candles[i].regression_tags.front() * 
+						m_config.transaction_base_value;
+
+					if (direction != 0)
+					{
+						std::cout << asset << " [" << candles[i].date_time << 
+							"] DIRECTION: " << std::showpos << direction << 
+							" REWARD: " << std::setw(8) << std::setfill(' ') << std::right <<
+							std::setprecision(2) << std::fixed << std::showpos << reward << std::endl;
+					}
+					
+				}
+			}
+			catch (const boost::python::error_already_set &)
+			{
+				logger.write(Severity::error, shared::Python::exception());
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+			*/
+
+			/*
 			try
 			{
 				std::mutex mutex;
@@ -1407,19 +1530,12 @@ namespace solution
 
 					direction = ((direction == 0) ? 1 : (direction / std::abs(direction)));
 
-					reward += direction * record_test.deviation * m_config.transaction_base_value;
+					//reward += direction * record_test.deviation * m_config.transaction_base_value;
 
 					++total_counter;
 
-					std::cout << record_test.asset << " [" << record_test.date_time << "] NEIGHBOURS: { ";
-					
-					for (const auto & neighbour : neighbours)
-					{
-						std::cout << std::setw(5) << std::setfill(' ') << std::right <<
-							neighbour.second.asset << " [" << neighbour.second.date_time << "] ";
-					}
-
-					std::cout << "} DIRECTION: " << std::showpos << direction << " REWARD: " <<
+					std::cout << record_test.asset << " [" << record_test.date_time << "] DIRECTION: " 
+						<< std::showpos << direction << " REWARD: " <<
 						std::setw(8) << std::setfill(' ') << std::right <<
 						std::setprecision(2) << std::fixed << std::showpos << reward <<
 							((direction * record_test.deviation < 0.0) ? " ERROR (" + 
@@ -1431,6 +1547,69 @@ namespace solution
 			{
 				shared::catch_handler < market_exception > (logger, exception);
 			}
+			*/
+
+			/*
+			try
+			{
+				const auto asset = m_config.local_environment_test_asset;
+				const auto scale = m_config.local_environment_test_scale;
+				const auto start = m_config.local_environment_test_start;
+
+				const auto & candles = m_charts.at(asset).at(scale);
+
+				auto direction = 0;
+
+				auto income = 0.0;
+
+				auto reward = 0.0;
+
+				for (std::size_t i = m_config.skipped_timesteps + 1U, 
+					index = 0U; i < std::size(candles); ++i)
+				{
+					if (candles[i].date_time.year < start)
+					{
+						continue;
+					}
+
+					if (candles[i].n_levels == 0U && candles[i - 1U].n_levels > 0U &&
+						std::abs(candles[i].price_deviation) < 0.025)
+					{
+						direction = (candles[i].price_deviation > 0.0 ? +1 : -1);
+
+						index = i;
+					}
+				
+					if (i - index >= m_config.movement_timesteps || income < -2.5 || income > 5.0 ||
+						(income > 0.0 && candles[i].n_levels != 0U))
+					{
+						direction = 0;
+
+						income = 0.0;
+					}
+					else
+					{
+						income += direction * candles[i].regression_tags.front() *
+							m_config.transaction_base_value;
+					}
+
+					reward += direction * candles[i].regression_tags.front() * 
+						m_config.transaction_base_value;
+
+					if (direction != 0)
+					{
+						std::cout << asset << " [" << candles[i].date_time << 
+							"] DIRECTION: " << std::showpos << direction << 
+							" REWARD: " << std::setw(8) << std::setfill(' ') << std::right <<
+							std::setprecision(2) << std::fixed << std::showpos << reward << std::endl;
+					}
+				}
+			}
+			catch (const std::exception & exception)
+			{
+				shared::catch_handler < market_exception > (logger, exception);
+			}
+			*/
 		}
 
 		void Market::run_fridays_test() const
@@ -2743,6 +2922,11 @@ namespace solution
 					if (candle.price_close < epsilon)
 					{
 						throw std::domain_error("required: (price_close > 0.0) for " + asset);
+					}
+
+					if (candle.volume == 0ULL)
+					{
+						throw std::domain_error("required: (volume > 0) for " + asset);
 					}
 
 					candles.push_back(std::move(candle));
